@@ -479,7 +479,7 @@ function renderBestSellers(sellers) {
           <div class="seller-bar" style="width:${(s.qty/max*100).toFixed(0)}%;background:${colors[i]}"></div>
         </div>
       </div>
-      <div class="seller-revenue">฿${(s.revenue/1000).toFixed(1)}K</div>
+      <div class="seller-revenue">฿${(Number(s.rev||0)/1000).toFixed(1)}K</div>
     </div>
   `).join('');
 }
