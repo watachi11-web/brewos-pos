@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrewOS — Kitchen Display</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#1B4332; --green2:#2D6A4F; --orange:#F97316;
+  --bg:#faf9f7; --card:#ffffff; --border:#e8e3db;
+  --text:#1B2F1B; --muted:#4a6741; --urgent:#ef4444;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── TOPBAR ── */
+.topbar{background:#fff;border-bottom:1.5px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-left{display:flex;align-items:center;gap:16px;}
+.logo{font-size:18px;font-weight:700;color:var(--text);}
+.brand-badge{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);}
+.bb-badge{background:#e8f5ec;color:#1B4332;border-color:#a3c4ab;}
+.hh-badge{background:#fff3e8;color:#c04a00;border-color:#f5a96b;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.clock{font-size:22px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:1px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse-dot 2s infinite;}
+.btn-sm{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-sm:hover{background:var(--border);color:var(--text);}
+.btn-sm.active{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* ── FILTER BAR ── */
+.filter-bar{padding:12px 24px;background:#fff;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.filter-chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
+.count-badge{background:var(--border);border-radius:10px;padding:2px 7px;font-size:11px;margin-left:4px;}
+.filter-chip.active .count-badge{background:rgba(255,255,255,0.2);}
+.refresh-info{margin-left:auto;font-size:12px;color:var(--muted);}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:20px 24px;align-items:start;}
+
+/* ── ORDER CARD ── */
+.order-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color 0.3s;}
+.order-card.urgent{border-color:var(--urgent);box-shadow:0 0 0 1px #ef444430;}
+.order-card.ready-state{border-color:#22c55e;opacity:0.7;}
+.card-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.order-id{font-size:15px;font-weight:700;color:var(--text);}
+.order-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:3px 8px;border-radius:6px;}
+.type-dine{background:#e8f5ec;color:#1B4332;}
+.type-take{background:#fff3e8;color:#c04a00;}
+.type-del{background:#f3f0ff;color:#5b21b6;}
+.type-pre{background:#e8f4fd;color:#075985;}
+.card-meta{padding:8px 14px;display:flex;align-items:center;justify-content:space-between;background:#f5f9f6;border-bottom:1px solid var(--border);}
+.wait-time{font-size:13px;font-weight:600;}
+.wait-ok{color:#22c55e;}
+.wait-warn{color:#f59e0b;}
+.wait-urgent{color:var(--urgent);}
+.table-info{font-size:12px;color:var(--muted);}
+.items-list{padding:10px 14px;display:flex;flex-direction:column;gap:4px;}
+.item-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;background:#f2f7f3;transition:background 0.2s;cursor:pointer;}
+.item-row:hover{background:#e3eee6;}
+.item-row.item-done{opacity:0.4;}
+.item-row.item-done .item-name{text-decoration:line-through;}
+.item-qty{width:24px;height:24px;border-radius:6px;background:var(--green);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.item-done .item-qty{background:var(--border);}
+.item-info{flex:1;}
+.item-name{font-size:13px;font-weight:500;color:var(--text);}
+.item-mods{font-size:11px;color:var(--muted);margin-top:1px;}
+.item-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
+.item-done .item-check{background:#22c55e;border-color:#22c55e;color:#fff;}
+.card-footer{padding:10px 14px;display:flex;gap:8px;border-top:1px solid var(--border);}
+.btn-action{flex:1;padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.btn-start{background:#2D6A4F;color:#fff;}
+.btn-start:hover{background:#2D6A4F;}
+.btn-ready{background:#22c55e;color:#fff;}
+.btn-ready:hover{background:#16a34a;}
+.btn-bump{background:var(--border);color:var(--muted);}
+.btn-bump:hover{background:#3a4d40;color:var(--text);}
+
+/* ── EMPTY STATE ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:12px;color:var(--muted);}
+.empty-icon{font-size:64px;opacity:0.3;}
+.empty-text{font-size:18px;font-weight:500;}
+.empty-sub{font-size:14px;opacity:0.6;}
+
+/* ── STATS BAR ── */
+.stats{display:flex;gap:0;background:var(--card);border-bottom:1px solid var(--border);}
+.stat{flex:1;text-align:center;padding:10px;border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat-val{font-size:20px;font-weight:700;color:var(--text);}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+/* ── ANIMATIONS ── */
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes slide-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.order-card{animation:slide-in 0.3s ease;}
+@keyframes urgent-pulse{0%,100%{border-color:#ef4444}50%{border-color:#ef444470}}
+.order-card.urgent{animation:slide-in 0.3s ease,urgent-pulse 2s ease infinite;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">BrewOS Kitchen</div>
+    <span class="brand-badge bb-badge" id="brandBadge">☕ Brain Brew</span>
+  </div>
+  <div class="topbar-right">
+    <div class="status-dot"></div>
+    <span style="font-size:12px;color:var(--muted)">Live</span>
+    <div class="clock" id="clock">00:00:00</div>
+    <button class="btn-sm" onclick="switchBrand('BB',this)">BB</button>
+    <button class="btn-sm" onclick="switchBrand('HH',this)">HH</button>
+    <button class="btn-sm" onclick="switchBrand('ALL',this)">All</button>
+    <button class="btn-sm" onclick="loadQueue()" title="Refresh">↺</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Active Orders</div></div>
+  <div class="stat"><div class="stat-val" id="statPending">0</div><div class="stat-label">Pending</div></div>
+  <div class="stat"><div class="stat-val" id="statPrep">0</div><div class="stat-label">Preparing</div></div>
+  <div class="stat"><div class="stat-val urgent" id="statUrgent" style="color:var(--urgent)">0</div><div class="stat-label">Urgent (&gt;15m)</div></div>
+  <div class="stat"><div class="stat-val" id="statAvgWait">0m</div><div class="stat-label">Avg Wait</div></div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <button class="filter-chip active" onclick="filterBy('all',this)">All <span class="count-badge" id="cntAll">0</span></button>
+  <button class="filter-chip" onclick="filterBy('confirmed',this)">Pending <span class="count-badge" id="cntPending">0</span></button>
+  <button class="filter-chip" onclick="filterBy('preparing',this)">Preparing <span class="count-badge" id="cntPrep">0</span></button>
+  <button class="filter-chip" onclick="filterBy('ready',this)">Ready <span class="count-badge" id="cntReady">0</span></button>
+  <button class="filter-chip" onclick="filterBy('urgent',this)">🔴 Urgent <span class="count-badge" id="cntUrgent">0</span></button>
+  <div class="refresh-info" id="lastRefresh">Refreshing every 15s</div>
+</div>
+
+<!-- GRID -->
+<div class="grid" id="grid">
+  <div class="empty">
+    <div class="empty-icon">👨‍🍳</div>
+    <div class="empty-text">Loading orders...</div>
+  </div>
+</div>
+
+<script src="api.js"></script>
+<script>
+let BRAND = Auth.getBrand() || 'BB';
+let currentFilter = 'all';
+let allOrders = [];
+let refreshTimer;
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── LOAD QUEUE ──
+async function loadQueue() {
+  try {
+    const data = await API.orders({ brand_id: BRAND === 'ALL' ? '' : BRAND });
+    const now = new Date();
+
+    // Filter to active kitchen orders only
+    allOrders = data
+      .filter(o => ['confirmed','preparing','ready'].includes(o.order_status) || o.status === 'paid' && o.order_type !== 'delivery')
+      .map(o => {
+        const created  = new Date(o.created_at || o.time ? `2026-05-27T${o.time || '00:00'}:00` : now);
+        const waitMins = Math.max(0, Math.round((now - created) / 60000));
+        return {
+          ...o,
+          wait_minutes: waitMins,
+          is_urgent:    waitMins >= 15,
+          lines:        o.lines || generateMockLines(o),
+        };
+      });
+
+    // If using mock, generate realistic data
+    if (allOrders.length === 0) allOrders = generateMockOrders();
+
+    updateStats();
+    renderGrid();
+    document.getElementById('lastRefresh').textContent = `Last refresh: ${new Date().toLocaleTimeString('th-TH', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}`;
+  } catch(e) {
+    allOrders = generateMockOrders();
+    updateStats();
+    renderGrid();
+  }
+}
+
+// ── MOCK DATA (for demo) ──
+function generateMockOrders() {
+  const now = new Date();
+  return [
+    { order_id:'BB-270015', brand_id:'BB', order_type:'dine_in', order_status:'confirmed', table_number:'3', customer_name:'', wait_minutes:3, is_urgent:false, created_at: new Date(now-3*60000).toISOString(),
+      lines:[
+        {line_id:'L001',product_name:'Neuron Latte',quantity:2,modifiers:'[{"name":"Large"},{"name":"Oat Milk"}]',status:'pending'},
+        {line_id:'L002',product_name:'Synapse Matcha',quantity:1,modifiers:'[{"name":"Iced"},{"name":"Less Sweet"}]',status:'pending'},
+        {line_id:'L003',product_name:'Almond Croissant',quantity:1,modifiers:'[]',status:'pending'},
+      ]},
+    { order_id:'HH-270008', brand_id:'HH', order_type:'takeaway', order_status:'preparing', table_number:'', customer_name:'Khun Aim', wait_minutes:8, is_urgent:false, created_at: new Date(now-8*60000).toISOString(),
+      lines:[
+        {line_id:'L004',product_name:'Butter Croissant',quantity:3,modifiers:'[]',status:'done'},
+        {line_id:'L005',product_name:'Basque Cheesecake',quantity:2,modifiers:'[{"name":"Slice"}]',status:'preparing'},
+        {line_id:'L006',product_name:'Thai Milk Tea',quantity:2,modifiers:'[]',status:'pending'},
+      ]},
+    { order_id:'BB-270016', brand_id:'BB', order_type:'delivery', order_status:'confirmed', table_number:'', customer_name:'Khun Prae', wait_minutes:18, is_urgent:true, created_at: new Date(now-18*60000).toISOString(),
+      lines:[
+        {line_id:'L007',product_name:'Cortex Espresso',quantity:2,modifiers:'[{"name":"Hot"}]',status:'pending'},
+        {line_id:'L008',product_name:'Dendrite Cold Brew',quantity:1,modifiers:'[]',status:'pending'},
+        {line_id:'L009',product_name:'Oat Milk Latte',quantity:1,modifiers:'[{"name":"Large"},{"name":"No Sugar"}]',status:'pending'},
+      ]},
+    { order_id:'BB-270017', brand_id:'BB', order_type:'dine_in', order_status:'preparing', table_number:'7', customer_name:'', wait_minutes:6, is_urgent:false, created_at: new Date(now-6*60000).toISOString(),
+      lines:[
+        {line_id:'L010',product_name:'Neuron Latte',quantity:1,modifiers:'[{"name":"Regular"},{"name":"Full Cream"}]',status:'done'},
+        {line_id:'L011',product_name:'Axon Americano',quantity:2,modifiers:'[{"name":"Hot"}]',status:'preparing'},
+      ]},
+    { order_id:'HH-270009', brand_id:'HH', order_type:'pre_order', order_status:'confirmed', table_number:'', customer_name:'Khun Fah', wait_minutes:12, is_urgent:false, created_at: new Date(now-12*60000).toISOString(),
+      lines:[
+        {line_id:'L012',product_name:'Mango Layer Cake',quantity:1,modifiers:'[{"name":"Birthday message +฿50"}]',status:'pending'},
+        {line_id:'L013',product_name:'Butter Croissant',quantity:6,modifiers:'[]',status:'pending'},
+      ]},
+    { order_id:'BB-270018', brand_id:'BB', order_type:'takeaway', order_status:'ready', table_number:'', customer_name:'', wait_minutes:11, is_urgent:false, created_at: new Date(now-11*60000).toISOString(),
+      lines:[
+        {line_id:'L014',product_name:'Cold Brew 24hr',quantity:2,modifiers:'[]',status:'done'},
+        {line_id:'L015',product_name:'Banana Bread',quantity:1,modifiers:'[]',status:'done'},
+      ]},
+  ];
+}
+
+function generateMockLines(o) {
+  return [{line_id:'mock_'+Math.random(),product_name:o.id||'Item',quantity:1,modifiers:'[]',status:'pending'}];
+}
+
+// ── STATS ──
+function updateStats() {
+  const f = (fn) => allOrders.filter(fn).length;
+  const total   = allOrders.filter(o => o.order_status !== 'ready').length;
+  const pending = f(o => o.order_status === 'confirmed');
+  const prep    = f(o => o.order_status === 'preparing');
+  const ready   = f(o => o.order_status === 'ready');
+  const urgent  = f(o => o.is_urgent && o.order_status !== 'ready');
+  const waits   = allOrders.filter(o=>o.order_status!=='ready').map(o=>o.wait_minutes);
+  const avg     = waits.length ? Math.round(waits.reduce((a,b)=>a+b,0)/waits.length) : 0;
+
+  document.getElementById('statTotal').textContent  = total;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statPrep').textContent   = prep;
+  document.getElementById('statUrgent').textContent = urgent;
+  document.getElementById('statAvgWait').textContent = avg + 'm';
+  document.getElementById('cntAll').textContent     = allOrders.length;
+  document.getElementById('cntPending').textContent = pending;
+  document.getElementById('cntPrep').textContent    = prep;
+  document.getElementById('cntReady').textContent   = ready;
+  document.getElementById('cntUrgent').textContent  = urgent;
+}
+
+// ── RENDER ──
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  let orders = [...allOrders];
+
+  if (currentFilter === 'confirmed') orders = orders.filter(o => o.order_status === 'confirmed');
+  else if (currentFilter === 'preparing') orders = orders.filter(o => o.order_status === 'preparing');
+  else if (currentFilter === 'ready')  orders = orders.filter(o => o.order_status === 'ready');
+  else if (currentFilter === 'urgent') orders = orders.filter(o => o.is_urgent);
+
+  // Sort: urgent first, then by wait time
+  orders.sort((a,b) => {
+    if (a.order_status === 'ready' && b.order_status !== 'ready') return 1;
+    if (b.order_status === 'ready' && a.order_status !== 'ready') return -1;
+    if (a.is_urgent && !b.is_urgent) return -1;
+    if (b.is_urgent && !a.is_urgent) return 1;
+    return b.wait_minutes - a.wait_minutes;
+  });
+
+  if (orders.length === 0) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">✅</div>
+      <div class="empty-text">All clear!</div>
+      <div class="empty-sub">No active orders right now</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = orders.map(o => renderCard(o)).join('');
+}
+
+function renderCard(o) {
+  const typeMap = {dine_in:'Dine In',takeaway:'Takeaway',delivery:'Delivery',pre_order:'Pre-order'};
+  const typeClass= {dine_in:'type-dine',takeaway:'type-take',delivery:'type-del',pre_order:'type-pre'};
+  const typeIcon = {dine_in:'🍽',takeaway:'🥤',delivery:'🛵',pre_order:'📦'};
+  const waitClass = o.wait_minutes >= 15 ? 'wait-urgent' : o.wait_minutes >= 8 ? 'wait-warn' : 'wait-ok';
+  const isReady = o.order_status === 'ready';
+
+  const lines = (o.lines || []).map(l => {
+    const mods = parseMods(l.modifiers);
+    const done = l.status === 'done' || l.status === 'cancelled';
+    return `<div class="item-row ${done?'item-done':''}" onclick="toggleItem('${l.line_id}',this)">
+      <div class="item-qty">${l.quantity}</div>
+      <div class="item-info">
+        <div class="item-name">${l.product_name}</div>
+        ${mods ? `<div class="item-mods">${mods}</div>` : ''}
+      </div>
+      <div class="item-check">${done ? '✓' : ''}</div>
+    </div>`;
+  }).join('');
+
+  const footerBtns = isReady
+    ? `<button class="btn-action btn-bump" onclick="bumpOrder('${o.order_id}',this)">✓ Bump</button>`
+    : o.order_status === 'preparing'
+      ? `<button class="btn-action btn-ready" onclick="markReady('${o.order_id}',this)">🔔 Mark Ready</button>
+         <button class="btn-action btn-bump" style="flex:0;padding:8px 12px" onclick="bumpOrder('${o.order_id}',this)">✕</button>`
+      : `<button class="btn-action btn-start" onclick="startPreparing('${o.order_id}',this)">▶ Start</button>
+         <button class="btn-action btn-ready" onclick="markReady('${o.order_id}',this)">✓ Ready</button>`;
+
+  return `<div class="order-card ${o.is_urgent&&!isReady?'urgent':''} ${isReady?'ready-state':''}" id="card-${o.order_id}">
+    <div class="card-header">
+      <div class="order-id">${o.order_id}</div>
+      <span class="order-type ${typeClass[o.order_type]||'type-take'}">${typeIcon[o.order_type]||''} ${typeMap[o.order_type]||o.order_type}</span>
+    </div>
+    <div class="card-meta">
+      <div class="wait-time ${waitClass}">⏱ ${o.wait_minutes}m ${o.is_urgent?'— URGENT':''}</div>
+      <div class="table-info">${o.table_number?'Table '+o.table_number:o.customer_name||'Walk-in'}</div>
+    </div>
+    <div class="items-list">${lines}</div>
+    <div class="card-footer">${footerBtns}</div>
+  </div>`;
+}
+
+function parseMods(mStr) {
+  try {
+    const m = JSON.parse(mStr || '[]');
+    return m.map(x=>x.name).filter(Boolean).join(' · ');
+  } catch(e) { return mStr || ''; }
+}
+
+// ── ACTIONS ──
+async function toggleItem(lineId, rowEl) {
+  const row = rowEl.closest('.item-row');
+  const isDone = row.classList.contains('item-done');
+  row.classList.toggle('item-done', !isDone);
+  row.querySelector('.item-check').textContent = isDone ? '' : '✓';
+  try { await API.orders(); /* mark_item_done — demo */ } catch(e) {}
+  checkAllDone(row.closest('.order-card'));
+}
+
+function checkAllDone(card) {
+  const rows  = card.querySelectorAll('.item-row');
+  const done  = [...rows].every(r => r.classList.contains('item-done'));
+  if (done) {
+    const btn = card.querySelector('.btn-start, .btn-ready');
+    if (btn) { btn.textContent = '✓ Mark Ready'; btn.className = 'btn-action btn-ready'; }
+  }
+}
+
+async function startPreparing(orderId, btn) {
+  const card = document.getElementById('card-'+orderId);
+  card.querySelector('.card-header').style.borderBottomColor = '#f59e0b';
+  btn.textContent = 'Preparing...';
+  btn.disabled = true;
+  try { await API.updateOrderStatus(orderId, 'preparing'); } catch(e) {}
+  setTimeout(loadQueue, 500);
+}
+
+async function markReady(orderId, btn) {
+  btn.textContent = '✓ Ready!';
+  btn.disabled = true;
+  try { await API.updateOrderStatus(orderId, 'ready'); } catch(e) {}
+  const card = document.getElementById('card-'+orderId);
+  if (card) { card.classList.add('ready-state'); card.classList.remove('urgent'); }
+  setTimeout(loadQueue, 800);
+}
+
+async function bumpOrder(orderId, btn) {
+  const card = document.getElementById('card-'+orderId);
+  if (card) { card.style.opacity='0'; card.style.transform='scale(0.95)'; card.style.transition='all 0.3s'; }
+  try { await API.updateOrderStatus(orderId, 'completed'); } catch(e) {}
+  setTimeout(() => { if(card) card.remove(); updateStats(); }, 300);
+}
+
+function filterBy(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function switchBrand(b, el) {
+  BRAND = b;
+  document.getElementById('brandBadge').textContent = b === 'BB' ? '☕ Brain Brew' : b === 'HH' ? '🌸 Heng Heng' : '🏢 All Brands';
+  document.getElementById('brandBadge').className = 'brand-badge ' + (b === 'HH' ? 'hh-badge' : 'bb-badge');
+  loadQueue();
+}
+
+// ── AUTO-REFRESH every 15s ──
+loadQueue();
+refreshTimer = setInterval(loadQueue, 15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brain Brew Coffee — POS</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2ece0; --bg2:#e8dfd0; --card:#ffffff;
+  --green:#1e3a1e; --green-m:#2d5016;
+  --orange:#c8621a; --orange-l:#d97c3a;
+  --text:#1a2410; --text-m:#5a6448; --text-l:#9aaa87;
+  --border:rgba(30,58,30,.12); --r:12px;
+  --shadow:0 1px 6px rgba(30,58,30,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);font-family:'Sarabun',sans-serif;color:var(--text);display:flex;flex-direction:column;font-size:13px;}
+
+/* TOPBAR */
+.tb{height:58px;background:var(--card);border-bottom:1.5px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;}
+.tb-logo{display:flex;align-items:center;gap:10px;min-width:220px;}
+.tb-logo-icon{width:42px;height:42px;flex-shrink:0;}
+.tb-logo-text .name{font-size:15px;font-weight:900;color:var(--green);letter-spacing:.3px;line-height:1.1;}
+.tb-logo-text .sub{font-size:9px;font-weight:800;color:var(--orange);letter-spacing:2px;text-transform:uppercase;}
+.tb-div{width:1px;height:30px;background:var(--border);}
+.tb-tag{font-size:12px;color:var(--text-m);line-height:1.4;}
+.tb-tag small{display:block;font-size:10px;color:var(--text-l);font-style:italic;}
+.tb-sp{flex:1;}
+.tb-pill{display:flex;align-items:center;gap:7px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;}
+.tb-pill svg{width:14px;height:14px;stroke:var(--text-m);fill:none;stroke-width:2;flex-shrink:0;}
+.tb-user{display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;cursor:pointer;}
+.tb-av{width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tb-user-name{font-size:12px;font-weight:700;}
+.tb-user-role{font-size:10px;color:var(--text-l);}
+.tb-user svg{width:12px;height:12px;stroke:var(--text-l);fill:none;stroke-width:2;}
+.btn-logout{display:flex;align-items:center;gap:6px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;}
+.btn-logout svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.loading-bar{height:2px;background:var(--green);position:fixed;top:58px;left:0;width:0;transition:width .3s;z-index:999;}
+
+/* MAIN */
+.main{display:flex;flex:1;overflow:hidden;}
+
+/* LEFT: CART */
+.lp{width:300px;flex-shrink:0;background:var(--card);border-right:1.5px solid var(--border);display:flex;flex-direction:column;}
+.lp-head{padding:12px 14px 10px;border-bottom:1.5px solid var(--border);}
+.lp-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--green);}
+.lp-title svg{width:18px;height:18px;stroke:var(--green);fill:none;stroke-width:2;}
+.lp-badge{background:var(--green);color:#fff;font-size:10px;font-weight:800;border-radius:20px;padding:2px 8px;}
+.lp-cust{padding:8px 12px;border-bottom:1px solid var(--border);}
+.cust-btn{width:100%;display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:9px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--text-m);cursor:pointer;font-family:'Sarabun',sans-serif;transition:border-color .15s;}
+.cust-btn:hover{border-color:var(--green-m);}
+.cust-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.cust-btn .arr{margin-left:auto;width:13px;}
+.lp-items{flex:1;overflow-y:auto;padding:6px 10px;}
+.lp-items::-webkit-scrollbar{width:3px;}
+.lp-items::-webkit-scrollbar-thumb{background:var(--bg2);border-radius:3px;}
+.ci{display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;transition:background .1s;}
+.ci:hover{background:var(--bg);}
+.ci-img{width:44px;height:44px;border-radius:8px;background:var(--bg2);flex-shrink:0;font-size:20px;display:flex;align-items:center;justify-content:center;}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-price{font-size:11px;color:var(--text-m);margin-top:1px;}
+.ci-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.ci-total{font-size:13px;font-weight:800;color:var(--green);}
+.ci-stepper{display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;overflow:hidden;}
+.cs-btn{width:24px;height:22px;border:none;background:none;cursor:pointer;font-size:14px;color:var(--green);display:flex;align-items:center;justify-content:center;line-height:1;}
+.cs-btn:hover{background:var(--bg2);}
+.cs-val{width:22px;text-align:center;font-size:12px;font-weight:800;}
+.lp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100px;color:var(--text-l);font-size:12px;gap:6px;}
+.lp-foot{border-top:1.5px solid var(--border);padding:10px 14px;}
+.lp-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;color:var(--text-m);}
+.lp-row b{color:var(--text);font-weight:700;}
+.lp-disc-row{display:none;justify-content:space-between;font-size:12px;margin-bottom:3px;}
+.lp-disc-row.show{display:flex;}
+.lp-note-row{display:none;font-size:11px;color:var(--text-m);margin-bottom:4px;align-items:center;gap:4px;}
+.lp-note-row.show{display:flex;}
+.lp-total-row{display:flex;justify-content:space-between;align-items:baseline;margin:8px 0 10px;padding-top:7px;border-top:1.5px solid var(--border);}
+.lp-total-lbl{font-size:13px;font-weight:700;}
+.lp-total-amt{font-size:26px;font-weight:900;color:var(--green);}
+.lp-btns{display:flex;gap:7px;}
+.lp-btn{flex:1;padding:8px 6px;border-radius:8px;font-size:11px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;}
+.lp-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;}
+.btn-clear{border:1.5px solid var(--border);background:none;color:var(--text-m);}
+.btn-clear:hover{border-color:var(--orange);color:var(--orange);}
+.btn-note{border:1.5px solid var(--green);background:none;color:var(--green);}
+.btn-note:hover{background:var(--green);color:#fff;}
+
+/* CENTER: MENU */
+.cp{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:10px 12px;}
+.cat-bar{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-shrink:0;overflow-x:auto;}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-btn{flex-shrink:0;padding:7px 16px;border-radius:30px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;color:var(--text-m);transition:all .15s;white-space:nowrap;}
+.cat-btn:hover{border-color:var(--green-m);}
+.cat-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+.cat-search{margin-left:auto;flex-shrink:0;position:relative;}
+.cat-search input{padding:7px 12px 7px 30px;border:1.5px solid var(--border);border-radius:30px;font-size:12px;font-family:'Sarabun',sans-serif;background:var(--card);outline:none;color:var(--text);width:140px;transition:all .2s;}
+.cat-search input:focus{border-color:var(--green-m);width:170px;}
+.cat-search input::placeholder{color:var(--text-l);}
+.cat-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--text-l);fill:none;stroke-width:2;pointer-events:none;}
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;overflow-y:auto;flex:1;align-content:start;}
+.menu-grid::-webkit-scrollbar{width:3px;}
+.menu-grid::-webkit-scrollbar-thumb{background:var(--bg2);border-radius:3px;}
+.mc{background:var(--card);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden;cursor:pointer;transition:all .15s;position:relative;}
+.mc:hover{border-color:rgba(45,80,22,.35);box-shadow:0 3px 12px rgba(30,58,30,.1);transform:translateY(-1px);}
+.mc:active{transform:scale(.98);}
+.mc-photo{width:100%;aspect-ratio:1/1;min-height:80px;background:var(--bg2);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.mc-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+.mc-photo .mc-emoji{font-size:52px;line-height:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+.best-badge{position:absolute;top:8px;left:8px;background:var(--green);color:#fff;font-size:7.5px;font-weight:900;letter-spacing:.3px;text-transform:uppercase;border-radius:50%;width:34px;height:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;text-align:center;}
+.mc-body{padding:7px 9px 9px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;}
+.mc-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3;min-height:2.6em;}
+.mc-name-th{font-size:10px;color:var(--text-m);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px;}
+.mc-price{font-size:14px;font-weight:900;color:var(--orange);}
+.sc-bar{display:flex;gap:8px;margin-top:9px;flex-shrink:0;}
+.sc-btn{flex:1;padding:8px 4px;background:var(--card);border:1.5px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Sarabun',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .15s;}
+.sc-btn:hover{border-color:var(--green-m);}
+.sc-btn svg{width:15px;height:15px;stroke:var(--text-m);fill:none;stroke-width:2;}
+.sc-btn-lbl{font-size:11px;font-weight:700;color:var(--text-m);}
+.sc-btn-key{font-size:9px;color:var(--text-l);}
+
+/* RIGHT: CHECKOUT */
+.rp{width:255px;flex-shrink:0;background:var(--card);border-left:1.5px solid var(--border);display:flex;flex-direction:column;}
+.rp-head{padding:12px 14px 10px;border-bottom:1.5px solid var(--border);}
+.rp-title{font-size:14px;font-weight:800;color:var(--green);}
+.rp-body{flex:1;padding:12px 13px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.rp-sum-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:4px;}
+.rp-sum-lbl{color:var(--text-m);}
+.rp-sum-val{font-weight:700;}
+.rp-sum-val.disc{color:var(--orange);}
+.rp-total-block{background:var(--green);border-radius:10px;padding:11px 13px;}
+.rp-total-lbl{font-size:10px;color:rgba(255,255,255,.5);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px;}
+.rp-total-amt{display:flex;align-items:baseline;gap:2px;}
+.rp-total-sym{font-size:18px;font-weight:900;color:#fff;}
+.rp-total-main{font-size:34px;font-weight:900;color:#fff;line-height:1;}
+.rp-total-dec{font-size:18px;font-weight:600;color:rgba(255,255,255,.6);}
+.rp-recv-lbl{font-size:10px;font-weight:700;color:var(--text-m);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;}
+.rp-recv-wrap{position:relative;}
+.rp-recv-input{width:100%;padding:9px 40px 9px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:18px;font-weight:800;font-family:'Sarabun',sans-serif;color:var(--text);background:var(--card);outline:none;text-align:right;transition:border-color .2s;}
+.rp-recv-input:focus{border-color:var(--green-m);}
+.rp-recv-unit{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--text-l);font-weight:600;}
+.rp-change{background:var(--bg2);border-radius:9px;padding:9px 12px;display:flex;justify-content:space-between;align-items:baseline;}
+.rp-change-lbl{font-size:12px;color:var(--text-m);font-weight:600;}
+.rp-change-amt{display:flex;align-items:baseline;gap:1px;}
+.rp-change-sym{font-size:14px;font-weight:800;color:var(--green);}
+.rp-change-main{font-size:24px;font-weight:900;color:var(--green);}
+.rp-change-dec{font-size:14px;font-weight:600;color:var(--green);opacity:.7;}
+.rp-pay-lbl{font-size:10px;font-weight:700;color:var(--text-m);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.pay-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:9px;background:var(--card);cursor:pointer;font-family:'Sarabun',sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .15s;}
+.pay-btn:hover,.pay-btn.active{border-color:var(--green);background:rgba(45,80,22,.05);}
+.pay-btn.active{background:var(--green);border-color:var(--green);}
+.pay-btn svg{width:20px;height:20px;stroke:var(--text-m);fill:none;stroke-width:1.8;}
+.pay-btn.active svg{stroke:#fff;}
+.pay-btn-lbl{font-size:11px;font-weight:700;color:var(--text-m);}
+.pay-btn.active .pay-btn-lbl{color:#fff;}
+.pay-btn-key{font-size:9px;color:var(--text-l);}
+.pay-btn.active .pay-btn-key{color:rgba(255,255,255,.6);}
+.rp-foot{padding:11px 13px;border-top:1.5px solid var(--border);}
+.btn-pay{width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;font-family:'Sarabun',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
+.btn-pay:hover{background:var(--green-m);transform:translateY(-1px);}
+.btn-pay:active{transform:scale(.98);}
+.btn-pay svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;}
+
+/* MODALS */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(10,20,10,.5);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-bg.open{display:flex;}
+.modal{background:var(--card);border-radius:16px;padding:22px;width:360px;max-height:88vh;overflow-y:auto;box-shadow:0 10px 40px rgba(30,58,30,.2);}
+.modal-sm{width:310px;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.modal-title{font-size:15px;font-weight:800;color:var(--green);}
+.modal-x{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:15px;color:var(--text-l);display:flex;align-items:center;justify-content:center;}
+.modal-lbl{font-size:10px;font-weight:700;color:var(--text-m);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px;}
+.modal-inp{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif;color:var(--text);background:var(--card);outline:none;transition:border-color .2s;margin-bottom:10px;}
+.modal-inp:focus{border-color:var(--green-m);}
+.modal-inp::placeholder{color:var(--text-l);}
+textarea.modal-inp{resize:none;}
+.modal-row{display:flex;gap:8px;margin-top:4px;}
+.modal-btn{flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;transition:all .15s;}
+.mbtn-cancel{border:1.5px solid var(--border);background:none;color:var(--text-m);}
+.mbtn-ok{border:none;background:var(--green);color:#fff;}
+.mbtn-ok:hover{background:var(--green-m);}
+.mbtn-orange{border:none;background:var(--orange);color:#fff;}
+.disc-type{display:flex;gap:6px;margin-bottom:10px;}
+.disc-type-btn{flex:1;padding:7px;border:1.5px solid var(--border);border-radius:7px;font-size:11px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;background:none;color:var(--text-m);transition:all .15s;}
+.disc-type-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+.success-center{text-align:center;}
+.success-icon{font-size:46px;margin-bottom:8px;}
+.success-title{font-size:17px;font-weight:900;color:var(--green);margin-bottom:4px;}
+.success-sub{font-size:12px;color:var(--text-m);margin-bottom:14px;line-height:1.6;}
+.rcpt-box{background:var(--bg);border-radius:9px;padding:11px;text-align:left;margin-bottom:13px;}
+.rcpt-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;color:var(--text-m);}
+.rcpt-row:last-child{margin-bottom:0;}
+.rcpt-div{height:1px;background:var(--border);margin:7px 0;}
+.other-item{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg);font-size:13px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;color:var(--text);text-align:left;margin-bottom:7px;transition:all .15s;}
+.other-item:hover{border-color:var(--green-m);background:var(--card);}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(14px);background:var(--green);color:#fff;padding:8px 18px;border-radius:30px;font-size:12px;font-weight:700;z-index:999;opacity:0;pointer-events:none;transition:all .22s;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-logo">
+    <svg class="tb-logo-icon" viewBox="0 0 100 100" fill="none">
+      <rect x="15" y="35" width="55" height="45" rx="8" fill="#1B4332"/>
+      <path d="M70 45 Q88 45 88 57 Q88 69 70 69" stroke="#1B4332" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <rect x="20" y="75" width="45" height="8" rx="4" fill="#2D6A4F"/>
+      <path d="M28 35 Q33 20 40 25 Q47 30 52 18" stroke="#F97316" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M40 35 Q45 22 52 27" stroke="#F97316" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>
+    </svg>
+    <div class="tb-logo-text">
+      <div class="name" id="posTitle">Brain Brew POS</div>
+      <div class="sub" id="posBrand">Specialty Coffee</div>
+    </div>
+  </div>
+  <div class="tb-div"></div>
+  <div class="tb-tag">Specialty Coffee<small>Brain Brew Coffee</small></div>
+  <div class="tb-sp"></div>
+  <div class="tb-pill">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+    <span id="tbTime">--:--</span>&nbsp;น.&nbsp;
+    <span id="tbDate" style="font-weight:400;color:var(--text-m);font-size:11px"></span>
+  </div>
+  <div class="tb-user">
+    <div class="tb-av" id="userAv">A</div>
+    <div><div class="tb-user-name" id="userName">แคชเชียร์</div><div class="tb-user-role" id="userRole">POS</div></div>
+    <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+  <button class="btn-logout" onclick="doLogout()">
+    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    ออกจากระบบ
+  </button>
+</div>
+<div class="loading-bar" id="loadingBar"></div>
+
+<div class="main">
+  <!-- LEFT: CART -->
+  <div class="lp">
+    <div class="lp-head">
+      <div class="lp-title">
+        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        รายการขาย <span class="lp-badge" id="cartBadge">0</span>
+      </div>
+    </div>
+    <div class="lp-cust">
+      <div style="position:relative;margin-bottom:6px;">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;">👤</span>
+        <input id="custNameInput" type="text" placeholder="ชื่อลูกค้า (ไม่บังคับ)"
+          style="width:100%;padding:7px 10px 7px 30px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:'Sarabun',sans-serif;background:var(--bg);outline:none;color:var(--text);"
+          onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <button class="cust-btn" onclick="openMemberModal()">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span id="custText">ลูกค้าทั่วไป</span>
+        <svg class="arr" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+    <div class="lp-items" id="cartItems">
+      <div class="lp-empty">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--bg2)" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+        ยังไม่มีรายการ
+      </div>
+    </div>
+    <div class="lp-foot">
+      <div class="lp-row"><span>รายการ <span id="cartLineCount">0</span> รายการ</span><b id="cartSubAmt">฿0</b></div>
+      <div class="lp-disc-row" id="discRow"><span>ส่วนลด <span id="discLbl"></span></span><span style="color:var(--orange);font-weight:700" id="discAmt">-฿0</span></div>
+      <div class="lp-note-row" id="noteRow">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+        <span id="notePrev" style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></span>
+      </div>
+      <div class="lp-total-row"><span class="lp-total-lbl">ยอดรวมสุทธิ</span><span class="lp-total-amt" id="cartGrand">฿0</span></div>
+      <div class="lp-btns">
+        <button class="lp-btn btn-clear" onclick="clearCart()">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          ล้างรายการ
+        </button>
+        <button class="lp-btn btn-note" onclick="openNoteModal()">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          หมายเหตุ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER: MENU -->
+  <div class="cp">
+    <div class="cat-bar" id="catBar">
+      <!-- ปุ่มทั้งหมดถูกสร้างโดย buildCatBar() แทน -->
+      <div class="cat-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="ค้นหาเมนู..." oninput="filterSearch(this.value)">
+      </div>
+    </div>
+    <div class="menu-grid" id="menuGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">กำลังโหลดเมนู...</div>
+    </div>
+    <div class="sc-bar">
+      <button class="sc-btn" onclick="openDiscModal()">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="sc-btn-lbl">ส่วนลด</span><span class="sc-btn-key">F2</span>
+      </button>
+      <button class="sc-btn" onclick="openNoteModal()">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="sc-btn-lbl">หมายเหตุ</span><span class="sc-btn-key">F3</span>
+      </button>
+      <button class="sc-btn" onclick="openMemberModal()">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span class="sc-btn-lbl">สมาชิก</span><span class="sc-btn-key">F4</span>
+      </button>
+      <button class="sc-btn" onclick="openOtherModal()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        <span class="sc-btn-lbl">อื่นๆ</span><span class="sc-btn-key">F5</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: CHECKOUT -->
+  <div class="rp">
+    <div class="rp-head"><div class="rp-title">สรุปการชำระเงิน</div></div>
+    <div class="rp-body">
+      <div>
+        <div class="rp-sum-row"><span class="rp-sum-lbl">ยอดรวม</span><span class="rp-sum-val" id="rpSub">฿0.00</span></div>
+        <div class="rp-sum-row"><span class="rp-sum-lbl">ส่วนลด</span><span class="rp-sum-val disc" id="rpDisc">฿0.00</span></div>
+      </div>
+      <div class="rp-total-block">
+        <div class="rp-total-lbl">ยอดสุทธิ</div>
+        <div class="rp-total-amt">
+          <span class="rp-total-sym">฿</span>
+          <span class="rp-total-main" id="rpTotalMain">0</span>
+          <span class="rp-total-dec">.00</span>
+        </div>
+      </div>
+      <div>
+        <div class="rp-recv-lbl">รับเงิน</div>
+        <div class="rp-recv-wrap">
+          <input class="rp-recv-input" type="number" id="recvInput" placeholder="0" oninput="calcChange()">
+          <span class="rp-recv-unit">บาท</span>
+        </div>
+      </div>
+      <div class="rp-change">
+        <span class="rp-change-lbl">เงินทอน</span>
+        <div class="rp-change-amt">
+          <span class="rp-change-sym">฿</span>
+          <span class="rp-change-main" id="changeMain">0</span>
+          <span class="rp-change-dec">.00</span>
+        </div>
+      </div>
+      <div>
+        <div class="rp-pay-lbl">วิธีการชำระเงิน</div>
+        <div class="pay-grid">
+          <button class="pay-btn active" onclick="setPay(this,'cash')">
+            <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+            <span class="pay-btn-lbl">เงินสด</span><span class="pay-btn-key">F6</span>
+          </button>
+          <button class="pay-btn" onclick="setPay(this,'qr')">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/><rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3m3 0v-3m-3 3h3M16 16h2M16 21h-3v-3m3 3v-3"/></svg>
+            <span class="pay-btn-lbl">QR Code</span><span class="pay-btn-key">F7</span>
+          </button>
+          <button class="pay-btn" onclick="setPay(this,'card')">
+            <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <span class="pay-btn-lbl">บัตรเครดิต</span><span class="pay-btn-key">F8</span>
+          </button>
+          <button class="pay-btn" onclick="setPay(this,'transfer')">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span class="pay-btn-lbl">โอนเงิน</span><span class="pay-btn-key">F9</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="rp-foot">
+      <button class="btn-pay" onclick="doCheckout()">
+        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+        ชำระเงิน (Enter)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ส่วนลด -->
+<div class="modal-bg" id="discModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><span class="modal-title">💝 ส่วนลด</span><button class="modal-x" onclick="cm('discModal')">✕</button></div>
+    <div class="disc-type">
+      <button class="disc-type-btn active" id="dTypePct" onclick="setDT('pct')">ลด % (เปอร์เซ็นต์)</button>
+      <button class="disc-type-btn" id="dTypeAmt" onclick="setDT('amt')">ลด ฿ (บาท)</button>
+    </div>
+    <div class="modal-lbl" id="dInputLbl">ลดกี่ % ?</div>
+    <input class="modal-inp" type="number" id="discInput" placeholder="เช่น 10" min="0">
+    <div class="modal-lbl">เหตุผล (optional)</div>
+    <input class="modal-inp" type="text" id="discReason" placeholder="เช่น โปรโมชั่น, ลูกค้า VIP...">
+    <div class="modal-row">
+      <button class="modal-btn mbtn-cancel" onclick="clearDisc();cm('discModal')">ยกเลิกส่วนลด</button>
+      <button class="modal-btn mbtn-ok" onclick="applyDisc()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: หมายเหตุ -->
+<div class="modal-bg" id="noteModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><span class="modal-title">📝 หมายเหตุ</span><button class="modal-x" onclick="cm('noteModal')">✕</button></div>
+    <textarea class="modal-inp" id="noteInput" rows="4" placeholder="เช่น ไม่ใส่น้ำตาล, แยกถุง..."></textarea>
+    <div class="modal-row">
+      <button class="modal-btn mbtn-cancel" onclick="cm('noteModal')">ยกเลิก</button>
+      <button class="modal-btn mbtn-ok" onclick="applyNote()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: สมาชิก -->
+<div class="modal-bg" id="memberModal">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">👥 เลือกลูกค้า</span><button class="modal-x" onclick="cm('memberModal')">✕</button></div>
+    <input class="modal-inp" type="text" id="mSearch" placeholder="ค้นหาชื่อหรือเบอร์..." oninput="searchMember(this.value)">
+    <div id="mResults"></div>
+    <div class="modal-row">
+      <button class="modal-btn mbtn-cancel" onclick="selectMember(null)">ลูกค้าทั่วไป</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: อื่นๆ -->
+<div class="modal-bg" id="otherModal">
+  <div class="modal modal-sm">
+    <div class="modal-head"><span class="modal-title">⚙️ อื่นๆ</span><button class="modal-x" onclick="cm('otherModal')">✕</button></div>
+    <button class="other-item" onclick="voidOrder()">🚫 ยกเลิกบิล</button>
+    <button class="other-item" onclick="reprintLast()">🖨️ พิมพ์ใบเสร็จซ้ำ</button>
+    <button class="other-item" onclick="window.location.href='orders.html'">📋 ดูออเดอร์ทั้งหมด</button>
+    <button class="other-item" onclick="window.location.href='dashboard.html'">📊 ไป Dashboard</button>
+  </div>
+</div>
+
+<!-- MODAL: สำเร็จ -->
+<div class="modal-bg" id="successModal">
+  <div class="modal success-center">
+    <div class="success-icon">✅</div>
+    <div class="success-title">ชำระเงินสำเร็จ!</div>
+    <div class="success-sub">ขอบคุณที่ใช้บริการ 🙏<br>Specialty Coffee · Neuroscience Inspired</div>
+    <div class="rcpt-box" id="rcptBox"></div>
+    <div class="modal-row">
+      <button class="modal-btn mbtn-cancel" onclick="closeSuccess()">✕ ปิด</button>
+      <button class="modal-btn mbtn-ok" onclick="window.print()">🖨️ พิมพ์ใบเสร็จ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script src="api.js"></script>
+<script>
+// ── STATE ──
+const cart={};
+let payMethod='cash', discType='pct', discValue=0, discReasonTxt='',
+    orderNote='', selectedMember=null, MENUS=[], CATS=[], lastData=null, currentCat='all';
+
+// ── CLOCK ──
+(function tick(){
+  const n=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
+  const p=x=>String(x).padStart(2,'0');
+  document.getElementById('tbTime').textContent=p(n.getHours())+':'+p(n.getMinutes());
+  const mo=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  document.getElementById('tbDate').textContent=n.getDate()+' '+mo[n.getMonth()+1]+' '+(n.getFullYear()+543);
+  setTimeout(tick,1000);
+})();
+
+// ── AUTH ──
+const user = Auth.getUser();
+if (!user) { window.location.href='login.html'; }
+else {
+  document.getElementById('userName').textContent = user.full_name || user.name || 'แคชเชียร์';
+  document.getElementById('userRole').textContent = user.role || 'cashier';
+  document.getElementById('userAv').textContent = (user.full_name||user.name||'A')[0].toUpperCase();
+}
+
+function doLogout() {
+  Auth.clearSession();
+  window.location.href = 'login.html';
+}
+
+// ── LOAD MENUS ──
+function parsePrice(val) {
+  if (val === null || val === undefined || val === '') return 0;
+  if (typeof val === 'number') return val;
+  const cleaned = String(val).replace(/[฿,\s]/g, '');
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+
+async function loadMenus() {
+  document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;">⏳ กำลังโหลดเมนู...</div>';
+  try {
+    const res = await fetch('https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec?action=get_menu_data');
+    const json = await res.json();
+    if (!json.success || !json.data) throw new Error('No data');
+    const raw = json.data;
+
+    // เฉพาะ category/product ของ BB เท่านั้น
+    CATS = [
+      { id:'all', name:'ทั้งหมด', emoji:'🍽', brand:'BB' },
+      ...(raw.categories||[]).filter(c => c.brand_id==='BB').map(c => ({
+        id: c.category_id, name: c.name, emoji: c.emoji||'☕', brand: c.brand_id
+      }))
+    ];
+    MENUS = (raw.products||[]).filter(p => p.brand_id==='BB').map(p => ({
+      id: p.product_id, cat: p.category_id,
+      e: p.emoji||'🍽',
+      // ใช้ name ก่อน ถ้าว่างใช้ name_th แทน เพื่อไม่ให้ชื่อหาย
+      name: (p.name && p.name.trim()) ? p.name : (p.name_th || 'ไม่มีชื่อ'),
+      nameTh: (p.name && p.name.trim()) ? (p.name_th || '') : '',
+      price: parsePrice(p.base_price), cost: parsePrice(p.cost_price),
+      best: p.is_featured === true,
+      imgUrl: p.image_url||'', brand: p.brand_id,
+    }));
+    buildCatBar();
+    currentCat = 'all';  // บังคับ reset เป็น 'ทั้งหมด' เสมอหลังโหลดเสร็จ
+    renderMenus(MENUS);
+    if (catBarEl) { catBarEl.style.opacity = '1'; catBarEl.style.pointerEvents = 'auto'; }
+  } catch(e) {
+    document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">โหลดเมนูไม่ได้ — ' + e.message + '</div>';
+  }
+}
+
+// ── CATEGORY BAR ──
+function buildCatBar() {
+  const bar = document.getElementById('catBar');
+  const search = bar.querySelector('.cat-search');
+  bar.innerHTML = '';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'cat-btn active';
+  allBtn.textContent = '🍽 ทั้งหมด';
+  allBtn.onclick = () => filterCat('all', allBtn);
+  bar.appendChild(allBtn);
+
+  CATS.filter(c => c.id !== 'all').forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.textContent = (c.emoji||'') + ' ' + c.name;
+    btn.setAttribute('data-cat-id', c.id);
+    btn.onclick = () => filterCat(c.id, btn);
+    bar.appendChild(btn);
+  });
+  bar.appendChild(search);
+}
+
+// ── RENDER MENUS ──
+function renderMenus(items) {
+  const g = document.getElementById('menuGrid');
+  if (!items.length) { g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">ไม่พบเมนู</div>'; return; }
+  g.innerHTML = items.map(m => `
+    <div class="mc" onclick="addToCart('${m.id}')">
+      <div class="mc-photo">
+        ${m.imgUrl ? `<img src="${m.imgUrl}" alt="${m.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+        <div class="mc-emoji" style="${m.imgUrl?'display:none':'display:flex'}">${m.e}</div>
+        ${m.best ? '<div class="best-badge">BEST<br>SELLER</div>' : ''}
+      </div>
+      <div class="mc-body">
+        <div class="mc-name">${m.name || "ไม่มีชื่อ"}</div>
+        ${m.nameTh ? `<div class="mc-name-th">${m.nameTh}</div>` : ''}
+        <div class="mc-price">฿${m.price}</div>
+      </div>
+    </div>`).join('');
+}
+
+function filterCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const q = document.querySelector('.cat-search input').value.toLowerCase();
+  applyFilter(q);
+}
+function filterSearch(q) { applyFilter(q.toLowerCase()); }
+function applyFilter(q) {
+  let items = currentCat === 'all' ? MENUS : MENUS.filter(m => m.cat === currentCat);
+  console.log('🔍 applyFilter:', { currentCat, totalMenus: MENUS.length, filteredCount: items.length, sample: items[0] });
+  if (q) items = items.filter(m => m.name.toLowerCase().includes(q) || (m.nameTh||'').toLowerCase().includes(q) || String(m.price).includes(q));
+  renderMenus(items);
+}
+
+// ── CART ──
+function addToCart(id) {
+  const m = MENUS.find(x => x.id === id);
+  if (!m) return;
+  cart[id] ? cart[id].qty++ : cart[id] = { menu: m, qty: 1 };
+  renderCart();
+  toast2('✅ ' + m.name);
+}
+function chgQty(id, d) {
+  if (!cart[id]) return;
+  cart[id].qty += d;
+  if (cart[id].qty <= 0) delete cart[id];
+  renderCart();
+}
+function clearCart() {
+  Object.keys(cart).forEach(k => delete cart[k]);
+  discValue = 0; orderNote = ''; selectedMember = null;
+  document.getElementById('custText').textContent = 'ลูกค้าทั่วไป';
+  document.getElementById('noteRow').classList.remove('show');
+  document.getElementById('discRow').classList.remove('show');
+  document.getElementById('recvInput').value = '';
+  renderCart();
+  toast2('🗑️ ล้างรายการแล้ว');
+}
+function getSub() { return Object.values(cart).reduce((s,i) => s + i.menu.price * i.qty, 0); }
+function getDisc() {
+  const s = getSub();
+  if (!discValue) return 0;
+  return discType === 'pct' ? Math.round(s * discValue / 100) : Math.min(discValue, s);
+}
+function getGrand() { return Math.max(0, getSub() - getDisc()); }
+function renderCart() {
+  const items = Object.values(cart);
+  const cnt = items.reduce((s,i) => s + i.qty, 0), sub = getSub(), disc = getDisc(), grand = getGrand();
+  document.getElementById('cartBadge').textContent = cnt;
+  document.getElementById('cartLineCount').textContent = items.length;
+  document.getElementById('cartSubAmt').textContent = '฿' + sub;
+  document.getElementById('rpSub').textContent = '฿' + sub.toFixed(2);
+  document.getElementById('rpDisc').textContent = '฿' + disc.toFixed(2);
+  document.getElementById('rpTotalMain').textContent = grand;
+  document.getElementById('cartGrand').textContent = '฿' + grand;
+  disc > 0 ? (document.getElementById('discRow').classList.add('show'), document.getElementById('discLbl').textContent = discType==='pct'?'('+discValue+'%)':'', document.getElementById('discAmt').textContent = '-฿'+disc) : document.getElementById('discRow').classList.remove('show');
+  orderNote ? (document.getElementById('noteRow').classList.add('show'), document.getElementById('notePrev').textContent = orderNote) : document.getElementById('noteRow').classList.remove('show');
+  calcChange();
+  const el = document.getElementById('cartItems');
+  if (!items.length) { el.innerHTML = '<div class="lp-empty"><svg viewBox="0 0 24 24" fill="none" stroke="var(--bg2)" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>ยังไม่มีรายการ</div>'; return; }
+  el.innerHTML = items.map(i => `
+    <div class="ci">
+      <div class="ci-img">${i.menu.imgUrl ? `<img src="${i.menu.imgUrl}" alt="${i.menu.name}" onerror="this.style.display='none'">` : i.menu.e}</div>
+      <div class="ci-info">
+        <div class="ci-name">${i.menu.name}</div>
+        <div class="ci-price">฿${i.menu.price} × ${i.qty}</div>
+      </div>
+      <div class="ci-right">
+        <div class="ci-total">฿${i.menu.price * i.qty}</div>
+        <div class="ci-stepper">
+          <button class="cs-btn" onclick="chgQty('${i.menu.id}',-1)">−</button>
+          <span class="cs-val">${i.qty}</span>
+          <button class="cs-btn" onclick="chgQty('${i.menu.id}',1)">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── DISCOUNT ──
+function openDiscModal() { om('discModal'); document.getElementById('discInput').value = discValue||''; document.getElementById('discReason').value = discReasonTxt||''; }
+function setDT(t) { discType = t; document.getElementById('dTypePct').classList.toggle('active', t==='pct'); document.getElementById('dTypeAmt').classList.toggle('active', t==='amt'); document.getElementById('dInputLbl').textContent = t==='pct' ? 'ลดกี่ % ?' : 'ลดกี่บาท?'; }
+function applyDisc() { const v = parseFloat(document.getElementById('discInput').value)||0; if(v<0){toast2('⚠️ กรอกตัวเลขให้ถูกต้อง');return;} discValue=v; discReasonTxt=document.getElementById('discReason').value; cm('discModal'); renderCart(); toast2('💝 ส่วนลด '+(discType==='pct'?v+'%':'฿'+v)); }
+function clearDisc() { discValue = 0; discReasonTxt = ''; renderCart(); }
+
+// ── NOTE ──
+function openNoteModal() { om('noteModal'); document.getElementById('noteInput').value = orderNote; }
+function applyNote() { orderNote = document.getElementById('noteInput').value.trim(); cm('noteModal'); renderCart(); if(orderNote) toast2('📝 บันทึกหมายเหตุแล้ว'); }
+
+// ── MEMBER ──
+function openMemberModal() { om('memberModal'); document.getElementById('mSearch').value = ''; document.getElementById('mResults').innerHTML = ''; }
+function searchMember(q) {
+  if (!q.trim()) { document.getElementById('mResults').innerHTML = ''; return; }
+  API.customers({ search: q }).then(list => {
+    const hits = (list||[]).filter(c => (c.full_name||'').includes(q) || (c.phone||'').includes(q));
+    document.getElementById('mResults').innerHTML = hits.length
+      ? hits.slice(0,5).map(c => `<div style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);" onclick='pickMember(${JSON.stringify(c)})'>${c.full_name}<div style="font-size:10px;color:var(--text-l)">📞 ${c.phone||'-'} · แต้ม ${c.points||0}</div></div>`).join('')
+      : '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ไม่พบลูกค้า</div>';
+  }).catch(() => {});
+}
+function pickMember(m) { selectedMember = m; document.getElementById('custText').textContent = '👤 ' + m.full_name; cm('memberModal'); toast2('👤 เลือก ' + m.full_name); }
+function selectMember(m) { selectedMember = m; if(!m) document.getElementById('custText').textContent = 'ลูกค้าทั่วไป'; cm('memberModal'); }
+
+// ── OTHER ──
+function openOtherModal() { om('otherModal'); }
+function voidOrder() { clearCart(); cm('otherModal'); toast2('🚫 ยกเลิกบิลแล้ว'); }
+function reprintLast() { if(!lastData){toast2('ไม่มีใบเสร็จล่าสุด');return;} cm('otherModal'); showSuccess(lastData); }
+
+// ── PAYMENT ──
+function setPay(btn, m) { payMethod = m; document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
+function calcChange() {
+  const grand = getGrand(), recv = parseFloat(document.getElementById('recvInput').value)||0, ch = Math.max(0, recv-grand);
+  document.getElementById('changeMain').textContent = Math.floor(ch);
+}
+async function doCheckout() {
+  const items = Object.values(cart);
+  if (!items.length) { toast2('⚠️ กรุณาเลือกเมนูก่อน'); return; }
+  const grand = getGrand(), recv = parseFloat(document.getElementById('recvInput').value)||0;
+  if (payMethod === 'cash' && recv < grand) { toast2('⚠️ รับเงินไม่ครบ (฿' + grand + ')'); return; }
+  const bkk = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
+  const p = n => String(n).padStart(2,'0');
+  const ds = bkk.getFullYear()+'-'+p(bkk.getMonth()+1)+'-'+p(bkk.getDate());
+  const ts = p(bkk.getHours())+':'+p(bkk.getMinutes());
+  const rcpId = 'RCP-'+ds.replace(/-/g,'')+'-'+p(bkk.getHours())+p(bkk.getMinutes())+p(bkk.getSeconds());
+  const payLabels = {cash:'เงินสด', qr:'QR Code', card:'บัตรเครดิต', transfer:'โอนเงิน'};
+  const data = { items, sub: getSub(), disc: getDisc(), grand, recv, change: recv-grand, payMethod, payLabel: payLabels[payMethod], note: orderNote, member: selectedMember, dateStr: ds, timeStr: ts, rcpId };
+  lastData = data;
+  try {
+    showLoad();
+    const custNameInput = document.getElementById('custNameInput');
+    const custName = (custNameInput && custNameInput.value.trim())
+      ? custNameInput.value.trim()
+      : (selectedMember ? selectedMember.full_name : 'Walk-in');
+
+    await API.submitOrderDirect({
+      customerName: custName,
+      room: '',
+      pickupTime: '',
+      note: orderNote,
+      brandId: 'BB',
+      cartItems: items.map(i => ({
+        name: i.menu.name, cat: i.menu.cat || '',
+        qty: i.qty, price: i.menu.price, cost: i.menu.cost || 0
+      })),
+      grand: grand,
+      rcpId: rcpId,
+    });
+    hideLoad();
+    showSuccess(data);
+    toast2('✅ บันทึกออเดอร์สำเร็จ!');
+  } catch(e) {
+    hideLoad();
+    // บันทึกไม่ได้ก็ยังแสดง receipt
+    showSuccess(data);
+    toast2('⚠️ แสดงใบเสร็จแล้ว (บันทึก offline)');
+  }
+}
+function showSuccess(d) {
+  let html = d.items.map(i => `<div class="rcpt-row"><span>${i.menu.name} ×${i.qty}</span><span>฿${i.menu.price*i.qty}</span></div>`).join('');
+  html += '<div class="rcpt-div"></div>';
+  if (d.disc > 0) html += `<div class="rcpt-row"><span>ส่วนลด</span><span style="color:var(--orange)">-฿${d.disc}</span></div>`;
+  html += `<div class="rcpt-row"><span>ยอดสุทธิ</span><span>฿${d.grand}</span></div>`;
+  if (d.payLabel === 'เงินสด') html += `<div class="rcpt-row"><span>รับเงิน</span><span>฿${d.recv}</span></div><div class="rcpt-row"><span>เงินทอน</span><span>฿${Math.max(0,d.change).toFixed(0)}</span></div>`;
+  html += `<div class="rcpt-div"></div><div class="rcpt-row" style="font-size:10px;color:var(--text-l)"><span>${d.rcpId}</span><span>${d.dateStr} ${d.timeStr}</span></div>`;
+  if (d.note) html += `<div class="rcpt-row" style="font-size:11px"><span>📝 ${d.note}</span></div>`;
+  document.getElementById('rcptBox').innerHTML = html;
+  om('successModal');
+}
+function closeSuccess() { cm('successModal'); clearCart(); document.getElementById('recvInput').value = ''; calcChange(); }
+
+// ── MODAL HELPERS ──
+function om(id) { document.getElementById(id).classList.add('open'); }
+function cm(id) { document.getElementById(id).classList.remove('open'); }
+function showLoad() { document.getElementById('loadingBar').style.width='70%'; }
+function hideLoad() { const b=document.getElementById('loadingBar'); b.style.width='100%'; setTimeout(()=>{b.style.width='0';},300); }
+let _tt;
+function toast2(msg) { const t=document.getElementById('toastEl'); t.textContent=msg; t.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>t.classList.remove('show'),2200); }
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.key === 'Enter') doCheckout();
+  if (e.key === 'F2') { e.preventDefault(); openDiscModal(); }
+  if (e.key === 'F3') { e.preventDefault(); openNoteModal(); }
+  if (e.key === 'F4') { e.preventDefault(); openMemberModal(); }
+  if (e.key === 'F5') { e.preventDefault(); openOtherModal(); }
+  const pb = document.querySelectorAll('.pay-btn');
+  if (e.key === 'F6') { e.preventDefault(); setPay(pb[0],'cash'); }
+  if (e.key === 'F7') { e.preventDefault(); setPay(pb[1],'qr'); }
+  if (e.key === 'F8') { e.preventDefault(); setPay(pb[2],'card'); }
+  if (e.key === 'F9') { e.preventDefault(); setPay(pb[3],'transfer'); }
+  if (e.key === 'Escape') document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'));
+});
+document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); }));
+
+// ── INIT ──
+loadMenus();
+</script>
+</body>
+</html>

@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory — Brain Brew × Heng Heng</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --brand-dark:   #1B4332;
+  --brand-mid:    #2D6A4F;
+  --brand-light:  #52B788;
+  --brand-accent: #F97316;
+  --brand-cream:  #FDFDF5;
+  --danger:       #EF4444;
+  --warning:      #F59E0B;
+  --success:      #10B981;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: #f5f0e8; color: #1a2e1a; overflow-x: hidden; }
+
+/* LAYOUT */
+.app { display: flex; height: 100vh; }
+.sidebar { width: 220px; background: #1B4332; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; flex-shrink: 0; padding: 0 0 16px; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.sidebar-logo-brand { font-family: 'Playfair Display', serif; font-size: 13px; color: #1a2e1a; }
+.sidebar-logo-sub { font-size: 10px; color: #4a6741; margin-top: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+.nav-section { padding: 12px 12px 4px; }
+.nav-label { font-size: 9px; color:rgba(0,0,0,0.35); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; padding: 0 8px; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 12px; color: #4a6741; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.nav-item:hover { background: rgba(255,255,255,0.05); color:#1a2e1a; }
+.nav-item.active { background: var(--brand-dark); color: #1a2e1a; }
+.nav-icon { width: 16px; text-align: center; font-size: 13px; }
+
+/* TOPBAR */
+.topbar { background: #1B4332; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.topbar-title { font-size: 15px; font-weight: 600; color: #1a2e1a; }
+.topbar-brand-switch { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; margin-left: 16px; }
+.brand-tab { padding: 5px 14px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; color:#1a2e1a; border: none; background: transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.brand-tab.active { background: var(--brand-dark); color: #1a2e1a; }
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+.btn { padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ghost { background: rgba(255,255,255,0.06); color:#1a2e1a; border: 1px solid rgba(255,255,255,0.08); }
+.btn-ghost:hover { background: rgba(255,255,255,0.1); color: #1a2e1a; }
+.btn-primary { background: var(--brand-dark); color: #fff; }
+.btn-primary:hover { background: var(--brand-mid); }
+.btn-danger { background: rgba(239,68,68,0.15); color: #EF4444; border: 1px solid rgba(239,68,68,0.2); }
+.btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+/* CONTENT */
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+.content::-webkit-scrollbar { width: 4px; }
+.content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* KPI ROW */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+.kpi-card { background: #1B4332; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 16px 20px; }
+.kpi-label { font-size: 11px; color: #4a6741; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+.kpi-value { font-size: 26px; font-weight: 700; color: #1a2e1a; line-height: 1; }
+.kpi-sub { font-size: 11px; color: #4a6741; margin-top: 4px; }
+.kpi-alert { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); }
+.kpi-alert .kpi-value { color: #EF4444; }
+
+/* TABS */
+.tab-row { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(255,255,255,0.04); padding: 3px; border-radius: 10px; width: fit-content; }
+.tab-btn { padding: 7px 18px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; color:#1a2e1a; border: none; background: transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.tab-btn.active { background: #ffffff; color: #1a2e1a; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+
+/* FILTERS */
+.filter-row { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+.search-input { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 12px 8px 34px; font-size: 12px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; width: 220px; }
+.search-input:focus { border-color: var(--brand-light); }
+.search-input::placeholder { color:rgba(0,0,0,0.35); }
+.search-wrap { position: relative; }
+.search-icon-abs { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.3; }
+.select-filter { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 12px; font-size: 12px; color:#4a6741; font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer; }
+.select-filter option { background: #ffffff; }
+.filter-right { margin-left: auto; }
+
+/* TABLE */
+.table-card { background: #1B4332; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; overflow: hidden; }
+.table-header { display: grid; padding: 11px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 10px; color: #4a6741; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+.table-row { display: grid; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: center; transition: background 0.1s; }
+.table-row:last-child { border-bottom: none; }
+.table-row:hover { background: rgba(255,255,255,0.02); }
+
+/* Inventory table: 5 cols */
+.inv-grid { grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr; gap: 12px; }
+
+/* STOCK BADGE */
+.stock-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.stock-ok    { background: rgba(16,185,129,0.12); color: #10B981; }
+.stock-low   { background: rgba(245,158,11,0.12); color: #F59E0B; }
+.stock-out   { background: rgba(239,68,68,0.12);  color: #EF4444; }
+.stock-dot   { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+/* STOCK BAR */
+.stock-bar-wrap { width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 4px; }
+.stock-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+/* ITEM NAME */
+.item-name { font-size: 13px; font-weight: 500; color: #1a2e1a; }
+.item-meta { font-size: 10px; color: #4a6741; margin-top: 2px; }
+
+/* QTY EDIT */
+.qty-cell { display: flex; align-items: center; gap: 6px; }
+.qty-val { font-size: 14px; font-weight: 600; color: #1a2e1a; min-width: 32px; }
+.qty-unit { font-size: 10px; color: #4a6741; }
+.adj-btn { width: 22px; height: 22px; border-radius: 5px; background: rgba(255,255,255,0.06); border: none; color:#1a2e1a; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; }
+.adj-btn:hover { background: rgba(255,255,255,0.12); color: #1a2e1a; }
+
+/* COST */
+.cost-val { font-size: 13px; color:#4a6741; }
+.cost-total { font-size: 11px; color: #4a6741; margin-top: 2px; }
+
+/* ROW ACTIONS */
+.row-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.icon-btn { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); color:#1a2e1a; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.15s; }
+.icon-btn:hover { background: rgba(255,255,255,0.1); color: #1a2e1a; }
+.icon-btn.del:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.2); color: #EF4444; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal { background: #ffffff; border-radius: 20px; width: 480px; max-height: 85vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 600; color: #1a2e1a; }
+.modal-close { background: none; border: none; color:#1a2e1a; font-size: 20px; cursor: pointer; }
+.modal-close:hover { color: #1a2e1a; }
+.modal-body { padding: 20px 24px; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 11px; color:#1a2e1a; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; transition: border 0.15s; }
+.form-input:focus { border-color: var(--brand-light); }
+.form-input::placeholder { color:rgba(0,0,0,0.35); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-select { appearance: none; cursor: pointer; }
+.form-footer { display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px; }
+
+/* TRANSACTION TAB */
+.tx-grid { grid-template-columns: 1.5fr 1fr 1fr 1fr 1.5fr; gap: 12px; }
+.tx-type { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+.tx-in     { background: rgba(16,185,129,0.12); color: #10B981; }
+.tx-out    { background: rgba(239,68,68,0.12);  color: #EF4444; }
+.tx-waste  { background: rgba(245,158,11,0.12); color: #F59E0B; }
+.tx-adjust { background: rgba(99,102,241,0.12); color: #818CF8; }
+
+/* ALERT BANNER */
+.alert-banner { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.alert-banner-icon { font-size: 16px; }
+.alert-banner-text { font-size: 12px; color:#1a2e1a; }
+.alert-banner-count { font-weight: 700; color: #EF4444; }
+
+/* EMPTY */
+.empty-state { padding: 60px 24px; text-align: center; color:rgba(0,0,0,0.35); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+.empty-text { font-size: 13px; }
+
+/* ADJUST MODAL */
+.adj-type-row { display: flex; gap: 6px; margin-bottom: 16px; }
+.adj-type-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1.5px solid #e0d8cc; background: transparent; font-size: 12px; font-weight: 500; color:#1a2e1a; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; text-align: center; }
+.adj-type-btn:hover { border-color: #c5bdb0; color:#1a2e1a; }
+.adj-type-btn.sel-in     { border-color: #10B981; background: rgba(16,185,129,0.1); color: #10B981; }
+.adj-type-btn.sel-out    { border-color: #EF4444; background: rgba(239,68,68,0.1);  color: #EF4444; }
+.adj-type-btn.sel-waste  { border-color: #F59E0B; background: rgba(245,158,11,0.1); color: #F59E0B; }
+.adj-type-btn.sel-adjust { border-color: #818CF8; background: rgba(129,140,248,0.1);color: #818CF8; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-brand">Brain Brew × Heng Heng</div>
+      <div class="sidebar-logo-sub">Back Office</div>
+    </div>
+    <div class="nav-section" style="flex:1">
+      <div class="nav-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⬛</span>Dashboard</a>
+      <a href="pos.html"       class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
+      <div class="nav-label" style="margin-top:12px">Operations</div>
+      <a href="inventory.html" class="nav-item active"><span class="nav-icon">📦</span>Inventory</a>
+      <a href="recipe.html"    class="nav-item"><span class="nav-icon">🧪</span>Recipes</a>
+      <a href="production.html"class="nav-item"><span class="nav-icon">🏭</span>Production</a>
+      <div class="nav-label" style="margin-top:12px">Business</div>
+      <a href="crm.html"       class="nav-item"><span class="nav-icon">👥</span>CRM / Members</a>
+      <a href="finance.html"   class="nav-item"><span class="nav-icon">💰</span>Finance</a>
+      <a href="reports.html"   class="nav-item"><span class="nav-icon">📊</span>Reports</a>
+      <div class="nav-label" style="margin-top:12px">Settings</div>
+      <a href="settings.html"  class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);">
+      <div style="font-size:11px;color:rgba(0,0,0,0.35)">Owner · All Brands</div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title">Inventory</div>
+      <div class="topbar-brand-switch">
+        <button class="brand-tab active" onclick="switchBrand('ALL', this)">All</button>
+        <button class="brand-tab" onclick="switchBrand('BB', this)">Brain Brew</button>
+        <button class="brand-tab" onclick="switchBrand('HH', this)">Heng Heng</button>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="exportCSV()">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 8l3 3 3-3"/></svg>
+          Export
+        </button>
+        <button class="btn btn-ghost" onclick="openModal('adjust-modal')">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M2 8h12"/></svg>
+          Adjust Stock
+        </button>
+        <button class="btn btn-primary" onclick="openModal('add-modal')">
+          + Add Ingredient
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- KPI Row -->
+      <div class="kpi-row" id="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Items</div>
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-sub">Tracked ingredients</div>
+        </div>
+        <div class="kpi-card kpi-alert">
+          <div class="kpi-label">⚠ Low Stock</div>
+          <div class="kpi-value" id="kpi-low">—</div>
+          <div class="kpi-sub">Need replenishment</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Stock Value</div>
+          <div class="kpi-value" id="kpi-value" style="font-size:20px">—</div>
+          <div class="kpi-sub">Total inventory cost</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Today's Usage</div>
+          <div class="kpi-value" id="kpi-usage">—</div>
+          <div class="kpi-sub">Transactions today</div>
+        </div>
+      </div>
+
+      <!-- Low stock alert banner -->
+      <div class="alert-banner" id="low-stock-banner" style="display:none">
+        <div class="alert-banner-icon">🔴</div>
+        <div class="alert-banner-text">
+          <span class="alert-banner-count" id="alert-count">0</span> items are below minimum stock level and need to be restocked.
+        </div>
+        <button class="btn btn-danger" style="margin-left:auto;padding:5px 12px;font-size:11px" onclick="filterLowStock()">View All</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab('stock', this)">Stock Levels</button>
+        <button class="tab-btn" onclick="switchTab('transactions', this)">Transactions</button>
+        <button class="tab-btn" onclick="switchTab('suppliers', this)">Suppliers</button>
+      </div>
+
+      <!-- ===== STOCK TAB ===== -->
+      <div id="tab-stock">
+        <div class="filter-row">
+          <div class="search-wrap">
+            <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+            <input class="search-input" type="text" placeholder="Search ingredients…" oninput="filterInventory(this.value)">
+          </div>
+          <select class="select-filter" id="cat-filter" onchange="filterInventory()">
+            <option value="">All Categories</option>
+            <option value="coffee">Coffee & Espresso</option>
+            <option value="dairy">Dairy & Milk</option>
+            <option value="syrup">Syrups & Flavors</option>
+            <option value="dry">Dry Goods</option>
+            <option value="packaging">Packaging</option>
+            <option value="bakery">Bakery Ingredients</option>
+          </select>
+          <select class="select-filter" id="status-filter" onchange="filterInventory()">
+            <option value="">All Status</option>
+            <option value="ok">In Stock</option>
+            <option value="low">Low Stock</option>
+            <option value="out">Out of Stock</option>
+          </select>
+          <div class="filter-right">
+            <span style="font-size:11px;color:#4a6741" id="filter-count">Showing all items</span>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header inv-grid">
+            <div>Ingredient</div>
+            <div>Current Stock</div>
+            <div>Min / Max</div>
+            <div>Unit Cost</div>
+            <div style="text-align:right">Actions</div>
+          </div>
+          <div id="inventory-table-body">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TRANSACTIONS TAB ===== -->
+      <div id="tab-transactions" style="display:none">
+        <div class="filter-row">
+          <div class="search-wrap">
+            <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+            <input class="search-input" type="text" placeholder="Search transactions…" oninput="filterTransactions(this.value)">
+          </div>
+          <select class="select-filter" onchange="filterTransactions()">
+            <option value="">All Types</option>
+            <option value="receive">Receive (PO)</option>
+            <option value="deduct">Sales Deduction</option>
+            <option value="waste">Wastage</option>
+            <option value="adjust">Manual Adjust</option>
+          </select>
+          <select class="select-filter">
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header tx-grid">
+            <div>Ingredient</div>
+            <div>Type</div>
+            <div>Quantity Change</div>
+            <div>Date</div>
+            <div>Note / Reference</div>
+          </div>
+          <div id="tx-table-body">
+            <!-- Injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SUPPLIERS TAB ===== -->
+      <div id="tab-suppliers" style="display:none">
+        <div class="filter-row">
+          <button class="btn btn-primary" onclick="openModal('supplier-modal')">+ Add Supplier</button>
+        </div>
+        <div class="table-card">
+          <div class="table-header" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px;display:grid">
+            <div>Supplier Name</div>
+            <div>Contact</div>
+            <div>Payment Terms</div>
+            <div>Last Order</div>
+            <div style="text-align:right">Actions</div>
+          </div>
+          <div id="supplier-table-body"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+
+<!-- ===== ADD INGREDIENT MODAL ===== -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Ingredient</div>
+      <button class="modal-close" onclick="closeModal('add-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ingredient Name</label>
+          <input class="form-input" type="text" id="add-name" placeholder="e.g. Espresso Beans">
+        </div>
+        <div class="form-group">
+          <label class="form-label">SKU / Code</label>
+          <input class="form-input" type="text" id="add-sku" placeholder="ING-001">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input form-select" id="add-cat">
+            <option value="coffee">Coffee & Espresso</option>
+            <option value="dairy">Dairy & Milk</option>
+            <option value="syrup">Syrups & Flavors</option>
+            <option value="dry">Dry Goods</option>
+            <option value="packaging">Packaging</option>
+            <option value="bakery">Bakery Ingredients</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <select class="form-input form-select" id="add-unit">
+            <option value="g">g (grams)</option>
+            <option value="kg">kg</option>
+            <option value="ml">ml</option>
+            <option value="L">L (liters)</option>
+            <option value="pcs">pcs (pieces)</option>
+            <option value="bag">bag</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Current Stock</label>
+          <input class="form-input" type="number" id="add-stock" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit Cost (฿)</label>
+          <input class="form-input" type="number" id="add-cost" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Min Stock (Alert)</label>
+          <input class="form-input" type="number" id="add-min" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Stock</label>
+          <input class="form-input" type="number" id="add-max" placeholder="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <select class="form-input form-select" id="add-brand">
+            <option value="SHARED">Shared (Both)</option>
+            <option value="BB">Brain Brew Only</option>
+            <option value="HH">Heng Heng Only</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Supplier</label>
+          <select class="form-input form-select" id="add-supplier">
+            <option value="">Select supplier</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveIngredient()">Save Ingredient</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== ADJUST STOCK MODAL ===== -->
+<div class="modal-overlay" id="adjust-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Adjust Stock</div>
+      <button class="modal-close" onclick="closeModal('adjust-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Ingredient</label>
+        <select class="form-input form-select" id="adj-ingredient">
+          <!-- Populated by JS -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Transaction Type</label>
+        <div class="adj-type-row">
+          <button class="adj-type-btn sel-in" onclick="selectAdjType('receive', this)">📥 Receive</button>
+          <button class="adj-type-btn" onclick="selectAdjType('deduct', this)">📤 Deduct</button>
+          <button class="adj-type-btn" onclick="selectAdjType('waste', this)">🗑 Waste</button>
+          <button class="adj-type-btn" onclick="selectAdjType('adjust', this)">🔧 Adjust</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Quantity</label>
+          <input class="form-input" type="number" id="adj-qty" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit Cost (฿) — optional</label>
+          <input class="form-input" type="number" id="adj-cost" placeholder="0.00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note / Reference</label>
+        <input class="form-input" type="text" id="adj-note" placeholder="e.g. PO-2024-001, morning count…">
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:12px;margin-bottom:16px">
+        <div style="font-size:11px;color:#4a6741;margin-bottom:6px">AFTER ADJUSTMENT</div>
+        <div style="font-size:18px;font-weight:700;color:#1a2e1a" id="adj-preview">—</div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="closeModal('adjust-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveAdjustment()">Save Adjustment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== EDIT MODAL ===== -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit Ingredient</div>
+      <button class="modal-close" onclick="closeModal('edit-modal')">×</button>
+    </div>
+    <div class="modal-body" id="edit-modal-body">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== ADD SUPPLIER MODAL ===== -->
+<div class="modal-overlay" id="supplier-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Supplier</div>
+      <button class="modal-close" onclick="closeModal('supplier-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Supplier Name</label>
+          <input class="form-input" type="text" id="sup-name" placeholder="Company name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Person</label>
+          <input class="form-input" type="text" id="sup-contact" placeholder="Name">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" type="text" id="sup-phone" placeholder="0X-XXXX-XXXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Terms</label>
+          <select class="form-input form-select" id="sup-terms">
+            <option value="cod">Cash on Delivery</option>
+            <option value="net7">Net 7 days</option>
+            <option value="net14">Net 14 days</option>
+            <option value="net30">Net 30 days</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Products Supplied</label>
+        <input class="form-input" type="text" id="sup-products" placeholder="e.g. Coffee beans, packaging…">
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="closeModal('supplier-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSupplier()">Save Supplier</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ============================================================
+// MOCK DATA
+// ============================================================
+let ACTIVE_BRAND = Auth.getBrand() || 'ALL';
+let activeTab = 'stock';
+let adjType = 'receive';
+let showLowOnly = false;
+
+let INVENTORY = [
+  { id:'ING-001', name:'Espresso Beans (BB Blend)', sku:'BB-BEAN-01', category:'coffee', brand:'BB', unit:'g',  stock:4800, min_stock:1000, max_stock:8000, unit_cost:0.85, supplier:'Thai Coffee Co.' },
+  { id:'ING-002', name:'Single Origin Ethiopia',    sku:'BB-BEAN-02', category:'coffee', brand:'BB', unit:'g',  stock:620,  min_stock:500,  max_stock:3000, unit_cost:1.20, supplier:'Thai Coffee Co.' },
+  { id:'ING-003', name:'Full Cream Milk',           sku:'SH-MILK-01', category:'dairy',  brand:'SHARED', unit:'ml', stock:18000,min_stock:5000, max_stock:30000,unit_cost:0.05, supplier:'Dairy Fresh Ltd.' },
+  { id:'ING-004', name:'Oat Milk (Oatly)',          sku:'SH-MILK-02', category:'dairy',  brand:'SHARED', unit:'ml', stock:3200, min_stock:2000, max_stock:10000,unit_cost:0.12, supplier:'Oatly TH' },
+  { id:'ING-005', name:'Almond Milk',               sku:'SH-MILK-03', category:'dairy',  brand:'SHARED', unit:'ml', stock:800,  min_stock:1000, max_stock:5000, unit_cost:0.15, supplier:'Oatly TH' },
+  { id:'ING-006', name:'Vanilla Syrup',             sku:'SH-SYR-01',  category:'syrup',  brand:'SHARED', unit:'ml', stock:2400, min_stock:500,  max_stock:4000, unit_cost:0.08, supplier:'Monin TH' },
+  { id:'ING-007', name:'Caramel Syrup',             sku:'SH-SYR-02',  category:'syrup',  brand:'SHARED', unit:'ml', stock:180,  min_stock:500,  max_stock:4000, unit_cost:0.08, supplier:'Monin TH' },
+  { id:'ING-008', name:'Matcha Powder (Premium)',   sku:'BB-MAT-01',  category:'dry',    brand:'BB', unit:'g',  stock:2200, min_stock:500,  max_stock:5000, unit_cost:0.45, supplier:'Ippodo TH' },
+  { id:'ING-009', name:'Dark Cocoa Powder',         sku:'SH-DRY-01',  category:'dry',    brand:'SHARED', unit:'g', stock:1500, min_stock:300,  max_stock:3000, unit_cost:0.12, supplier:'General Supplies' },
+  { id:'ING-010', name:'Cane Sugar',                sku:'SH-DRY-02',  category:'dry',    brand:'SHARED', unit:'g', stock:12000,min_stock:2000, max_stock:20000,unit_cost:0.03, supplier:'General Supplies' },
+  { id:'ING-011', name:'All Purpose Flour',         sku:'HH-BAKE-01', category:'bakery', brand:'HH', unit:'g',  stock:8000, min_stock:2000, max_stock:15000,unit_cost:0.02, supplier:'HH Bakery Supply' },
+  { id:'ING-012', name:'Butter (Unsalted)',         sku:'HH-BAKE-02', category:'bakery', brand:'HH', unit:'g',  stock:2400, min_stock:1000, max_stock:8000, unit_cost:0.18, supplier:'Dairy Fresh Ltd.' },
+  { id:'ING-013', name:'Eggs (Grade A)',            sku:'HH-BAKE-03', category:'bakery', brand:'HH', unit:'pcs',stock:72,   min_stock:30,   max_stock:200,  unit_cost:5.50, supplier:'HH Bakery Supply' },
+  { id:'ING-014', name:'Paper Cup 12oz',            sku:'BB-PKG-01',  category:'packaging',brand:'BB',unit:'pcs',stock:800, min_stock:200,  max_stock:2000, unit_cost:2.50, supplier:'PackPlus' },
+  { id:'ING-015', name:'Paper Cup 16oz',            sku:'BB-PKG-02',  category:'packaging',brand:'BB',unit:'pcs',stock:1200,min_stock:200,  max_stock:2000, unit_cost:3.00, supplier:'PackPlus' },
+  { id:'ING-016', name:'Turmeric Powder',           sku:'BB-DRY-01',  category:'dry',    brand:'BB', unit:'g',  stock:0,    min_stock:200,  max_stock:1000, unit_cost:0.25, supplier:'General Supplies' },
+];
+
+async function loadInventoryData() {
+  try {
+    const data = await API.inventory();
+    if (data && data.length) {
+      INVENTORY = data.map(i => ({
+        id: i.id || i.ingredient_id,
+        name: i.name,
+        sku: i.sku || i.id,
+        category: i.category || 'other',
+        brand: i.brand_id || 'SHARED',
+        unit: i.unit,
+        stock: Number(i.current_stock || 0),
+        min_stock: Number(i.par_level * 0.25 || i.min_stock || 0),
+        max_stock: Number(i.par_level || i.max_stock || 100),
+        unit_cost: Number(i.cost_per_unit || i.unit_cost || 0),
+        supplier: i.supplier || '—',
+        low_stock: i.low_stock,
+      }));
+    }
+  } catch(e) { /* keep static INVENTORY */ }
+  renderInventory();
+}
+
+document.addEventListener('DOMContentLoaded', loadInventoryData);
+
+const TRANSACTIONS = [
+  { id:'TXN-001', ingredient_id:'ING-001', ingredient_name:'Espresso Beans',   type:'receive', qty:+2000, date:'2026-05-27 09:15', note:'PO-2026-019', unit:'g' },
+  { id:'TXN-002', ingredient_id:'ING-003', ingredient_name:'Full Cream Milk',  type:'deduct',  qty:-450,  date:'2026-05-27 10:31', note:'Orders: ORD-892, ORD-893', unit:'ml' },
+  { id:'TXN-003', ingredient_id:'ING-007', ingredient_name:'Caramel Syrup',    type:'waste',   qty:-180,  date:'2026-05-27 08:00', note:'Expired — opening count', unit:'ml' },
+  { id:'TXN-004', ingredient_id:'ING-008', ingredient_name:'Matcha Powder',    type:'receive', qty:+1000, date:'2026-05-26 14:00', note:'PO-2026-018', unit:'g' },
+  { id:'TXN-005', ingredient_id:'ING-013', ingredient_name:'Eggs Grade A',     type:'deduct',  qty:-12,   date:'2026-05-26 12:00', note:'Production batch PRD-044', unit:'pcs' },
+  { id:'TXN-006', ingredient_id:'ING-010', ingredient_name:'Cane Sugar',       type:'adjust',  qty:-200,  date:'2026-05-26 08:00', note:'Physical count correction', unit:'g' },
+  { id:'TXN-007', ingredient_id:'ING-005', ingredient_name:'Almond Milk',      type:'receive', qty:+2000, date:'2026-05-25 09:00', note:'PO-2026-017', unit:'ml' },
+  { id:'TXN-008', ingredient_id:'ING-004', ingredient_name:'Oat Milk (Oatly)', type:'deduct',  qty:-600,  date:'2026-05-25 18:00', note:'Orders: ORD-870–880', unit:'ml' },
+];
+
+const SUPPLIERS = [
+  { id:'SUP-001', name:'Thai Coffee Co.',   contact:'Khun Somchai',  phone:'02-234-5678', terms:'net14', last_order:'2026-05-20', products:'Espresso beans, single origin' },
+  { id:'SUP-002', name:'Dairy Fresh Ltd.',  contact:'Khun Nong',     phone:'02-456-7890', terms:'cod',   last_order:'2026-05-25', products:'Milk, butter, cream' },
+  { id:'SUP-003', name:'Oatly TH',          contact:'Sales Dept.',   phone:'02-123-4567', terms:'net7',  last_order:'2026-05-22', products:'Oat milk, almond milk' },
+  { id:'SUP-004', name:'Monin TH',          contact:'Khun Lek',      phone:'081-234-5678',terms:'net30', last_order:'2026-05-10', products:'Syrups, flavoring' },
+  { id:'SUP-005', name:'Ippodo TH',         contact:'Import Desk',   phone:'02-777-8888', terms:'net14', last_order:'2026-05-15', products:'Matcha powder' },
+  { id:'SUP-006', name:'HH Bakery Supply',  contact:'Khun Mook',     phone:'082-345-6789',terms:'cod',   last_order:'2026-05-26', products:'Flour, eggs, baking' },
+  { id:'SUP-007', name:'PackPlus',          contact:'Sales Team',    phone:'02-888-9999', terms:'net14', last_order:'2026-05-18', products:'Cups, lids, packaging' },
+  { id:'SUP-008', name:'General Supplies',  contact:'Khun Prae',     phone:'080-123-4567',terms:'cod',   last_order:'2026-05-24', products:'Sugar, cocoa, spices' },
+];
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getStockStatus(item) {
+  if (item.stock <= 0)              return { label:'Out of Stock', cls:'stock-out' };
+  if (item.stock <= item.min_stock) return { label:'Low Stock',    cls:'stock-low' };
+  return                                   { label:'In Stock',     cls:'stock-ok'  };
+}
+
+function stockBarPct(item) {
+  const pct = Math.min(100, (item.stock / item.max_stock) * 100);
+  return pct;
+}
+
+function stockBarColor(item) {
+  if (item.stock <= 0)              return '#EF4444';
+  if (item.stock <= item.min_stock) return '#F59E0B';
+  return '#10B981';
+}
+
+function formatCurrency(n) { return '฿' + n.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function formatNum(n, unit) { return n.toLocaleString() + ' ' + unit; }
+
+
+// ============================================================
+// KPI
+// ============================================================
+function updateKPIs(items) {
+  const low = items.filter(i => i.stock <= i.min_stock && i.stock > 0).length;
+  const out = items.filter(i => i.stock <= 0).length;
+  const totalValue = items.reduce((s, i) => s + i.stock * i.unit_cost, 0);
+
+  document.getElementById('kpi-total').textContent = items.length;
+  document.getElementById('kpi-low').textContent = low + out;
+  document.getElementById('kpi-value').textContent = formatCurrency(totalValue);
+  document.getElementById('kpi-usage').textContent = TRANSACTIONS.filter(t => t.date.startsWith('2026-05-27')).length;
+
+  const alertCount = low + out;
+  const banner = document.getElementById('low-stock-banner');
+  if (alertCount > 0) {
+    banner.style.display = 'flex';
+    document.getElementById('alert-count').textContent = alertCount;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+
+// ============================================================
+// RENDER INVENTORY TABLE
+// ============================================================
+function getFilteredInventory() {
+  const q   = document.querySelector('input[placeholder="Search ingredients…"]')?.value.toLowerCase() || '';
+  const cat = document.getElementById('cat-filter')?.value || '';
+  const sts = document.getElementById('status-filter')?.value || '';
+
+  let items = INVENTORY.filter(i => {
+    if (ACTIVE_BRAND !== 'ALL' && i.brand !== ACTIVE_BRAND && i.brand !== 'SHARED') return false;
+    if (cat && i.category !== cat) return false;
+    if (q && !i.name.toLowerCase().includes(q)) return false;
+    if (sts === 'ok'  && !(i.stock > i.min_stock)) return false;
+    if (sts === 'low' && !(i.stock > 0 && i.stock <= i.min_stock)) return false;
+    if (sts === 'out' && !(i.stock <= 0)) return false;
+    if (showLowOnly && i.stock > i.min_stock) return false;
+    return true;
+  });
+
+  return items;
+}
+
+function renderInventory() {
+  const items = getFilteredInventory();
+  updateKPIs(INVENTORY);
+
+  document.getElementById('filter-count').textContent =
+    items.length === INVENTORY.length ? `Showing all ${items.length} items` : `Showing ${items.length} of ${INVENTORY.length} items`;
+
+  const body = document.getElementById('inventory-table-body');
+  if (items.length === 0) {
+    body.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">No items match your filters</div></div>`;
+    return;
+  }
+
+  body.innerHTML = items.map(item => {
+    const status = getStockStatus(item);
+    const pct    = stockBarPct(item);
+    const color  = stockBarColor(item);
+    const totalVal = item.stock * item.unit_cost;
+
+    return `
+      <div class="table-row inv-grid">
+        <div>
+          <div class="item-name">${item.name}</div>
+          <div class="item-meta">${item.sku} · ${item.category} · ${item.brand}</div>
+        </div>
+        <div>
+          <div class="qty-cell">
+            <div class="qty-val">${item.stock.toLocaleString()}</div>
+            <div class="qty-unit">${item.unit}</div>
+          </div>
+          <div class="stock-bar-wrap">
+            <div class="stock-bar-fill" style="width:${pct}%;background:${color}"></div>
+          </div>
+          <div style="margin-top:3px">
+            <span class="stock-badge ${status.cls}"><span class="stock-dot"></span>${status.label}</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:#4a6741">Min: ${item.min_stock.toLocaleString()} ${item.unit}</div>
+          <div style="font-size:12px;color:#4a6741;margin-top:2px">Max: ${item.max_stock.toLocaleString()} ${item.unit}</div>
+        </div>
+        <div>
+          <div class="cost-val">${formatCurrency(item.unit_cost)} / ${item.unit}</div>
+          <div class="cost-total">Total: ${formatCurrency(totalVal)}</div>
+        </div>
+        <div class="row-actions">
+          <button class="icon-btn" title="Adjust stock" onclick="quickAdjust('${item.id}')">±</button>
+          <button class="icon-btn" title="Edit" onclick="editItem('${item.id}')">✎</button>
+          <button class="icon-btn del" title="Delete" onclick="deleteItem('${item.id}')">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+
+// ============================================================
+// RENDER TRANSACTIONS
+// ============================================================
+function renderTransactions(filter = '') {
+  const body = document.getElementById('tx-table-body');
+  let txns = [...TRANSACTIONS].reverse(); // newest first
+  if (filter) {
+    const q = filter.toLowerCase();
+    txns = txns.filter(t => t.ingredient_name.toLowerCase().includes(q) || t.note.toLowerCase().includes(q));
+  }
+
+  if (txns.length === 0) {
+    body.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No transactions found</div></div>`;
+    return;
+  }
+
+  const typeMap = { receive:'tx-in', deduct:'tx-out', waste:'tx-waste', adjust:'tx-adjust' };
+  const typeLabel = { receive:'Receive', deduct:'Deduct', waste:'Waste', adjust:'Adjust' };
+
+  body.innerHTML = txns.map(tx => `
+    <div class="table-row tx-grid">
+      <div>
+        <div class="item-name">${tx.ingredient_name}</div>
+        <div class="item-meta">${tx.ingredient_id}</div>
+      </div>
+      <div><span class="tx-type ${typeMap[tx.type]}">${typeLabel[tx.type]}</span></div>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:${tx.qty > 0 ? '#10B981' : '#EF4444'}">
+          ${tx.qty > 0 ? '+' : ''}${tx.qty.toLocaleString()} ${tx.unit}
+        </div>
+      </div>
+      <div style="font-size:12px;color:#4a6741">${tx.date}</div>
+      <div style="font-size:12px;color:#4a6741">${tx.note}</div>
+    </div>
+  `).join('');
+}
+
+
+// ============================================================
+// RENDER SUPPLIERS
+// ============================================================
+function renderSuppliers() {
+  const body = document.getElementById('supplier-table-body');
+  const termsLabel = { cod:'Cash on Delivery', net7:'Net 7 days', net14:'Net 14 days', net30:'Net 30 days' };
+
+  body.innerHTML = SUPPLIERS.map(s => `
+    <div class="table-row" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:12px;display:grid">
+      <div>
+        <div class="item-name">${s.name}</div>
+        <div class="item-meta">${s.products}</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--green);font-weight:700">${s.contact}</div>
+        <div style="font-size:11px;color:#4a6741;margin-top:2px">${s.phone}</div>
+      </div>
+      <div style="font-size:12px;color:#4a6741">${termsLabel[s.terms]}</div>
+      <div style="font-size:12px;color:#4a6741">${s.last_order}</div>
+      <div class="row-actions">
+        <button class="icon-btn" title="Edit">✎</button>
+        <button class="icon-btn del" title="Delete">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+
+// ============================================================
+// POPULATE ADJUST MODAL DROPDOWN
+// ============================================================
+function populateIngredientDropdown() {
+  const sel = document.getElementById('adj-ingredient');
+  sel.innerHTML = INVENTORY.map(i =>
+    `<option value="${i.id}">${i.name} (${i.stock.toLocaleString()} ${i.unit})</option>`
+  ).join('');
+  updateAdjPreview();
+
+  const supSel = document.getElementById('add-supplier');
+  if (supSel) {
+    supSel.innerHTML = `<option value="">Select supplier</option>` +
+      SUPPLIERS.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+}
+
+
+// ============================================================
+// ADJUSTMENT PREVIEW
+// ============================================================
+function updateAdjPreview() {
+  const ingId = document.getElementById('adj-ingredient')?.value;
+  const qty   = parseFloat(document.getElementById('adj-qty')?.value) || 0;
+  const item  = INVENTORY.find(i => i.id === ingId);
+  if (!item) return;
+
+  const delta = adjType === 'deduct' || adjType === 'waste' ? -Math.abs(qty) : Math.abs(qty);
+  const after = item.stock + delta;
+  document.getElementById('adj-preview').textContent =
+    `${item.stock.toLocaleString()} ${item.unit}  →  ${after.toLocaleString()} ${item.unit}`;
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'adj-ingredient' || e.target.id === 'adj-qty') updateAdjPreview();
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'adj-qty') updateAdjPreview();
+});
+
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function switchBrand(brand, btn) {
+  ACTIVE_BRAND = brand;
+  sessionStorage.setItem('brewos_brand', brand);
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderInventory();
+}
+
+function switchTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-stock').style.display       = tab === 'stock'        ? 'block' : 'none';
+  document.getElementById('tab-transactions').style.display= tab === 'transactions' ? 'block' : 'none';
+  document.getElementById('tab-suppliers').style.display   = tab === 'suppliers'    ? 'block' : 'none';
+  if (tab === 'transactions') renderTransactions();
+  if (tab === 'suppliers')    renderSuppliers();
+}
+
+function filterInventory(val) { showLowOnly = false; renderInventory(); }
+function filterLowStock() {
+  showLowOnly = true;
+  document.getElementById('status-filter').value = '';
+  renderInventory();
+}
+function filterTransactions(val) { renderTransactions(val || ''); }
+
+function openModal(id) {
+  if (id === 'adjust-modal') populateIngredientDropdown();
+  document.getElementById(id).classList.add('show');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function quickAdjust(ingId) {
+  openModal('adjust-modal');
+  setTimeout(() => {
+    const sel = document.getElementById('adj-ingredient');
+    if (sel) { sel.value = ingId; updateAdjPreview(); }
+  }, 50);
+}
+
+function selectAdjType(type, btn) {
+  adjType = type;
+  document.querySelectorAll('.adj-type-btn').forEach(b => {
+    b.className = 'adj-type-btn';
+  });
+  btn.classList.add(`sel-${type}`);
+  updateAdjPreview();
+}
+
+function saveIngredient() {
+  const name  = document.getElementById('add-name').value.trim();
+  if (!name) { alert('Please enter an ingredient name.'); return; }
+  const newItem = {
+    id: 'ING-' + String(INVENTORY.length + 1).padStart(3, '0'),
+    name,
+    sku:       document.getElementById('add-sku').value || 'AUTO',
+    category:  document.getElementById('add-cat').value,
+    brand:     document.getElementById('add-brand').value,
+    unit:      document.getElementById('add-unit').value,
+    stock:     parseFloat(document.getElementById('add-stock').value) || 0,
+    min_stock: parseFloat(document.getElementById('add-min').value)   || 0,
+    max_stock: parseFloat(document.getElementById('add-max').value)   || 100,
+    unit_cost: parseFloat(document.getElementById('add-cost').value)  || 0,
+    supplier:  '',
+  };
+  INVENTORY.push(newItem);
+  closeModal('add-modal');
+  renderInventory();
+}
+
+function saveAdjustment() {
+  const ingId = document.getElementById('adj-ingredient').value;
+  const qty   = parseFloat(document.getElementById('adj-qty').value);
+  const note  = document.getElementById('adj-note').value;
+  if (!qty || isNaN(qty)) { alert('Please enter a quantity.'); return; }
+
+  const item  = INVENTORY.find(i => i.id === ingId);
+  if (!item) return;
+
+  const delta = adjType === 'deduct' || adjType === 'waste' ? -Math.abs(qty) : Math.abs(qty);
+  item.stock  = Math.max(0, item.stock + delta);
+
+  TRANSACTIONS.push({
+    id: 'TXN-' + String(TRANSACTIONS.length + 1).padStart(3, '0'),
+    ingredient_id: ingId,
+    ingredient_name: item.name,
+    type: adjType === 'deduct' ? 'deduct' : adjType,
+    qty: delta,
+    date: new Date().toISOString().slice(0,16).replace('T',' '),
+    note: note || '—',
+    unit: item.unit,
+  });
+
+  closeModal('adjust-modal');
+  renderInventory();
+}
+
+function saveSupplier() {
+  const name = document.getElementById('sup-name').value.trim();
+  if (!name) { alert('Please enter supplier name.'); return; }
+  SUPPLIERS.push({
+    id: 'SUP-' + String(SUPPLIERS.length + 1).padStart(3, '0'),
+    name,
+    contact: document.getElementById('sup-contact').value,
+    phone: document.getElementById('sup-phone').value,
+    terms: document.getElementById('sup-terms').value,
+    last_order: '—',
+    products: document.getElementById('sup-products').value,
+  });
+  closeModal('supplier-modal');
+  renderSuppliers();
+}
+
+function editItem(id) {
+  const item = INVENTORY.find(i => i.id === id);
+  if (!item) return;
+  document.getElementById('edit-modal-body').innerHTML = `
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input class="form-input" type="text" id="ei-name" value="${item.name}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unit Cost (฿)</label>
+        <input class="form-input" type="number" id="ei-cost" value="${item.unit_cost}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Min Stock</label>
+        <input class="form-input" type="number" id="ei-min" value="${item.min_stock}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max Stock</label>
+        <input class="form-input" type="number" id="ei-max" value="${item.max_stock}">
+      </div>
+    </div>
+    <div class="form-footer">
+      <button class="btn btn-ghost" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="applyEdit('${id}')">Save Changes</button>
+    </div>
+  `;
+  openModal('edit-modal');
+}
+
+function applyEdit(id) {
+  const item = INVENTORY.find(i => i.id === id);
+  if (!item) return;
+  item.name       = document.getElementById('ei-name').value || item.name;
+  item.unit_cost  = parseFloat(document.getElementById('ei-cost').value) || item.unit_cost;
+  item.min_stock  = parseFloat(document.getElementById('ei-min').value)  || item.min_stock;
+  item.max_stock  = parseFloat(document.getElementById('ei-max').value)  || item.max_stock;
+  closeModal('edit-modal');
+  renderInventory();
+}
+
+function deleteItem(id) {
+  if (!confirm('Delete this ingredient?')) return;
+  const idx = INVENTORY.findIndex(i => i.id === id);
+  if (idx !== -1) INVENTORY.splice(idx, 1);
+  renderInventory();
+}
+
+function exportCSV() {
+  const items = getFilteredInventory();
+  const rows = [['ID','Name','SKU','Category','Brand','Unit','Stock','Min Stock','Max Stock','Unit Cost','Total Value']];
+  items.forEach(i => rows.push([i.id,i.name,i.sku,i.category,i.brand,i.unit,i.stock,i.min_stock,i.max_stock,i.unit_cost,(i.stock*i.unit_cost).toFixed(2)]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `inventory_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+
+// INIT — handled by DOMContentLoaded → loadInventoryData()
+</script>
+<script src="api.js"></script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrewOS — Staff</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1B4332;--green2:#2D6A4F;--orange:#F97316;--bg:#f8f7f4;--card:#fff;--border:#e8e4de;--text:#1a1a1a;--muted:#6b7280;--sidebar:220px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar);background:#fff;border-right:1.5px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.logo-mark{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700;}
+.logo-sub{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.brand-chip{margin:12px 20px 0;background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--green);font-weight:700;}
+nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.nav-section{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;margin-top:8px;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--green);font-weight:700;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:1px;cursor:pointer;}
+.nav-link:hover{background:var(--bg);color:var(--green);}
+.nav-link.active{background:rgba(45,106,79,.08);color:var(--green);font-weight:600;}
+.nav-link .icon{width:16px;text-align:center;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);}
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;}
+.topbar-left p{font-size:12px;color:var(--muted);}
+.btn{padding:8px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-primary{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(249,115,22,0.3);}
+.btn-primary:hover{background:#ea580c;}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{background:var(--bg);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.content{padding:24px 28px;flex:1;}
+
+/* layout: list + detail */
+.staff-layout{display:grid;grid-template-columns:360px 1fr;gap:20px;height:calc(100vh - 108px);}
+.staff-list{background:#fff;border:1px solid var(--border);border-radius:14px;display:flex;flex-direction:column;overflow:hidden;}
+.list-header{padding:16px;border-bottom:1px solid var(--border);}
+.search-box{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:10px;}
+.search-box:focus{border-color:var(--green);}
+.role-filter{display:flex;gap:4px;flex-wrap:wrap;}
+.rf-btn{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--muted);transition:all 0.2s;}
+.rf-btn.active{background:var(--green);color:#fff;border-color:var(--green);}
+.staff-items{flex:1;overflow-y:auto;}
+.staff-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+.staff-item:hover{background:var(--bg);}
+.staff-item.active{background:#f0fdf4;border-left:3px solid var(--green);}
+.staff-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;color:#fff;}
+.staff-info{flex:1;min-width:0;}
+.staff-name{font-size:14px;font-weight:600;color:var(--text);}
+.staff-role{font-size:12px;color:var(--muted);}
+.staff-status{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.status-on{background:#22c55e;}
+.status-off{background:#d1d5db;}
+
+/* detail panel */
+.staff-detail{background:#fff;border:1px solid var(--border);border-radius:14px;overflow-y:auto;}
+.detail-hero{background:linear-gradient(135deg,var(--green),var(--green2));padding:28px;color:#fff;position:relative;}
+.detail-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.hero-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;background:rgba(255,255,255,0.2);border:3px solid rgba(255,255,255,0.3);margin-bottom:14px;}
+.hero-name{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px;}
+.hero-role{font-size:13px;opacity:0.75;margin-bottom:16px;}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.hero-chip{background:rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;font-size:11px;font-weight:500;}
+.detail-body{padding:24px;}
+.section-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+.info-item label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px;}
+.info-item span{font-size:14px;font-weight:500;color:var(--text);}
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-box{background:var(--bg);border-radius:10px;padding:14px;text-align:center;}
+.stat-box-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+.stat-box-value{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;}
+.stat-box-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* schedule */
+.schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:24px;}
+.sched-day{text-align:center;}
+.sched-day-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.sched-slot{padding:8px 4px;border-radius:6px;font-size:10px;font-weight:600;text-align:center;}
+.sched-work{background:#dcfce7;color:#16a34a;}
+.sched-off{background:var(--bg);color:var(--muted);}
+.sched-partial{background:#fef3c7;color:#d97706;}
+
+/* recent shifts */
+.shift-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.shift-item:last-child{border-bottom:none;}
+.shift-date{font-size:12px;color:var(--muted);width:80px;flex-shrink:0;}
+.shift-time{font-size:13px;font-weight:500;flex:1;}
+.shift-hours{font-size:13px;font-weight:600;color:var(--green);}
+.shift-sales{font-size:12px;color:var(--muted);width:80px;text-align:right;}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:20px;width:540px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-header{padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:20px 24px;}
+.modal-footer{padding:0 24px 24px;display:flex;gap:10px;justify-content:flex-end;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;}
+.form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all 0.2s;}
+.form-control:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(27,67,50,0.1);}
+
+.badge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.badge-owner{background:#fef3c7;color:#d97706;}
+.badge-manager{background:#dbeafe;color:#2563eb;}
+.badge-staff{background:#dcfce7;color:#16a34a;}
+.badge-cashier{background:#f3e8ff;color:#9333ea;}
+.badge-baker{background:#fce7f3;color:#db2777;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">BrewOS</div>
+    <div class="logo-sub">Back Office</div>
+    <div class="brand-chip">All Brands</div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-link" href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a class="nav-link" href="pos.html"><span class="icon">🖥️</span> POS System</a>
+    <a class="nav-link" href="orders.html"><span class="icon">🧾</span> Orders</a>
+    <a class="nav-link" href="kitchen.html"><span class="icon">👨‍🍳</span> Kitchen Display</a>
+    <div class="nav-section">Operations</div>
+    <a class="nav-link" href="inventory.html"><span class="icon">📦</span> Inventory</a>
+    <a class="nav-link" href="recipe.html"><span class="icon">📋</span> Recipes</a>
+    <a class="nav-link" href="production.html"><span class="icon">🏭</span> Production</a>
+    <div class="nav-section">Business</div>
+    <a class="nav-link" href="crm.html"><span class="icon">👥</span> CRM / Members</a>
+    <a class="nav-link" href="finance.html"><span class="icon">💰</span> Finance</a>
+    <a class="nav-link" href="reports.html"><span class="icon">📈</span> Reports</a>
+    <div class="nav-section">Admin</div>
+    <a class="nav-link active" href="staff.html"><span class="icon">🧑‍🍳</span> Staff</a>
+    <a class="nav-link" href="brand_editor.html"><span class="icon">🎨</span> Brand &amp; Menu</a>
+    <a class="nav-link" href="settings.html"><span class="icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;">A</div>
+      <div><div style="font-size:12px;color:#4a6741;font-weight:500;">Admin</div><div style="font-size:10px;color:#4a6741;">Owner</div></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2>Staff Management</h2>
+      <p>8 staff members · 5 currently on shift</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <button class="btn btn-outline btn-sm">📋 Schedule View</button>
+      <button class="btn btn-outline btn-sm">⬇ Export</button>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Staff</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="staff-layout">
+      <!-- List -->
+      <div class="staff-list">
+        <div class="list-header">
+          <input class="search-box" placeholder="Search staff..." oninput="filterStaff(this.value)">
+          <div class="role-filter">
+            <button class="rf-btn active" onclick="filterRole('all',this)">All</button>
+            <button class="rf-btn" onclick="filterRole('owner',this)">Owner</button>
+            <button class="rf-btn" onclick="filterRole('manager',this)">Manager</button>
+            <button class="rf-btn" onclick="filterRole('cashier',this)">Cashier</button>
+            <button class="rf-btn" onclick="filterRole('baker',this)">Baker</button>
+          </div>
+        </div>
+        <div class="staff-items" id="staffItems"></div>
+      </div>
+
+      <!-- Detail -->
+      <div class="staff-detail" id="staffDetail">
+        <div class="detail-hero">
+          <div class="hero-avatar" id="detailAvatar">N</div>
+          <div class="hero-name" id="detailName">Nong Saowalak</div>
+          <div class="hero-role" id="detailRoleStr">Head Barista · Brain Brew</div>
+          <div class="hero-chips">
+            <span class="hero-chip" id="detailBrand">Brain Brew</span>
+            <span class="hero-chip" id="detailStatus2">🟢 On Shift</span>
+            <span class="hero-chip" id="detailSince">Since Jan 2025</span>
+          </div>
+        </div>
+        <div class="detail-body">
+          <div class="stat-strip">
+            <div class="stat-box"><div class="stat-box-label">Shifts This Month</div><div class="stat-box-value" id="dShifts">22</div><div class="stat-box-sub">of 26 days</div></div>
+            <div class="stat-box"><div class="stat-box-label">Total Hours</div><div class="stat-box-value" id="dHours">176h</div><div class="stat-box-sub">Avg 8h/day</div></div>
+            <div class="stat-box"><div class="stat-box-label">Sales Processed</div><div class="stat-box-value" id="dSales">฿148k</div><div class="stat-box-sub">This month</div></div>
+            <div class="stat-box"><div class="stat-box-label">Performance</div><div class="stat-box-value" id="dPerf">⭐ 4.8</div><div class="stat-box-sub">Team avg: 4.2</div></div>
+          </div>
+
+          <div class="section-title">Personal Information</div>
+          <div class="info-grid">
+            <div class="info-item"><label>Full Name</label><span id="dFullName">Nong Saowalak Thongma</span></div>
+            <div class="info-item"><label>Phone</label><span id="dPhone">081-234-5678</span></div>
+            <div class="info-item"><label>Email</label><span id="dEmail">nong@brewos.app</span></div>
+            <div class="info-item"><label>Start Date</label><span id="dStart">Jan 15, 2025</span></div>
+            <div class="info-item"><label>Role</label><span><span class="badge" id="dBadge" style="background:#dcfce7;color:#16a34a;">Head Barista</span></span></div>
+            <div class="info-item"><label>Brand</label><span id="dBrandName">Brain Brew Coffee</span></div>
+            <div class="info-item"><label>Salary</label><span id="dSalary">฿18,000 / month</span></div>
+            <div class="info-item"><label>Contract</label><span id="dContract">Full-time</span></div>
+          </div>
+
+          <div class="section-title">This Week's Schedule</div>
+          <div class="schedule-grid">
+            <div class="sched-day"><div class="sched-day-label">Mon</div><div class="sched-slot sched-work">08–17</div></div>
+            <div class="sched-day"><div class="sched-day-label">Tue</div><div class="sched-slot sched-work">08–17</div></div>
+            <div class="sched-day"><div class="sched-day-label">Wed</div><div class="sched-slot sched-work">08–17</div></div>
+            <div class="sched-day"><div class="sched-day-label">Thu</div><div class="sched-slot sched-work">08–17</div></div>
+            <div class="sched-day"><div class="sched-day-label">Fri</div><div class="sched-slot sched-off">OFF</div></div>
+            <div class="sched-day"><div class="sched-day-label">Sat</div><div class="sched-slot sched-work">09–18</div></div>
+            <div class="sched-day"><div class="sched-day-label">Sun</div><div class="sched-slot sched-work">09–18</div></div>
+          </div>
+
+          <div class="section-title">Recent Shifts</div>
+          <div>
+            <div class="shift-item"><div class="shift-date">Today</div><div class="shift-time">08:02 – present</div><div class="shift-hours">~7h</div><div class="shift-sales">฿14,200</div></div>
+            <div class="shift-item"><div class="shift-date">Tue May 26</div><div class="shift-time">08:05 – 17:12</div><div class="shift-hours">9.1h</div><div class="shift-sales">฿18,400</div></div>
+            <div class="shift-item"><div class="shift-date">Mon May 25</div><div class="shift-time">08:00 – 17:00</div><div class="shift-hours">9.0h</div><div class="shift-sales">฿16,800</div></div>
+            <div class="shift-item"><div class="shift-date">Sun May 24</div><div class="shift-time">09:00 – 18:15</div><div class="shift-hours">9.2h</div><div class="shift-sales">฿19,200</div></div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:20px;">
+            <button class="btn btn-primary btn-sm" onclick="editStaff()">Edit Details</button>
+            <button class="btn btn-outline btn-sm">🔑 Reset Password</button>
+            <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fca5a5;">Deactivate</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Staff Modal -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Staff Member</div>
+      <button class="modal-close" onclick="closeAddModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First Name</label><input class="form-control" placeholder="First name"></div>
+        <div class="form-group"><label class="form-label">Last Name</label><input class="form-control" placeholder="Last name"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-control" placeholder="08X-XXX-XXXX"></div>
+        <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" placeholder="email@brewos.app"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Role</label><select class="form-control"><option>Cashier</option><option>Barista</option><option>Head Barista</option><option>Baker</option><option>Manager</option><option>Owner</option></select></div>
+        <div class="form-group"><label class="form-label">Brand</label><select class="form-control"><option>Brain Brew Coffee</option><option>Heng Heng Phanit</option><option>Both Brands</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Contract Type</label><select class="form-control"><option>Full-time</option><option>Part-time</option><option>Freelance</option></select></div>
+        <div class="form-group"><label class="form-label">Salary (฿/month)</label><input class="form-control" type="number" placeholder="15000"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Start Date</label><input class="form-control" type="date"></div>
+        <div class="form-group"><label class="form-label">Temp Password</label><input class="form-control" type="password" placeholder="Set initial password"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeAddModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStaff()">Add Staff Member</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STAFF = [
+  {id:1,name:'Nong Saowalak',role:'Head Barista',brand:'Brain Brew',status:'on',avatar:'N',color:'#1B4332',phone:'081-234-5678',email:'nong@brewos.app',salary:'฿18,000',contract:'Full-time',start:'Jan 15, 2025',shifts:22,hours:'176h',sales:'฿148k',perf:'⭐ 4.8'},
+  {id:2,name:'Khun Arthit',role:'Baker',brand:'Heng Heng',status:'on',avatar:'A',color:'#2D6A4F',phone:'082-345-6789',email:'arthit@brewos.app',salary:'฿16,000',contract:'Full-time',start:'Mar 1, 2024',shifts:24,hours:'192h',sales:'—',perf:'⭐ 4.6'},
+  {id:3,name:'Mint Chanida',role:'Baker',brand:'Heng Heng',status:'on',avatar:'M',color:'#40916C',phone:'083-456-7890',email:'mint@brewos.app',salary:'฿15,500',contract:'Full-time',start:'Jun 12, 2024',shifts:20,hours:'160h',sales:'—',perf:'⭐ 4.5'},
+  {id:4,name:'Pan Siriporn',role:'Cashier',brand:'Brain Brew',status:'on',avatar:'P',color:'#F97316',phone:'084-567-8901',email:'pan@brewos.app',salary:'฿14,000',contract:'Full-time',start:'Sep 5, 2025',shifts:18,hours:'144h',sales:'฿82k',perf:'⭐ 4.2'},
+  {id:5,name:'Bank Wittawat',role:'Barista',brand:'Brain Brew',status:'on',avatar:'B',color:'#ea580c',phone:'085-678-9012',email:'bank@brewos.app',salary:'฿15,000',contract:'Full-time',start:'Nov 20, 2024',shifts:21,hours:'168h',sales:'฿124k',perf:'⭐ 4.4'},
+  {id:6,name:'Nam Suphansa',role:'Cashier',brand:'Heng Heng',status:'off',avatar:'Na',color:'#6b7280',phone:'086-789-0123',email:'nam@brewos.app',salary:'฿13,500',contract:'Part-time',start:'Feb 10, 2026',shifts:12,hours:'96h',sales:'฿48k',perf:'⭐ 3.9'},
+  {id:7,name:'Fon Kanokporn',role:'Manager',brand:'Both',status:'off',avatar:'F',color:'#7c3aed',phone:'087-890-1234',email:'fon@brewos.app',salary:'฿28,000',contract:'Full-time',start:'Jan 1, 2024',shifts:22,hours:'180h',sales:'฿186k',perf:'⭐ 4.9'},
+  {id:8,name:'Admin Owner',role:'Owner',brand:'Both',status:'on',avatar:'A',color:'#1B4332',phone:'088-901-2345',email:'owner@brewos.app',salary:'—',contract:'Owner',start:'Jan 1, 2024',shifts:26,hours:'—',sales:'—',perf:'⭐ 5.0'},
+];
+
+let activeId = 1;
+let currentFilter = 'all';
+let searchQ = '';
+
+function renderList() {
+  const items = document.getElementById('staffItems');
+  const filtered = STAFF.filter(s => {
+    const matchRole = currentFilter === 'all' || s.role.toLowerCase().includes(currentFilter);
+    const matchQ = s.name.toLowerCase().includes(searchQ) || s.role.toLowerCase().includes(searchQ);
+    return matchRole && matchQ;
+  });
+  items.innerHTML = filtered.map(s => `
+    <div class="staff-item ${s.id === activeId ? 'active' : ''}" onclick="selectStaff(${s.id})">
+      <div class="staff-avatar" style="background:${s.color}">${s.avatar}</div>
+      <div class="staff-info">
+        <div class="staff-name">${s.name}</div>
+        <div class="staff-role">${s.role} · ${s.brand}</div>
+      </div>
+      <div class="staff-status ${s.status === 'on' ? 'status-on' : 'status-off'}"></div>
+    </div>`).join('');
+}
+
+function selectStaff(id) {
+  activeId = id;
+  const s = STAFF.find(x => x.id === id);
+  renderList();
+  document.getElementById('detailAvatar').textContent = s.avatar;
+  document.getElementById('detailAvatar').style.background = 'rgba(255,255,255,0.2)';
+  document.getElementById('detailName').textContent = s.name;
+  document.getElementById('detailRoleStr').textContent = s.role + ' · ' + s.brand;
+  document.getElementById('detailBrand').textContent = s.brand;
+  document.getElementById('detailStatus2').textContent = s.status === 'on' ? '🟢 On Shift' : '⚫ Off Shift';
+  document.getElementById('detailSince').textContent = 'Since ' + s.start.split(',')[1]?.trim() || s.start;
+  document.getElementById('dShifts').textContent = s.shifts;
+  document.getElementById('dHours').textContent = s.hours;
+  document.getElementById('dSales').textContent = s.sales;
+  document.getElementById('dPerf').textContent = s.perf;
+  document.getElementById('dFullName').textContent = s.name;
+  document.getElementById('dPhone').textContent = s.phone;
+  document.getElementById('dEmail').textContent = s.email;
+  document.getElementById('dStart').textContent = s.start;
+  document.getElementById('dBadge').textContent = s.role;
+  document.getElementById('dBrandName').textContent = s.brand === 'Both' ? 'Both Brands' : s.brand + (s.brand === 'Brain Brew' ? ' Coffee' : ' Phanit');
+  document.getElementById('dSalary').textContent = s.salary;
+  document.getElementById('dContract').textContent = s.contract;
+}
+
+function filterRole(r, el) {
+  currentFilter = r;
+  document.querySelectorAll('.rf-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderList();
+}
+
+function filterStaff(q) { searchQ = q.toLowerCase(); renderList(); }
+function openAddModal(){document.getElementById('addModal').classList.add('open');}
+function closeAddModal(){document.getElementById('addModal').classList.remove('open');}
+async function saveStaff(formData) {
+  try {
+    await API.createStaff(formData || {});
+    UI.toast('Staff member added!');
+    await loadStaffData();
+  } catch(e) { UI.toast('Error: ' + e.message, 'error'); }
+  closeAddModal();
+}
+function editStaff(){openAddModal();}
+
+async function loadStaffData() {
+  try {
+    const data = await API.staff();
+    if (data && data.length) {
+      // Merge API data over static STAFF array, using id as key
+      data.forEach(s => {
+        const idx = STAFF.findIndex(x => x.id === (s.id || s.staff_id));
+        const norm = {
+          id: s.id || s.staff_id || STAFF.length + 1,
+          name: s.name, role: s.role, brand: s.brand_id === 'BOTH' ? 'Both' : s.brand_id === 'HH' ? 'Heng Heng' : 'Brain Brew',
+          status: s.status || 'off', avatar: (s.name||'?')[0].toUpperCase(),
+          color: s.brand_id === 'HH' ? '#2D6A4F' : '#1B4332',
+          phone: s.phone || '—', email: s.email || '—',
+          salary: s.salary ? '฿' + s.salary.toLocaleString() : '—',
+          contract: s.contract || 'Full-time', start: s.start_date || '—',
+          shifts: s.shifts_this_month || 0, hours: (s.hours_this_month || 0) + 'h',
+          sales: s.sales_this_month ? '฿' + Math.round(s.sales_this_month/1000) + 'k' : '—',
+          perf: '⭐ ' + (s.rating || 4.5),
+        };
+        if (idx >= 0) STAFF[idx] = norm; else STAFF.push(norm);
+      });
+    }
+  } catch(e) { /* keep static STAFF */ }
+  renderList();
+  if (STAFF.length) selectStaff(STAFF[0].id);
+}
+
+document.addEventListener('DOMContentLoaded', loadStaffData);
+</script>
+<script src="api.js"></script>
+</body>
+</html>

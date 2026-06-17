@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrewOS — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1B4332;--green2:#2D6A4F;--orange:#F97316;--bg:#f8f7f4;--card:#fff;--border:#e8e4de;--text:#1a1a1a;--muted:#6b7280;--sidebar:220px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar);background:#fff;border-right:1.5px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.logo-mark{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700;}
+.logo-sub{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.brand-chip{margin:12px 20px 0;background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--green);font-weight:700;}
+nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.nav-section{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;margin-top:8px;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--green);font-weight:700;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:1px;cursor:pointer;}
+.nav-link:hover{background:var(--bg);color:var(--green);}
+.nav-link.active{background:rgba(45,106,79,.08);color:var(--green);font-weight:600;}
+.nav-link .icon{width:16px;text-align:center;}
+.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);}
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;}
+.topbar-left p{font-size:12px;color:var(--muted);}
+.btn{padding:8px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-primary{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(249,115,22,0.3);}
+.btn-primary:hover{background:#ea580c;}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{background:var(--bg);}
+.btn-danger{background:#ef4444;color:#fff;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.content{padding:24px 28px;flex:1;}
+
+/* layout */
+.settings-layout{display:grid;grid-template-columns:220px 1fr;gap:20px;}
+.settings-nav{background:#fff;border:1px solid var(--border);border-radius:14px;padding:8px;position:sticky;top:84px;height:fit-content;}
+.settings-nav-item{padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;gap:10px;}
+.settings-nav-item:hover{background:var(--bg);color:var(--text);}
+.settings-nav-item.active{background:#f0fdf4;color:var(--green);font-weight:600;}
+.settings-nav-section{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:10px 12px 4px;font-weight:600;}
+
+/* panels */
+.settings-panel{display:none;flex-direction:column;gap:20px;}
+.settings-panel.active{display:flex;}
+.settings-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.card-header{padding:18px 22px;border-bottom:1px solid var(--border);}
+.card-header h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;}
+.card-header p{font-size:12px;color:var(--muted);margin-top:3px;}
+.card-body{padding:20px 22px;}
+.card-footer{padding:14px 22px;border-top:1px solid var(--border);background:var(--bg);display:flex;justify-content:flex-end;gap:8px;}
+
+/* form elements */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-group{margin-bottom:16px;}
+.form-group:last-child{margin-bottom:0;}
+.form-label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;}
+.form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all 0.2s;color:var(--text);}
+.form-control:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(27,67,50,0.1);}
+.form-hint{font-size:11px;color:var(--muted);margin-top:5px;}
+
+/* toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info h4{font-size:14px;font-weight:500;margin-bottom:2px;}
+.toggle-info p{font-size:12px;color:var(--muted);}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#d1d5db;border-radius:24px;cursor:pointer;transition:0.3s;}
+.toggle-slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+input:checked+.toggle-slider{background:var(--green);}
+input:checked+.toggle-slider::before{transform:translateX(20px);}
+
+/* brand card */
+.brand-config{border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;transition:border-color 0.2s;}
+.brand-config:hover{border-color:var(--green2);}
+.brand-config-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.brand-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.brand-name-label{font-size:14px;font-weight:600;margin-left:10px;}
+
+/* tax display */
+.tax-preview{background:var(--bg);border-radius:10px;padding:14px;margin-top:12px;font-size:13px;}
+.tax-row{display:flex;justify-content:space-between;padding:4px 0;}
+.tax-row.total{font-weight:700;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;}
+
+/* receipt preview */
+.receipt-preview{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;font-family:'Courier New',monospace;font-size:11px;line-height:2;}
+.rp-center{text-align:center;}
+.rp-line{border-top:1px dashed var(--border);margin:6px 0;}
+.rp-row{display:flex;justify-content:space-between;}
+
+/* danger zone */
+.danger-zone{border:1px solid #fecaca;border-radius:14px;padding:20px;}
+.danger-zone h3{font-size:14px;font-weight:600;color:#dc2626;margin-bottom:4px;}
+.danger-zone p{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.danger-actions{display:flex;gap:10px;flex-wrap:wrap;}
+
+/* loyalty tiers */
+.tier-row{display:grid;grid-template-columns:30px 120px 120px 120px 1fr;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.tier-row:last-child{border-bottom:none;}
+.tier-row.header{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;}
+.tier-dot{width:10px;height:10px;border-radius:50%;}
+
+/* API config */
+.api-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);}
+.api-row:last-child{border-bottom:none;}
+.api-label{font-size:13px;font-weight:500;width:160px;flex-shrink:0;}
+.api-value{flex:1;font-size:12px;color:var(--muted);font-family:'Courier New',monospace;background:var(--bg);padding:6px 10px;border-radius:6px;word-break:break-all;}
+.api-copy{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer;white-space:nowrap;}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">BrewOS</div>
+    <div class="logo-sub">Back Office</div>
+    <div class="brand-chip">All Brands</div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-link" href="dashboard.html"><span class="icon">📊</span> Dashboard</a>
+    <a class="nav-link" href="pos.html"><span class="icon">🖥️</span> POS System</a>
+    <a class="nav-link" href="orders.html"><span class="icon">🧾</span> Orders</a>
+    <a class="nav-link" href="kitchen.html"><span class="icon">👨‍🍳</span> Kitchen Display</a>
+    <div class="nav-section">Operations</div>
+    <a class="nav-link" href="inventory.html"><span class="icon">📦</span> Inventory</a>
+    <a class="nav-link" href="recipe.html"><span class="icon">📋</span> Recipes</a>
+    <a class="nav-link" href="production.html"><span class="icon">🏭</span> Production</a>
+    <div class="nav-section">Business</div>
+    <a class="nav-link" href="crm.html"><span class="icon">👥</span> CRM / Members</a>
+    <a class="nav-link" href="finance.html"><span class="icon">💰</span> Finance</a>
+    <a class="nav-link" href="reports.html"><span class="icon">📈</span> Reports</a>
+    <div class="nav-section">Admin</div>
+    <a class="nav-link" href="staff.html"><span class="icon">🧑‍🍳</span> Staff</a>
+    <a class="nav-link active" href="settings.html"><span class="icon">⚙️</span> Settings</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;">A</div>
+      <div><div style="font-size:12px;color:#4a6741;font-weight:500;">Admin</div><div style="font-size:10px;color:#4a6741;">Owner</div></div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2>Settings</h2>
+      <p>System configuration & preferences</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline btn-sm">↩ Discard Changes</button>
+      <button class="btn btn-primary" onclick="saveSettings()">Save All Settings</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="settings-layout">
+
+      <!-- Settings Nav -->
+      <div class="settings-nav">
+        <div class="settings-nav-section">General</div>
+        <div class="settings-nav-item active" onclick="showPanel('brands',this)">🏢 Brands</div>
+        <div class="settings-nav-item" onclick="showPanel('pos',this)">🖥️ POS Settings</div>
+        <div class="settings-nav-item" onclick="showPanel('tax',this)">🧾 Tax & Charges</div>
+        <div class="settings-nav-item" onclick="showPanel('receipt',this)">🖨 Receipt</div>
+        <div class="settings-nav-section">Business</div>
+        <div class="settings-nav-item" onclick="showPanel('loyalty',this)">⭐ Loyalty Program</div>
+        <div class="settings-nav-item" onclick="showPanel('inventory',this)">📦 Inventory Alerts</div>
+        <div class="settings-nav-item" onclick="showPanel('payments',this)">💳 Payments</div>
+        <div class="settings-nav-section">System</div>
+        <div class="settings-nav-item" onclick="showPanel('api',this)">🔗 API & Integration</div>
+        <div class="settings-nav-item" onclick="showPanel('security',this)">🔒 Security</div>
+        <div class="settings-nav-item" onclick="showPanel('danger',this)" style="color:#ef4444;">⚠️ Danger Zone</div>
+      </div>
+
+      <!-- Panels -->
+      <div>
+
+        <!-- Brands -->
+        <div class="settings-panel active" id="panel-brands">
+          <div class="settings-card">
+            <div class="card-header"><h3>Brand Configuration</h3><p>Manage your brand profiles and settings</p></div>
+            <div class="card-body">
+              <div class="brand-config">
+                <div class="brand-config-header">
+                  <div style="display:flex;align-items:center;">
+                    <div class="brand-icon" style="background:#f0fdf4;">☕</div>
+                    <span class="brand-name-label">Brain Brew Coffee</span>
+                  </div>
+                  <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600;">Active</span>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Brand Name</label><input class="form-control" value="Brain Brew Coffee"></div>
+                  <div class="form-group"><label class="form-label">Tagline</label><input class="form-control" value="Specialty Coffee · Neuroscience Inspired"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Primary Color</label><div style="display:flex;gap:8px;"><input class="form-control" value="#1B4332" style="flex:1;"><input type="color" value="#1B4332" style="width:44px;height:40px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"></div></div>
+                  <div class="form-group"><label class="form-label">Accent Color</label><div style="display:flex;gap:8px;"><input class="form-control" value="#F97316" style="flex:1;"><input type="color" value="#F97316" style="width:44px;height:40px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"></div></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Address</label><input class="form-control" value="123 Sathorn Rd, Bangkok 10120"></div>
+                  <div class="form-group"><label class="form-label">Phone</label><input class="form-control" value="02-123-4567"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Tax ID</label><input class="form-control" value="0-1234-56789-01-2"></div>
+                  <div class="form-group"><label class="form-label">Email</label><input class="form-control" value="hello@brainbrew.co.th"></div>
+                </div>
+              </div>
+
+              <div class="brand-config">
+                <div class="brand-config-header">
+                  <div style="display:flex;align-items:center;">
+                    <div class="brand-icon" style="background:#fef6ee;">🌸</div>
+                    <span class="brand-name-label">Heng Heng Phanit</span>
+                  </div>
+                  <span style="font-size:11px;background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600;">Active</span>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Brand Name</label><input class="form-control" value="Heng Heng Phanit"></div>
+                  <div class="form-group"><label class="form-label">Tagline</label><input class="form-control" value="Artisan Bakery · Warm & Wholesome"></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Primary Color</label><div style="display:flex;gap:8px;"><input class="form-control" value="#2D6A4F" style="flex:1;"><input type="color" value="#2D6A4F" style="width:44px;height:40px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"></div></div>
+                  <div class="form-group"><label class="form-label">Accent Color</label><div style="display:flex;gap:8px;"><input class="form-control" value="#FB923C" style="flex:1;"><input type="color" value="#FB923C" style="width:44px;height:40px;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;"></div></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Brand Settings</button></div>
+          </div>
+        </div>
+
+        <!-- POS Settings -->
+        <div class="settings-panel" id="panel-pos">
+          <div class="settings-card">
+            <div class="card-header"><h3>POS Behaviour</h3><p>Configure how the point-of-sale system works</p></div>
+            <div class="card-body">
+              <div class="toggle-row"><div class="toggle-info"><h4>Require Customer Selection</h4><p>Force cashier to look up or create customer before checkout</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Auto-apply Loyalty Points</h4><p>Automatically redeem loyalty discount when applicable</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Print Receipt on Every Order</h4><p>Auto-print to thermal printer after payment</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Allow Discount Without Manager</h4><p>Cashiers can apply discounts without manager approval</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Require Table Number for Dine In</h4><p>Table number is mandatory for dine-in orders</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Sound Alerts</h4><p>Play sound when order is completed</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+            </div>
+            <div class="card-body" style="border-top:1px solid var(--border);">
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Max Discount %</label><input class="form-control" type="number" value="20"><div class="form-hint">Maximum discount a cashier can apply</div></div>
+                <div class="form-group"><label class="form-label">Order Prefix (Brain Brew)</label><input class="form-control" value="BB-"><div class="form-hint">Prefix for order IDs</div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Order Prefix (Heng Heng)</label><input class="form-control" value="HH-"><div class="form-hint">Prefix for order IDs</div></div>
+                <div class="form-group"><label class="form-label">Number of Tables</label><input class="form-control" type="number" value="20"><div class="form-hint">Total tables in the venue</div></div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save POS Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Tax -->
+        <div class="settings-panel" id="panel-tax">
+          <div class="settings-card">
+            <div class="card-header"><h3>Tax & Service Charges</h3><p>Configure tax and service charge rates per brand</p></div>
+            <div class="card-body">
+              <div style="margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:12px;">☕ Brain Brew Coffee</div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">VAT Rate (%)</label><input class="form-control" type="number" value="7"><div class="form-hint">Thai standard VAT</div></div>
+                  <div class="form-group"><label class="form-label">Service Charge (%)</label><input class="form-control" type="number" value="10"><div class="form-hint">Applied to dine-in orders</div></div>
+                </div>
+                <div class="toggle-row" style="padding:10px 0;"><div class="toggle-info"><h4>Apply Service Charge to Takeaway</h4><p>Also charge service fee for takeaway orders</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+                <div class="toggle-row" style="padding:10px 0;"><div class="toggle-info"><h4>Prices are VAT-inclusive</h4><p>Display prices already include VAT</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              </div>
+
+              <div style="border-top:1px solid var(--border);padding-top:20px;margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:600;margin-bottom:12px;">🌸 Heng Heng Phanit</div>
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">VAT Rate (%)</label><input class="form-control" type="number" value="7"></div>
+                  <div class="form-group"><label class="form-label">Service Charge (%)</label><input class="form-control" type="number" value="0"><div class="form-hint">0 = No service charge</div></div>
+                </div>
+              </div>
+
+              <div class="tax-preview">
+                <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;">Preview — ฿100 item (Brain Brew, Dine In)</div>
+                <div class="tax-row"><span>Subtotal</span><span>฿100.00</span></div>
+                <div class="tax-row"><span>Service Charge (10%)</span><span>฿10.00</span></div>
+                <div class="tax-row"><span>VAT (7%)</span><span>฿7.00</span></div>
+                <div class="tax-row total"><span>Total</span><span>฿117.00</span></div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Tax Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Receipt -->
+        <div class="settings-panel" id="panel-receipt">
+          <div class="settings-card">
+            <div class="card-header"><h3>Receipt Configuration</h3><p>Customize what appears on printed and digital receipts</p></div>
+            <div class="card-body" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+              <div>
+                <div class="form-group"><label class="form-label">Receipt Header</label><textarea class="form-control" rows="3">Brain Brew Coffee
+Specialty Since 2024
+Tel: 02-123-4567</textarea></div>
+                <div class="form-group"><label class="form-label">Receipt Footer</label><textarea class="form-control" rows="3">Thank you for your visit!
+Follow us @brainbrew.bkk
+WiFi: BrewGuest / Pass: coffee123</textarea></div>
+                <div class="toggle-row" style="padding:10px 0;"><div class="toggle-info"><h4>Show Loyalty Points Earned</h4></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="toggle-row" style="padding:10px 0;"><div class="toggle-info"><h4>Show QR Code for Member App</h4></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+                <div class="toggle-row" style="padding:10px 0;"><div class="toggle-info"><h4>Show Item Modifiers</h4></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+                <div class="form-group" style="margin-top:12px;"><label class="form-label">Paper Width</label><select class="form-control"><option>58mm</option><option selected>80mm</option></select></div>
+              </div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;">Preview</div>
+                <div class="receipt-preview">
+                  <div class="rp-center"><strong>Brain Brew Coffee</strong><br>Specialty Since 2024<br>Tel: 02-123-4567</div>
+                  <div class="rp-line"></div>
+                  <div>Order: #BB-270001</div>
+                  <div>27/05/2026 08:14</div>
+                  <div>Cashier: Nong S.</div>
+                  <div class="rp-line"></div>
+                  <div class="rp-row"><span>Neuron Latte L x2</span><span>฿180</span></div>
+                  <div style="color:#888;font-size:10px;padding-left:8px;">Oat Milk, Less Sugar</div>
+                  <div class="rp-row"><span>Butter Croissant x1</span><span>฿65</span></div>
+                  <div class="rp-line"></div>
+                  <div class="rp-row"><span>Subtotal</span><span>฿245</span></div>
+                  <div class="rp-row"><span>Service (10%)</span><span>฿24.50</span></div>
+                  <div class="rp-row"><span>VAT (7%)</span><span>฿17.15</span></div>
+                  <div class="rp-line"></div>
+                  <div class="rp-row"><strong>TOTAL</strong><strong>฿286.65</strong></div>
+                  <div class="rp-row"><span>QR PromptPay</span><span>฿286.65</span></div>
+                  <div class="rp-line"></div>
+                  <div>Points earned: +28 pts</div>
+                  <div>Balance: 1,240 pts</div>
+                  <div class="rp-line"></div>
+                  <div class="rp-center">Thank you for your visit!<br>@brainbrew.bkk</div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Receipt Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Loyalty -->
+        <div class="settings-panel" id="panel-loyalty">
+          <div class="settings-card">
+            <div class="card-header"><h3>Loyalty Program</h3><p>Configure point earning and tier thresholds</p></div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Points per ฿ Spent</label><input class="form-control" type="number" value="1"><div class="form-hint">e.g. 1 pt per ฿1 spent</div></div>
+                <div class="form-group"><label class="form-label">Min. Points to Redeem</label><input class="form-control" type="number" value="100"><div class="form-hint">Minimum points for one redemption</div></div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Points Value (฿ per 100 pts)</label><input class="form-control" type="number" value="10"><div class="form-hint">100 pts = ฿10 discount</div></div>
+                <div class="form-group"><label class="form-label">Points Expiry (months)</label><input class="form-control" type="number" value="12"><div class="form-hint">0 = never expire</div></div>
+              </div>
+              <div style="margin-top:8px;">
+                <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px;">Tier Thresholds</div>
+                <div class="tier-row header"><div></div><div>Tier</div><div>Min. Spend (฿)</div><div>Points Multiplier</div><div>Perks</div></div>
+                <div class="tier-row"><div><div class="tier-dot" style="background:#d97706;"></div></div><div>🥉 Bronze</div><div><input class="form-control" value="0" style="padding:5px 8px;font-size:12px;"></div><div><input class="form-control" value="1×" style="padding:5px 8px;font-size:12px;"></div><div style="font-size:12px;color:var(--muted);">Basic member</div></div>
+                <div class="tier-row"><div><div class="tier-dot" style="background:#94a3b8;"></div></div><div>🥈 Silver</div><div><input class="form-control" value="3,000" style="padding:5px 8px;font-size:12px;"></div><div><input class="form-control" value="1.5×" style="padding:5px 8px;font-size:12px;"></div><div style="font-size:12px;color:var(--muted);">Birthday reward</div></div>
+                <div class="tier-row"><div><div class="tier-dot" style="background:#1B4332;"></div></div><div>🥇 Gold</div><div><input class="form-control" value="10,000" style="padding:5px 8px;font-size:12px;"></div><div><input class="form-control" value="2×" style="padding:5px 8px;font-size:12px;"></div><div style="font-size:12px;color:var(--muted);">Free drink monthly</div></div>
+                <div class="tier-row"><div><div class="tier-dot" style="background:#F97316;"></div></div><div>💎 Platinum</div><div><input class="form-control" value="30,000" style="padding:5px 8px;font-size:12px;"></div><div><input class="form-control" value="3×" style="padding:5px 8px;font-size:12px;"></div><div style="font-size:12px;color:var(--muted);">VIP + concierge</div></div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Loyalty Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Inventory Alerts -->
+        <div class="settings-panel" id="panel-inventory">
+          <div class="settings-card">
+            <div class="card-header"><h3>Inventory Alerts</h3><p>Configure stock threshold notifications</p></div>
+            <div class="card-body">
+              <div class="toggle-row"><div class="toggle-info"><h4>Low Stock Email Alerts</h4><p>Send email when items reach low stock threshold</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Daily Inventory Summary</h4><p>Receive daily stock level report at 7:00 AM</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Auto-deduct on Order Complete</h4><p>Deduct ingredient stock automatically when order is paid</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Block Sale if Out of Stock</h4><p>Prevent selling items when all ingredients are depleted</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Alert Recipients (email)</label><textarea class="form-control" rows="3" placeholder="owner@brewos.app&#10;manager@brewos.app"></textarea></div>
+                  <div class="form-group"><label class="form-label">Default Low Stock %</label><input class="form-control" type="number" value="20"><div class="form-hint">Alert when stock falls below 20% of par level</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Alert Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Payments -->
+        <div class="settings-panel" id="panel-payments">
+          <div class="settings-card">
+            <div class="card-header"><h3>Payment Methods</h3><p>Enable or disable payment options at checkout</p></div>
+            <div class="card-body">
+              <div class="toggle-row"><div class="toggle-info"><h4>Cash</h4><p>Physical cash payments with change calculator</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>QR / PromptPay</h4><p>Thai QR code payment standard</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Credit / Debit Card</h4><p>Visa, Mastercard, JCB via card terminal</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Bank Transfer</h4><p>Manual bank transfer with reference number</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Store Credit / Gift Card</h4><p>Allow redemption of prepaid store credit</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+                <div class="form-group"><label class="form-label">PromptPay / Account Name</label><input class="form-control" value="Brain Brew Coffee Co., Ltd."></div>
+                <div class="form-group"><label class="form-label">PromptPay ID (Tax ID / Phone)</label><input class="form-control" value="0-1234-56789-01-2"></div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Payment Settings</button></div>
+          </div>
+        </div>
+
+        <!-- API -->
+        <div class="settings-panel" id="panel-api">
+          <div class="settings-card">
+            <div class="card-header"><h3>API & Integration</h3><p>Connect BrewOS to Google Sheets and external services</p></div>
+            <div class="card-body">
+              <div class="api-row"><div class="api-label">Apps Script URL</div><div class="api-value" id="apiUrl">https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec</div><button class="api-copy" onclick="copyApi('apiUrl')">Copy</button></div>
+              <div class="api-row"><div class="api-label">Spreadsheet ID</div><div class="api-value" id="sheetId">YOUR_SPREADSHEET_ID_HERE</div><button class="api-copy" onclick="copyApi('sheetId')">Copy</button></div>
+              <div class="api-row"><div class="api-label">API Version</div><div class="api-value">v2.0.0</div><button class="api-copy">—</button></div>
+              <div class="api-row"><div class="api-label">Last Sync</div><div class="api-value">27 May 2026, 13:42:18</div><button class="api-copy" onclick="showToast('Syncing...')">Sync Now</button></div>
+              <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px;">
+                <div class="form-group"><label class="form-label">Apps Script Web App URL</label><input class="form-control" placeholder="https://script.google.com/macros/s/..."></div>
+                <div class="form-group"><label class="form-label">Google Spreadsheet ID</label><input class="form-control" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"></div>
+                <button class="btn btn-outline btn-sm" onclick="testConnection()">🔌 Test Connection</button>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save API Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Security -->
+        <div class="settings-panel" id="panel-security">
+          <div class="settings-card">
+            <div class="card-header"><h3>Security & Access</h3><p>Manage authentication and permissions</p></div>
+            <div class="card-body">
+              <div class="toggle-row"><div class="toggle-info"><h4>Require PIN for Void Orders</h4><p>Manager PIN required to void or delete an order</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Auto-logout After Inactivity</h4><p>Log out staff after 30 minutes of inactivity</p></div><label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Cashiers Can See Sales Reports</h4><p>Allow cashier role to view daily sales data</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div class="toggle-row"><div class="toggle-info"><h4>Cashiers Can Edit Products</h4><p>Allow cashier role to add or edit product details</p></div><label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label></div>
+              <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
+                <div class="form-row">
+                  <div class="form-group"><label class="form-label">Session Duration (hours)</label><input class="form-control" type="number" value="12"><div class="form-hint">JWT token expiry</div></div>
+                  <div class="form-group"><label class="form-label">Manager PIN</label><input class="form-control" type="password" value="1234"><div class="form-hint">Used for sensitive actions</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save Security Settings</button></div>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="settings-panel" id="panel-danger">
+          <div class="danger-zone">
+            <h3>⚠️ Danger Zone</h3>
+            <p>These actions are irreversible. Please proceed with extreme caution.</p>
+            <div class="danger-actions">
+              <button class="btn btn-outline btn-sm" onclick="if(confirm('Clear all today\'s orders? This cannot be undone.'))showToast('Orders cleared.')">🗑 Clear Today\'s Orders</button>
+              <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fca5a5;" onclick="if(confirm('Reset all inventory counts to zero?'))showToast('Inventory reset.')">📦 Reset Inventory</button>
+              <button class="btn btn-outline btn-sm" style="color:#ef4444;border-color:#fca5a5;" onclick="if(confirm('Delete all loyalty points? This cannot be undone.'))showToast('Points cleared.')">⭐ Clear All Points</button>
+              <button class="btn btn-danger btn-sm" onclick="if(confirm('FACTORY RESET: Delete ALL data? This cannot be undone!'))showToast('Factory reset initiated...')">💣 Factory Reset</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPanel(name, el) {
+  document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  el.classList.add('active');
+}
+async function saveSettings() {
+  try {
+    // Collect all form controls in the active panel and send as settings
+    const panel = document.querySelector('.settings-panel.active');
+    if (panel) {
+      const inputs = panel.querySelectorAll('input, select, textarea');
+      const updates = [];
+      inputs.forEach(el => {
+        if (el.id && el.value) updates.push({ key: el.id, value: el.type === 'checkbox' ? el.checked : el.value });
+      });
+      if (updates.length) await API.updateSetting({ settings: updates, brand_id: Auth.getBrand() });
+    }
+    UI.toast('✅ Settings saved successfully!');
+  } catch(e) { UI.toast('Save failed: ' + e.message, 'error'); }
+}
+
+async function testConnection() {
+  try {
+    const result = await apiGet('ping');
+    UI.toast('🔌 Connected! BrewOS API v' + (result?.version || '2.0'));
+  } catch(e) { UI.toast('❌ Connection failed: ' + e.message, 'error'); }
+}
+
+function copyApi(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard?.writeText(el.textContent).then(() => UI.toast('Copied to clipboard!'));
+}
+
+async function loadSettingsData() {
+  try {
+    const settings = await API.settings(Auth.getBrand());
+    // Populate API URL fields if set
+    if (settings && API_BASE !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+      const urlEl = document.getElementById('apiUrl');
+      if (urlEl) urlEl.textContent = API_BASE;
+    }
+  } catch(e) { /* use defaults */ }
+}
+
+document.addEventListener('DOMContentLoaded', loadSettingsData);
+function showToast(m) {
+  const t=document.createElement('div');
+  t.textContent=m;
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1B4332;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+</script>
+<script src="api.js"></script>
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrewOS — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bb-green: #1B4332;
+  --bb-green-light: #2D6A4F;
+  --bb-orange: #F97316;
+  --bb-cream: #FEFCE8;
+  --hh-green: #2D6A4F;
+  --hh-orange: #FB923C;
+  --hh-cream: #FFFBF0;
+  --active-brand: var(--bb-green);
+  --active-accent: var(--bb-orange);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  background: #0a1a0e;
+  display: flex;
+}
+
+/* ---- Animated background ---- */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 80% at 20% 50%, #1B433240 0%, transparent 60%),
+              radial-gradient(ellipse 60% 60% at 80% 20%, #2D6A4F30 0%, transparent 50%),
+              radial-gradient(ellipse 40% 40% at 70% 80%, #F9731620 0%, transparent 40%),
+              #0a1a0e;
+}
+.blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: float 8s ease-in-out infinite;
+}
+.blob-1 { width:500px; height:500px; background:#1B4332; top:-100px; left:-150px; animation-delay:0s; }
+.blob-2 { width:350px; height:350px; background:#F97316; bottom:-100px; right:-80px; animation-delay:-4s; }
+.blob-3 { width:250px; height:250px; background:#2D6A4F; top:40%; left:40%; animation-delay:-2s; }
+@keyframes float {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-40px) scale(1.05); }
+  66% { transform: translate(-20px,20px) scale(0.95); }
+}
+/* grain overlay */
+.bg-canvas::after {
+  content:''; position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:1; opacity:0.4;
+}
+
+/* ---- Split layout ---- */
+.left-panel {
+  position: relative; z-index: 10;
+  flex: 0 0 55%;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 60px;
+}
+.right-panel {
+  position: relative; z-index: 10;
+  flex: 1;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  padding: 60px 50px;
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ---- Brand logo area ---- */
+.brand-logo {
+  text-align: center;
+  animation: fadeUp 0.8s ease both;
+}
+.brand-switch {
+  display: flex; gap: 8px; margin-bottom: 48px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 50px; padding: 4px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.brand-btn {
+  padding: 8px 20px; border-radius: 50px; border: none;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.3s ease;
+  color: rgba(255,255,255,0.5); background: transparent;
+}
+.brand-btn.active {
+  background: rgba(255,255,255,0.12);
+  color: white;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.logo-icon {
+  width: 90px; height: 90px;
+  border-radius: 28px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 42px;
+  background: linear-gradient(135deg, #1B4332, #2D6A4F);
+  box-shadow: 0 20px 60px rgba(27,67,50,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+  position: relative; overflow: hidden;
+  transition: all 0.5s ease;
+}
+.logo-icon::after {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+}
+h1.brand-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px; font-weight: 700;
+  color: white; letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  transition: all 0.4s ease;
+}
+.brand-tagline {
+  font-size: 15px; color: rgba(255,255,255,0.5);
+  font-weight: 300; letter-spacing: 0.5px;
+}
+
+/* ---- Decorative elements ---- */
+.deco-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black, transparent);
+}
+.stat-cards {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-top: 56px; width: 100%; max-width: 380px;
+  animation: fadeUp 0.9s ease 0.3s both;
+}
+.stat-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 18px;
+  backdrop-filter: blur(10px);
+}
+.stat-label { font-size: 11px; color: #4a6741; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.stat-value { font-family: 'Playfair Display', serif; font-size: 26px; color: white; }
+.stat-delta { font-size: 12px; color: #22c55e; margin-top: 2px; }
+
+/* ---- Form ---- */
+.form-card {
+  width: 100%; max-width: 380px;
+  animation: fadeUp 0.8s ease 0.1s both;
+}
+.form-header { margin-bottom: 32px; }
+.form-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 600; color: white;
+  margin-bottom: 6px;
+}
+.form-header p { font-size: 14px; color: #4a6741; }
+
+.form-group { margin-bottom: 18px; position: relative; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 500;
+  color: rgba(255,255,255,0.5); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+.form-input {
+  width: 100%; padding: 14px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 15px;
+  outline: none; transition: all 0.25s ease;
+}
+.form-input:focus {
+  border-color: rgba(249,115,22,0.6);
+  background: rgba(255,255,255,0.09);
+  box-shadow: 0 0 0 3px rgba(249,115,22,0.12);
+}
+.form-input::placeholder { color: rgba(255,255,255,0.25); }
+
+.role-select {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  margin-bottom: 24px;
+}
+.role-btn {
+  padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+  background: transparent; color: #4a6741;
+  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  cursor: pointer; transition: all 0.2s ease; text-align: center;
+}
+.role-btn:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
+.role-btn.active {
+  background: rgba(249,115,22,0.15);
+  border-color: rgba(249,115,22,0.5);
+  color: #FB923C;
+}
+.role-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+
+.btn-login {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #F97316, #ea580c);
+  border: none; border-radius: 12px;
+  color: white; font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.3s ease;
+  box-shadow: 0 8px 24px rgba(249,115,22,0.35);
+  position: relative; overflow: hidden;
+}
+.btn-login::before {
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0; transition: opacity 0.3s;
+}
+.btn-login:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(249,115,22,0.45); }
+.btn-login:hover::before { opacity: 1; }
+.btn-login:active { transform: translateY(0); }
+
+.form-footer {
+  margin-top: 24px; text-align: center;
+  font-size: 13px; color: #4a6741;
+}
+.form-footer a { color: rgba(249,115,22,0.8); text-decoration: none; }
+.form-footer a:hover { color: #F97316; }
+
+/* demo credentials */
+.demo-creds {
+  margin-top: 20px;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 12px; color: #4a6741;
+}
+.demo-creds span { color: rgba(255,255,255,0.6); font-weight: 500; }
+
+/* alerts */
+.alert {
+  padding: 12px 14px; border-radius: 10px;
+  font-size: 13px; margin-bottom: 18px;
+  display: none;
+}
+.alert.error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+.alert.success { background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3); color: #86efac; }
+
+/* loading state */
+.btn-login.loading { pointer-events: none; opacity: 0.7; }
+.spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin: 0 auto; }
+.btn-login.loading .btn-text { display: none; }
+.btn-login.loading .spinner { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* version badge */
+.version-badge {
+  position: absolute; bottom: 24px; left: 0; right: 0;
+  text-align: center; font-size: 11px; color: rgba(255,255,255,0.2);
+  letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+  .left-panel { display: none; }
+  .right-panel { flex: 1; padding: 40px 28px; border-left: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- Left Panel -->
+<div class="left-panel">
+  <div class="deco-grid"></div>
+
+  <div class="brand-switch">
+    <button class="brand-btn active" onclick="switchBrand('bb')">☕ Brain Brew</button>
+    <button class="brand-btn" onclick="switchBrand('hh')">🌸 Heng Heng</button>
+  </div>
+
+  <div class="brand-logo">
+    <div class="logo-icon" id="logoIcon">☕</div>
+    <h1 class="brand-name" id="brandName">Brain Brew Coffee</h1>
+    <p class="brand-tagline" id="brandTagline">Specialty Coffee · Neuroscience Inspired</p>
+  </div>
+
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-label">Today's Revenue</div>
+      <div class="stat-value">฿18,420</div>
+      <div class="stat-delta">↑ 12% vs yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Orders Today</div>
+      <div class="stat-value">147</div>
+      <div class="stat-delta">↑ 8 from yesterday</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Active Members</div>
+      <div class="stat-value">2,841</div>
+      <div class="stat-delta">↑ 23 new this week</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">GP Margin</div>
+      <div class="stat-value">69.5%</div>
+      <div class="stat-delta">↑ 2.1% vs last month</div>
+    </div>
+  </div>
+</div>
+
+<!-- Right Panel — Login Form -->
+<div class="right-panel">
+  <div class="form-card">
+    <div class="form-header">
+      <h2>Welcome back</h2>
+      <p>Sign in to your BrewOS workspace</p>
+    </div>
+
+    <!-- Role selector -->
+    <div class="role-select">
+      <button class="role-btn active" onclick="selectRole('owner', this)">
+        <span class="role-icon">👑</span>Owner
+      </button>
+      <button class="role-btn" onclick="selectRole('manager', this)">
+        <span class="role-icon">🧑‍💼</span>Manager
+      </button>
+      <button class="role-btn" onclick="selectRole('staff', this)">
+        <span class="role-icon">🧑‍🍳</span>Cashier
+      </button>
+    </div>
+
+    <div class="alert error" id="errorAlert"></div>
+    <div class="alert success" id="successAlert"></div>
+
+    <div class="form-group">
+      <label class="form-label">Email / Username</label>
+      <input type="text" class="form-input" id="username" placeholder="owner@brewos.app" value="owner@brewos.app">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-input" id="password" placeholder="••••••••" value="admin123">
+    </div>
+
+    <button class="btn-login" onclick="handleLogin()">
+      <span class="btn-text">Sign In to Dashboard →</span>
+      <div class="spinner"></div>
+    </button>
+
+    <div class="demo-creds">
+      🔑 Demo: <span>owner@brewos.app</span> / <span>admin123</span>
+    </div>
+
+    <p class="form-footer">
+      Forgot password? <a href="#">Contact your administrator</a>
+    </p>
+  </div>
+
+  <div class="version-badge">BREWOS v2.0 · MULTI-BRAND POS PLATFORM</div>
+</div>
+
+<script>
+const CONFIG = { API_BASE: 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec' };
+
+let currentBrand = 'bb';
+let currentRole = 'owner';
+
+const BRANDS = {
+  bb: {
+    name: 'Brain Brew Coffee',
+    tagline: 'Specialty Coffee · Neuroscience Inspired',
+    icon: '☕',
+    blob1: '#1B4332',
+    blob2: '#F97316',
+  },
+  hh: {
+    name: 'Heng Heng Phanit',
+    tagline: 'Artisan Bakery · Warm & Wholesome',
+    icon: '🌸',
+    blob1: '#2D6A4F',
+    blob2: '#FB923C',
+  }
+};
+
+function switchBrand(brand) {
+  currentBrand = brand;
+  const b = BRANDS[brand];
+  document.getElementById('brandName').textContent = b.name;
+  document.getElementById('brandTagline').textContent = b.tagline;
+  document.getElementById('logoIcon').textContent = b.icon;
+  document.querySelectorAll('.brand-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', (brand === 'bb' && i === 0) || (brand === 'hh' && i === 1));
+  });
+}
+
+function selectRole(role, el) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function showAlert(type, msg) {
+  document.getElementById('errorAlert').style.display = 'none';
+  document.getElementById('successAlert').style.display = 'none';
+  const el = document.getElementById(type === 'error' ? 'errorAlert' : 'successAlert');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function handleLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  if (!username || !password) { showAlert('error', 'Please enter your credentials.'); return; }
+
+  const btn = document.querySelector('.btn-login');
+  btn.classList.add('loading');
+
+  try {
+    const data = await API.login(username, password, currentBrand);
+    // API.login calls Auth.setSession internally via api.js
+    const redirectMap = { owner: 'dashboard.html', manager: 'dashboard.html', staff: 'pos.html', cashier: 'pos.html', baker: 'production.html' };
+    const redirect = redirectMap[data.user.role] || 'dashboard.html';
+    showAlert('success', '✅ Login successful! Redirecting...');
+    setTimeout(() => { window.location.href = redirect; }, 800);
+  } catch (e) {
+    showAlert('error', '❌ ' + (e.message || 'Invalid credentials.'));
+    btn.classList.remove('loading');
+  }
+}
+
+// Enter key
+document.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+</script>
+<script src="api.js"></script>
+</body>
+</html>

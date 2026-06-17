@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipes & Costing — Brain Brew × Heng Heng</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --brand-dark:   #1B4332;
+  --brand-mid:    #2D6A4F;
+  --brand-light:  #52B788;
+  --brand-accent: #F97316;
+  --danger:       #EF4444;
+  --warning:      #F59E0B;
+  --success:      #10B981;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: #f5f0e8; color: #1a2e1a; overflow-x: hidden; }
+
+/* LAYOUT */
+.app { display: flex; height: 100vh; }
+.sidebar { width: 220px; background: #1B4332; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; flex-shrink: 0; padding: 0 0 16px; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* SIDEBAR */
+.sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.sidebar-logo-brand { font-family: 'Playfair Display', serif; font-size: 13px; color: #1a2e1a; }
+.sidebar-logo-sub { font-size: 10px; color: #4a6741; margin-top: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+.nav-section { padding: 12px 12px 4px; }
+.nav-label { font-size: 9px; color:rgba(0,0,0,0.35); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; padding: 0 8px; margin-bottom: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; font-size: 12px; color: #4a6741; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+.nav-item:hover { background: rgba(255,255,255,0.05); color:#1a2e1a; }
+.nav-item.active { background: var(--brand-dark); color: #1a2e1a; }
+.nav-icon { width: 16px; text-align: center; font-size: 13px; }
+
+/* TOPBAR */
+.topbar { background: #ffffff; border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.topbar-title { font-size: 15px; font-weight: 600; color: #1a2e1a; }
+.topbar-brand-switch { display: flex; gap: 4px; background: rgba(255,255,255,0.05); padding: 3px; border-radius: 8px; margin-left: 16px; }
+.brand-tab { padding: 5px 14px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; color: #4a6741; border: none; background: transparent; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.brand-tab.active { background: var(--brand-dark); color: #1a2e1a; }
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+.btn { padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ghost { background: rgba(255,255,255,0.06); color:#1a2e1a; border: 1px solid rgba(255,255,255,0.08); }
+.btn-ghost:hover { background: rgba(255,255,255,0.1); color: #1a2e1a; }
+.btn-primary { background: var(--brand-dark); color: #fff; }
+.btn-primary:hover { background: var(--brand-mid); }
+
+/* SPLIT LAYOUT */
+.recipe-layout { display: flex; flex: 1; overflow: hidden; }
+.recipe-list-panel { width: 320px; border-right: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; flex-shrink: 0; }
+.recipe-detail-panel { flex: 1; overflow-y: auto; }
+.recipe-detail-panel::-webkit-scrollbar { width: 4px; }
+.recipe-detail-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+/* RECIPE LIST */
+.list-header { padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.list-search { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; }
+.list-search:focus { border-color: var(--brand-light); }
+.list-search::placeholder { color:rgba(0,0,0,0.35); }
+.recipe-list { flex: 1; overflow-y: auto; }
+.recipe-list::-webkit-scrollbar { width: 3px; }
+.recipe-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+.recipe-list-item { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: background 0.1s; }
+.recipe-list-item:hover { background: rgba(255,255,255,0.03); }
+.recipe-list-item.active { background: rgba(27,67,50,0.4); border-left: 3px solid var(--brand-light); }
+.rli-name { font-size: 13px; font-weight: 500; color: #1a2e1a; margin-bottom: 3px; }
+.rli-meta { display: flex; gap: 8px; align-items: center; }
+.rli-cat { font-size: 10px; color: #4a6741; }
+.rli-gp { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+.gp-high   { background: rgba(16,185,129,0.15); color: #10B981; }
+.gp-mid    { background: rgba(245,158,11,0.15);  color: #F59E0B; }
+.gp-low    { background: rgba(239,68,68,0.15);   color: #EF4444; }
+
+/* LIST SECTION HEADER */
+.list-section-title { font-size: 9px; color:rgba(0,0,0,0.35); text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 16px 4px; }
+
+/* DETAIL CONTENT */
+.detail-content { padding: 24px; }
+
+/* RECIPE HEADER CARD */
+.recipe-hero { background: linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; position: relative; overflow: hidden; }
+.recipe-hero::before { content: ''; position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; border-radius: 50%; background: rgba(255,255,255,0.05); }
+.recipe-hero::after  { content: ''; position: absolute; bottom: -30px; right: 60px; width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+.recipe-hero-icon { font-size: 40px; margin-bottom: 12px; }
+.recipe-hero-name { font-family: 'Playfair Display', serif; font-size: 22px; color: #1a2e1a; margin-bottom: 4px; }
+.recipe-hero-cat { font-size: 12px; color:#4a6741; margin-bottom: 16px; }
+.recipe-hero-kpis { display: flex; gap: 20px; }
+.hero-kpi { }
+.hero-kpi-label { font-size: 10px; color: #4a6741; text-transform: uppercase; letter-spacing: 0.05em; }
+.hero-kpi-value { font-size: 18px; font-weight: 700; color: #1a2e1a; }
+.hero-kpi-sub { font-size: 10px; color: #4a6741; margin-top: 1px; }
+
+/* GP RING */
+.gp-ring-wrap { margin-left: auto; display: flex; flex-direction: column; align-items: center; }
+.gp-ring { width: 72px; height: 72px; position: relative; }
+.gp-ring-svg { transform: rotate(-90deg); }
+.gp-ring-track { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 6; }
+.gp-ring-fill  { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s; }
+.gp-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.gp-ring-pct { font-size: 16px; font-weight: 700; color: #1a2e1a; line-height: 1; }
+.gp-ring-lbl { font-size: 9px; color: #4a6741; }
+
+/* SECTION CARDS */
+.section-card { background: #f5f0e8; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+.section-card-header { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; }
+.section-card-title { font-size: 12px; font-weight: 600; color:#4a6741; text-transform: uppercase; letter-spacing: 0.07em; }
+.section-card-body { padding: 16px 18px; }
+
+/* INGREDIENT TABLE */
+.ing-header { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 10px; font-size: 10px; color:rgba(0,0,0,0.35); text-transform: uppercase; letter-spacing: 0.07em; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.ing-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.04); align-items: center; }
+.ing-row:last-child { border-bottom: none; }
+.ing-name { font-size: 12px; font-weight: 500; color: #1a2e1a; }
+.ing-sub { font-size: 10px; color: #4a6741; margin-top: 2px; }
+.ing-qty { font-size: 12px; color:#1a2e1a; }
+.ing-cost { font-size: 12px; color:#4a6741; }
+.ing-pct-bar { height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; margin-top: 3px; }
+.ing-pct-fill { height: 100%; border-radius: 2px; background: var(--brand-light); }
+.ing-remove { background: none; border: none; color:rgba(0,0,0,0.35); cursor: pointer; font-size: 14px; }
+.ing-remove:hover { color: #EF4444; }
+
+/* ADD INGREDIENT ROW */
+.add-ing-row { display: flex; gap: 8px; margin-top: 12px; }
+.add-ing-select { flex: 2; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; }
+.add-ing-select:focus { border-color: var(--brand-light); }
+.add-ing-input  { flex: 1; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; }
+.add-ing-input:focus { border-color: var(--brand-light); }
+.add-ing-input::placeholder { color:rgba(0,0,0,0.35); }
+
+/* COST BREAKDOWN */
+.cost-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.cost-item { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; }
+.cost-item-label { font-size: 10px; color: #4a6741; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.cost-item-value { font-size: 16px; font-weight: 600; color: #1a2e1a; }
+.cost-item-sub { font-size: 10px; color: #4a6741; margin-top: 2px; }
+.cost-item.highlight { background: rgba(82,183,136,0.08); border: 1px solid rgba(82,183,136,0.15); }
+.cost-item.highlight .cost-item-value { color: var(--brand-light); }
+
+/* PRICE EDITOR */
+.price-editor { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+.price-input { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 10px 14px; font-size: 18px; font-weight: 600; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; width: 120px; }
+.price-input:focus { border-color: var(--brand-light); }
+.price-label { font-size: 12px; color: #4a6741; }
+
+/* SCALING */
+.scale-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+.scale-btn { padding: 6px 14px; border-radius: 7px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); font-size: 12px; color:#4a6741; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.scale-btn:hover { background: rgba(255,255,255,0.1); color: #1a2e1a; }
+.scale-btn.active { background: var(--brand-dark); border-color: var(--brand-dark); color: #1a2e1a; }
+.scale-input { width: 60px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; padding: 6px 10px; font-size: 12px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; text-align: center; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal { background: #ffffff; border-radius: 20px; width: 540px; max-height: 88vh; overflow-y: auto; border: 1px solid rgba(255,255,255,0.08); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 600; color: #1a2e1a; }
+.modal-close { background: none; border: none; color: #4a6741; font-size: 20px; cursor: pointer; }
+.modal-close:hover { color: #1a2e1a; }
+.modal-body { padding: 20px 24px; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 11px; color: #4a6741; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 9px 12px; font-size: 13px; color: #1a2e1a; font-family: 'DM Sans', sans-serif; outline: none; }
+.form-input:focus { border-color: var(--brand-light); }
+.form-input::placeholder { color:rgba(0,0,0,0.35); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-footer { display: flex; gap: 8px; justify-content: flex-end; padding-top: 4px; }
+
+/* EMPTY DETAIL */
+.empty-detail { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color:rgba(0,0,0,0.35); padding: 40px; text-align: center; }
+.empty-detail-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.3; }
+.empty-detail-text { font-size: 14px; margin-bottom: 20px; }
+
+/* STOCK WARNING */
+.stock-warn { display: flex; align-items: center; gap: 6px; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); border-radius: 8px; padding: 8px 12px; font-size: 11px; color: #F59E0B; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-brand">Brain Brew × Heng Heng</div>
+      <div class="sidebar-logo-sub">Back Office</div>
+    </div>
+    <div class="nav-section" style="flex:1">
+      <div class="nav-label">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⬛</span>Dashboard</a>
+      <a href="pos.html"       class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
+      <div class="nav-label" style="margin-top:12px">Operations</div>
+      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
+      <a href="recipe.html"    class="nav-item active"><span class="nav-icon">🧪</span>Recipes</a>
+      <a href="production.html"class="nav-item"><span class="nav-icon">🏭</span>Production</a>
+      <div class="nav-label" style="margin-top:12px">Business</div>
+      <a href="crm.html"       class="nav-item"><span class="nav-icon">👥</span>CRM / Members</a>
+      <a href="finance.html"   class="nav-item"><span class="nav-icon">💰</span>Finance</a>
+      <a href="reports.html"   class="nav-item"><span class="nav-icon">📊</span>Reports</a>
+      <div class="nav-label" style="margin-top:12px">Settings</div>
+      <a href="settings.html"  class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
+    </div>
+    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);">
+      <div style="font-size:11px;color:rgba(0,0,0,0.35)">Owner · All Brands</div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN ===== -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title">Recipes & Costing</div>
+      <div class="topbar-brand-switch">
+        <button class="brand-tab active" onclick="switchBrand('ALL', this)">All</button>
+        <button class="brand-tab" onclick="switchBrand('BB', this)">Brain Brew</button>
+        <button class="brand-tab" onclick="switchBrand('HH', this)">Heng Heng</button>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost" onclick="">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 8l3 3 3-3"/></svg>
+          Export Costs
+        </button>
+        <button class="btn btn-primary" onclick="openCreateModal()">
+          + New Recipe
+        </button>
+      </div>
+    </div>
+
+    <!-- Recipe Layout -->
+    <div class="recipe-layout">
+
+      <!-- Left: Recipe List -->
+      <div class="recipe-list-panel">
+        <div class="list-header">
+          <input class="list-search" type="text" placeholder="Search recipes…" oninput="filterRecipes(this.value)">
+        </div>
+        <div class="recipe-list" id="recipe-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <!-- Right: Detail / Editor -->
+      <div class="recipe-detail-panel" id="recipe-detail-panel">
+        <div class="empty-detail" id="empty-detail">
+          <div class="empty-detail-icon">🧪</div>
+          <div class="empty-detail-text">Select a recipe to view cost details,<br>or create a new one</div>
+          <button class="btn btn-primary" onclick="openCreateModal()">+ New Recipe</button>
+        </div>
+        <div id="recipe-detail" style="display:none"></div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ===== CREATE RECIPE MODAL ===== -->
+<div class="modal-overlay" id="create-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">New Recipe</div>
+      <button class="modal-close" onclick="closeModal('create-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Recipe Name</label>
+          <input class="form-input" type="text" id="cr-name" placeholder="e.g. Neuron Latte">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon / Emoji</label>
+          <input class="form-input" type="text" id="cr-icon" placeholder="☕" maxlength="4">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="cr-cat">
+            <option value="signature">Signature Coffee</option>
+            <option value="coldbrew">Cold Brew</option>
+            <option value="matcha">Matcha</option>
+            <option value="noncoffee">Non-Coffee</option>
+            <option value="food">Food / Baked</option>
+            <option value="merch">Merchandise</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <select class="form-input" id="cr-brand">
+            <option value="BB">Brain Brew Coffee</option>
+            <option value="HH">Heng Heng Phanit</option>
+            <option value="SHARED">Shared</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Selling Price (฿)</label>
+          <input class="form-input" type="number" id="cr-price" placeholder="120">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Serving Size</label>
+          <input class="form-input" type="text" id="cr-serving" placeholder="e.g. 8oz, 280ml">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Linked Product (optional)</label>
+        <select class="form-input" id="cr-product">
+          <option value="">Select menu item…</option>
+          <option value="PRD-001">Neuron Latte</option>
+          <option value="PRD-002">Cortex Espresso</option>
+          <option value="PRD-003">Axon Flat White</option>
+          <option value="PRD-006">Synapse Matcha</option>
+          <option value="PRD-010">Banana Bread</option>
+        </select>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="closeModal('create-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="createRecipe()">Create Recipe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+let ACTIVE_BRAND = sessionStorage.getItem('brewos_brand') || 'ALL';
+let activeRecipeId = null;
+let scaleMultiplier = 1;
+
+const INGREDIENTS_DB = [
+  { id:'ING-001', name:'Espresso Beans (BB Blend)', unit:'g',  unit_cost:0.85 },
+  { id:'ING-002', name:'Single Origin Ethiopia',    unit:'g',  unit_cost:1.20 },
+  { id:'ING-003', name:'Full Cream Milk',           unit:'ml', unit_cost:0.05 },
+  { id:'ING-004', name:'Oat Milk (Oatly)',          unit:'ml', unit_cost:0.12 },
+  { id:'ING-005', name:'Almond Milk',               unit:'ml', unit_cost:0.15 },
+  { id:'ING-006', name:'Vanilla Syrup',             unit:'ml', unit_cost:0.08 },
+  { id:'ING-007', name:'Caramel Syrup',             unit:'ml', unit_cost:0.08 },
+  { id:'ING-008', name:'Matcha Powder (Premium)',   unit:'g',  unit_cost:0.45 },
+  { id:'ING-009', name:'Dark Cocoa Powder',         unit:'g',  unit_cost:0.12 },
+  { id:'ING-010', name:'Cane Sugar',                unit:'g',  unit_cost:0.03 },
+  { id:'ING-011', name:'All Purpose Flour',         unit:'g',  unit_cost:0.02 },
+  { id:'ING-012', name:'Butter (Unsalted)',         unit:'g',  unit_cost:0.18 },
+  { id:'ING-013', name:'Eggs (Grade A)',            unit:'pcs',unit_cost:5.50 },
+  { id:'ING-016', name:'Turmeric Powder',           unit:'g',  unit_cost:0.25 },
+];
+
+let RECIPES = [
+  {
+    id: 'RCP-001', name: 'Neuron Latte', icon: '☕', category: 'signature', brand: 'BB',
+    selling_price: 120, serving: '8oz/240ml',
+    lines: [
+      { ingredient_id:'ING-001', qty:18 },
+      { ingredient_id:'ING-003', qty:180 },
+      { ingredient_id:'ING-006', qty:15 },
+    ],
+    method: 'Pull double espresso. Steam milk to 65°C. Pour over espresso. Add vanilla syrup. Latte art optional.',
+    notes: 'Use fresh beans within 14 days of roast. Grind at 18g ±0.5g.',
+  },
+  {
+    id: 'RCP-002', name: 'Cortex Espresso', icon: '☕', category: 'signature', brand: 'BB',
+    selling_price: 80, serving: '2oz/60ml',
+    lines: [
+      { ingredient_id:'ING-001', qty:18 },
+    ],
+    method: 'Pull 18g → 36g espresso in 28–32 seconds. Serve immediately.',
+    notes: 'Target extraction: 18g in, 36g out. TDS 10–12%.',
+  },
+  {
+    id: 'RCP-003', name: 'Synapse Matcha', icon: '🍵', category: 'matcha', brand: 'BB',
+    selling_price: 115, serving: '12oz/350ml',
+    lines: [
+      { ingredient_id:'ING-008', qty:4 },
+      { ingredient_id:'ING-003', qty:200 },
+      { ingredient_id:'ING-010', qty:10 },
+    ],
+    method: 'Sift 4g matcha. Add 20ml hot water at 80°C. Whisk until smooth. Steam milk. Combine.',
+    notes: 'Use Ippodo ceremonial grade. Do not use boiling water.',
+  },
+  {
+    id: 'RCP-004', name: 'Oat Milk Latte', icon: '🥛', category: 'noncoffee', brand: 'BB',
+    selling_price: 130, serving: '8oz/240ml',
+    lines: [
+      { ingredient_id:'ING-001', qty:18 },
+      { ingredient_id:'ING-004', qty:200 },
+      { ingredient_id:'ING-006', qty:10 },
+    ],
+    method: 'Pull double espresso. Steam Oatly to 65°C (do not overheat). Combine.',
+    notes: 'Oatly barista edition performs best at 55–60°C.',
+  },
+  {
+    id: 'RCP-005', name: 'Banana Bread', icon: '🍞', category: 'food', brand: 'HH',
+    selling_price: 65, serving: '1 slice / 120g',
+    lines: [
+      { ingredient_id:'ING-011', qty:80 },
+      { ingredient_id:'ING-012', qty:40 },
+      { ingredient_id:'ING-013', qty:0.5 },
+      { ingredient_id:'ING-010', qty:50 },
+    ],
+    method: 'Batch recipe: Mix 500g flour, 200g butter, 3 eggs, 200g sugar. Fold in 3 mashed bananas. Bake 160°C 45 min.',
+    notes: 'Batch: 8 slices per loaf. Scale ingredients ×8 for full production.',
+  },
+  {
+    id: 'RCP-006', name: 'Turmeric Golden Latte', icon: '🌟', category: 'noncoffee', brand: 'BB',
+    selling_price: 115, serving: '8oz/240ml',
+    lines: [
+      { ingredient_id:'ING-016', qty:3 },
+      { ingredient_id:'ING-003', qty:220 },
+      { ingredient_id:'ING-006', qty:10 },
+    ],
+    method: 'Mix turmeric with 20ml warm milk. Heat remaining milk. Combine. Add vanilla syrup.',
+    notes: 'Add pinch of black pepper for absorption. Adjust sweetness per customer.',
+  },
+  {
+    id: 'RCP-007', name: 'Almond Croissant', icon: '🥐', category: 'food', brand: 'HH',
+    selling_price: 75, serving: '1 piece / 85g',
+    lines: [
+      { ingredient_id:'ING-011', qty:120 },
+      { ingredient_id:'ING-012', qty:60 },
+      { ingredient_id:'ING-013', qty:0.5 },
+    ],
+    method: 'Laminated dough: Fold butter layers ×3. Shape. Proof 2hr. Bake 180°C 22 min. Fill with almond cream.',
+    notes: 'Keep croissants in sealed container. Best served warmed at 140°C for 4 min.',
+  },
+];
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getIngredient(id) { return INGREDIENTS_DB.find(i => i.id === id); }
+
+function calcRecipeCost(recipe, multiplier = 1) {
+  return recipe.lines.reduce((total, line) => {
+    const ing = getIngredient(line.ingredient_id);
+    return total + (ing ? ing.unit_cost * line.qty * multiplier : 0);
+  }, 0);
+}
+
+function calcGP(recipe) {
+  const cost = calcRecipeCost(recipe);
+  const gp   = ((recipe.selling_price - cost) / recipe.selling_price) * 100;
+  return { cost, gp };
+}
+
+function gpClass(gp) {
+  if (gp >= 65) return 'gp-high';
+  if (gp >= 50) return 'gp-mid';
+  return 'gp-low';
+}
+
+function gpRingColor(gp) {
+  if (gp >= 65) return '#10B981';
+  if (gp >= 50) return '#F59E0B';
+  return '#EF4444';
+}
+
+function fmt(n) { return '฿' + n.toFixed(2); }
+
+
+// ============================================================
+// RENDER LIST
+// ============================================================
+function getFilteredRecipes(filter = '') {
+  return RECIPES.filter(r => {
+    if (ACTIVE_BRAND !== 'ALL' && r.brand !== ACTIVE_BRAND && r.brand !== 'SHARED') return false;
+    if (filter && !r.name.toLowerCase().includes(filter.toLowerCase())) return false;
+    return true;
+  });
+}
+
+function renderRecipeList(filter = '') {
+  const list = document.getElementById('recipe-list');
+  const recipes = getFilteredRecipes(filter);
+
+  // Group by category
+  const groups = {};
+  recipes.forEach(r => {
+    if (!groups[r.category]) groups[r.category] = [];
+    groups[r.category].push(r);
+  });
+
+  const catLabels = { signature:'Signature Coffee', coldbrew:'Cold Brew', matcha:'Matcha', noncoffee:'Non-Coffee', food:'Food & Baked Goods', merch:'Merchandise' };
+
+  list.innerHTML = Object.entries(groups).map(([cat, items]) => `
+    <div class="list-section-title">${catLabels[cat] || cat}</div>
+    ${items.map(recipe => {
+      const { cost, gp } = calcGP(recipe);
+      return `
+        <div class="recipe-list-item ${activeRecipeId === recipe.id ? 'active' : ''}" onclick="selectRecipe('${recipe.id}')">
+          <div class="rli-name">${recipe.icon} ${recipe.name}</div>
+          <div class="rli-meta">
+            <span class="rli-cat">${recipe.brand} · ${recipe.serving}</span>
+            <span class="rli-gp ${gpClass(gp)}">GP ${gp.toFixed(0)}%</span>
+            <span style="font-size:10px;color:#4a6741;">${fmt(cost)}</span>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `).join('');
+}
+
+
+// ============================================================
+// RENDER DETAIL
+// ============================================================
+function selectRecipe(id) {
+  activeRecipeId = id;
+  scaleMultiplier = 1;
+  renderRecipeList();
+  renderDetail();
+}
+
+function renderDetail() {
+  const recipe = RECIPES.find(r => r.id === activeRecipeId);
+  if (!recipe) return;
+
+  document.getElementById('empty-detail').style.display = 'none';
+  document.getElementById('recipe-detail').style.display = 'block';
+
+  const { cost, gp } = calcGP(recipe, scaleMultiplier);
+  const margin = recipe.selling_price - cost;
+  const circumference = 2 * Math.PI * 30;
+  const offset = circumference - (gp / 100) * circumference;
+  const ringColor = gpRingColor(gp);
+
+  // Check for low-stock ingredients
+  const lowStockIngs = recipe.lines.filter(line => {
+    // Simulate: ING-005 (almond milk) and ING-007 (caramel syrup) are low
+    return ['ING-005','ING-007','ING-016'].includes(line.ingredient_id);
+  });
+
+  const totalLineCost = calcRecipeCost(recipe, scaleMultiplier);
+  const maxLineCost   = Math.max(...recipe.lines.map(l => {
+    const ing = getIngredient(l.ingredient_id);
+    return ing ? ing.unit_cost * l.qty * scaleMultiplier : 0;
+  }));
+
+  document.getElementById('recipe-detail').innerHTML = `
+    <!-- HERO -->
+    <div class="detail-content">
+      <div class="recipe-hero">
+        <div class="recipe-hero-icon">${recipe.icon}</div>
+        <div class="recipe-hero-name">${recipe.name}</div>
+        <div class="recipe-hero-cat">${recipe.brand} · ${recipe.category} · ${recipe.serving}</div>
+        <div class="recipe-hero-kpis">
+          <div class="hero-kpi">
+            <div class="hero-kpi-label">Selling Price</div>
+            <div class="hero-kpi-value">฿${recipe.selling_price}</div>
+            <div class="hero-kpi-sub">Per serving</div>
+          </div>
+          <div class="hero-kpi">
+            <div class="hero-kpi-label">Food Cost</div>
+            <div class="hero-kpi-value">${fmt(cost)}</div>
+            <div class="hero-kpi-sub">Per serving</div>
+          </div>
+          <div class="hero-kpi">
+            <div class="hero-kpi-label">Gross Profit</div>
+            <div class="hero-kpi-value">${fmt(margin)}</div>
+            <div class="hero-kpi-sub">Per serving</div>
+          </div>
+          <div class="gp-ring-wrap">
+            <div class="gp-ring">
+              <svg class="gp-ring-svg" width="72" height="72" viewBox="0 0 72 72">
+                <circle class="gp-ring-track" cx="36" cy="36" r="30"/>
+                <circle class="gp-ring-fill" cx="36" cy="36" r="30"
+                  stroke="${ringColor}"
+                  stroke-dasharray="${circumference}"
+                  stroke-dashoffset="${offset}"/>
+              </svg>
+              <div class="gp-ring-text">
+                <div class="gp-ring-pct" style="color:${ringColor}">${gp.toFixed(0)}%</div>
+                <div class="gp-ring-lbl">GP</div>
+              </div>
+            </div>
+            <div style="font-size:10px;color:#4a6741;margin-top:4px;text-align:center">Gross Margin</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCALING -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">Recipe Scaling</div>
+        </div>
+        <div class="section-card-body">
+          <div style="font-size:12px;color:#4a6741;margin-bottom:8px">Scale recipe for batch production:</div>
+          <div class="scale-row">
+            <button class="scale-btn ${scaleMultiplier===1?'active':''}"  onclick="setScale(1)">×1</button>
+            <button class="scale-btn ${scaleMultiplier===5?'active':''}"  onclick="setScale(5)">×5</button>
+            <button class="scale-btn ${scaleMultiplier===10?'active':''}" onclick="setScale(10)">×10</button>
+            <button class="scale-btn ${scaleMultiplier===20?'active':''}" onclick="setScale(20)">×20</button>
+            <input class="scale-input" type="number" id="custom-scale" value="${scaleMultiplier}" min="1" max="500" oninput="setScale(parseInt(this.value)||1)">
+            <span style="font-size:12px;color:#4a6741">servings</span>
+            <span style="margin-left:auto;font-size:13px;color:var(--brand-light);font-weight:600">
+              Total cost: ${fmt(totalLineCost)} for ${scaleMultiplier} serving${scaleMultiplier!==1?'s':''}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INGREDIENTS -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">Ingredients · ${recipe.lines.length} items</div>
+          <button class="btn btn-ghost" style="font-size:11px;padding:5px 12px" onclick="addIngredientRow('${recipe.id}')">+ Add</button>
+        </div>
+        <div class="section-card-body">
+          ${lowStockIngs.length > 0 ? `
+            <div class="stock-warn">
+              ⚠ ${lowStockIngs.length} ingredient${lowStockIngs.length>1?'s are':' is'} low in stock — may affect production capacity.
+            </div>
+          ` : ''}
+          <div class="ing-header">
+            <div>Ingredient</div>
+            <div>Qty × ${scaleMultiplier}</div>
+            <div>Unit Cost</div>
+            <div>Line Cost</div>
+            <div>% of Cost</div>
+          </div>
+          ${recipe.lines.map((line, idx) => {
+            const ing = getIngredient(line.ingredient_id);
+            if (!ing) return '';
+            const lineCost = ing.unit_cost * line.qty * scaleMultiplier;
+            const pct      = totalLineCost > 0 ? (lineCost / totalLineCost) * 100 : 0;
+            const isLow    = lowStockIngs.some(l => l.ingredient_id === line.ingredient_id);
+            return `
+              <div class="ing-row">
+                <div>
+                  <div class="ing-name" style="color:${isLow?'#F59E0B':'#fff'}">${ing.name}${isLow?' ⚠':''}</div>
+                  <div class="ing-sub">${ing.unit}</div>
+                </div>
+                <div class="ing-qty">
+                  <input type="number" value="${line.qty}" step="0.5" min="0"
+                    style="width:60px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:4px 8px;font-size:12px;color:#1a2e1a;font-family:'DM Sans',sans-serif;outline:none"
+                    oninput="updateIngQty('${recipe.id}',${idx},this.value)" onfocus="this.style.borderColor='var(--brand-light)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+                  <span style="font-size:10px;color:#4a6741;margin-left:4px">${ing.unit}</span>
+                  ${scaleMultiplier > 1 ? `<div style="font-size:10px;color:#4a6741">= ${(line.qty*scaleMultiplier).toLocaleString()} ${ing.unit}</div>` : ''}
+                </div>
+                <div class="ing-cost">${fmt(ing.unit_cost)}/${ing.unit}</div>
+                <div>
+                  <div class="ing-cost">${fmt(lineCost)}</div>
+                  <div style="font-size:10px;color:rgba(0,0,0,0.35);margin-top:1px">${pct.toFixed(1)}%</div>
+                </div>
+                <div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <div style="flex:1;height:3px;background:rgba(255,255,255,0.06);border-radius:2px">
+                      <div style="width:${pct}%;height:100%;border-radius:2px;background:var(--brand-light);transition:width 0.3s"></div>
+                    </div>
+                    <button class="ing-remove" onclick="removeIngredient('${recipe.id}',${idx})">✕</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+
+          <!-- Add ingredient inline -->
+          <div class="add-ing-row" id="add-ing-${recipe.id}">
+            <select class="add-ing-select" id="new-ing-select-${recipe.id}">
+              <option value="">+ Add ingredient…</option>
+              ${INGREDIENTS_DB.map(i => `<option value="${i.id}">${i.name} (${i.unit})</option>`).join('')}
+            </select>
+            <input class="add-ing-input" type="number" id="new-ing-qty-${recipe.id}" placeholder="Qty" step="0.5" min="0">
+            <button class="btn btn-ghost" style="font-size:11px;padding:6px 12px" onclick="confirmAddIngredient('${recipe.id}')">Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COST BREAKDOWN -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">Cost Breakdown</div>
+        </div>
+        <div class="section-card-body">
+          <div class="cost-breakdown">
+            <div class="cost-item">
+              <div class="cost-item-label">Food Cost</div>
+              <div class="cost-item-value">${fmt(cost)}</div>
+              <div class="cost-item-sub">${((cost/recipe.selling_price)*100).toFixed(1)}% of selling price</div>
+            </div>
+            <div class="cost-item highlight">
+              <div class="cost-item-label">Gross Profit</div>
+              <div class="cost-item-value">${fmt(margin)}</div>
+              <div class="cost-item-sub">GP Margin: ${gp.toFixed(1)}%</div>
+            </div>
+            <div class="cost-item">
+              <div class="cost-item-label">Monthly Revenue*</div>
+              <div class="cost-item-value">${fmt(recipe.selling_price * 300)}</div>
+              <div class="cost-item-sub">At 300 cups/month</div>
+            </div>
+            <div class="cost-item">
+              <div class="cost-item-label">Monthly Profit*</div>
+              <div class="cost-item-value">${fmt(margin * 300)}</div>
+              <div class="cost-item-sub">At 300 cups/month</div>
+            </div>
+          </div>
+          <!-- Selling price editor -->
+          <div style="padding-top:12px;border-top:1px solid rgba(255,255,255,0.05)">
+            <div style="font-size:11px;color:#4a6741;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px">Adjust Selling Price</div>
+            <div class="price-editor">
+              <span style="font-size:18px;color:#4a6741">฿</span>
+              <input class="price-input" type="number" value="${recipe.selling_price}" id="price-editor-input"
+                oninput="updateSellingPrice('${recipe.id}', this.value)">
+              <span class="price-label">per serving</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- METHOD & NOTES -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">Method & Notes</div>
+          <button class="btn btn-ghost" style="font-size:11px;padding:5px 12px" onclick="editMethod('${recipe.id}')">Edit</button>
+        </div>
+        <div class="section-card-body">
+          <div style="font-size:12px;color:#4a6741;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px">Preparation Method</div>
+          <div style="font-size:13px;color:#1a2e1a;line-height:1.6;margin-bottom:16px">${recipe.method || '—'}</div>
+          <div style="font-size:12px;color:#4a6741;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px">Notes</div>
+          <div style="font-size:13px;color:#4a6741;line-height:1.6">${recipe.notes || '—'}</div>
+        </div>
+      </div>
+
+      <!-- ACTIONS -->
+      <div style="display:flex;gap:8px;margin-bottom:40px">
+        <button class="btn btn-ghost" onclick="duplicateRecipe('${recipe.id}')">Duplicate Recipe</button>
+        <button class="btn btn-ghost" style="color:#EF4444;border-color:rgba(239,68,68,0.2)" onclick="deleteRecipe('${recipe.id}')">Delete</button>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="saveRecipe('${recipe.id}')">Save Changes</button>
+      </div>
+
+    </div><!-- /detail-content -->
+  `;
+}
+
+
+// ============================================================
+// INTERACTIONS
+// ============================================================
+function switchBrand(brand, btn) {
+  ACTIVE_BRAND = brand;
+  sessionStorage.setItem('brewos_brand', brand);
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeRecipeId = null;
+  document.getElementById('empty-detail').style.display = 'flex';
+  document.getElementById('recipe-detail').style.display = 'none';
+  renderRecipeList();
+}
+
+function filterRecipes(val) { renderRecipeList(val); }
+
+function setScale(n) {
+  scaleMultiplier = n;
+  renderDetail();
+}
+
+function updateIngQty(recipeId, idx, val) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  recipe.lines[idx].qty = parseFloat(val) || 0;
+  // Update GP in list without full re-render
+  renderRecipeList();
+  // Re-render detail cost section only (lightweight)
+  renderDetail();
+}
+
+function updateSellingPrice(recipeId, val) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  recipe.selling_price = parseFloat(val) || recipe.selling_price;
+  renderRecipeList();
+  renderDetail();
+}
+
+function removeIngredient(recipeId, idx) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  recipe.lines.splice(idx, 1);
+  renderDetail();
+  renderRecipeList();
+}
+
+function confirmAddIngredient(recipeId) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  const ingId  = document.getElementById(`new-ing-select-${recipeId}`)?.value;
+  const qty    = parseFloat(document.getElementById(`new-ing-qty-${recipeId}`)?.value);
+  if (!ingId || !qty || isNaN(qty)) { alert('Select an ingredient and enter a quantity.'); return; }
+  recipe.lines.push({ ingredient_id: ingId, qty });
+  renderDetail();
+  renderRecipeList();
+}
+
+function editMethod(recipeId) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  const m = prompt('Edit preparation method:', recipe.method);
+  if (m !== null) { recipe.method = m; renderDetail(); }
+}
+
+function duplicateRecipe(recipeId) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  const copy = JSON.parse(JSON.stringify(recipe));
+  copy.id   = 'RCP-' + String(RECIPES.length + 1).padStart(3, '0');
+  copy.name = recipe.name + ' (Copy)';
+  RECIPES.push(copy);
+  activeRecipeId = copy.id;
+  renderRecipeList();
+  renderDetail();
+}
+
+function deleteRecipe(recipeId) {
+  if (!confirm('Delete this recipe?')) return;
+  const idx = RECIPES.findIndex(r => r.id === recipeId);
+  if (idx !== -1) RECIPES.splice(idx, 1);
+  activeRecipeId = null;
+  document.getElementById('empty-detail').style.display = 'flex';
+  document.getElementById('recipe-detail').style.display = 'none';
+  renderRecipeList();
+}
+
+async function saveRecipe(recipeId) {
+  const recipe = RECIPES.find(r => r.id === recipeId);
+  if (!recipe) return;
+  try {
+    await API.updateRecipe({ recipe_id: recipeId, ...recipe });
+    UI.toast('Recipe saved!');
+  } catch(e) { UI.toast('Saved locally. Will sync when connected.', 'info'); }
+}
+
+function openCreateModal() { document.getElementById('create-modal').classList.add('show'); }
+function closeModal(id) { document.getElementById(id)?.classList.remove('show'); }
+
+async function createRecipe() {
+  const name = document.getElementById('cr-name').value.trim();
+  if (!name) { alert('Please enter a recipe name.'); return; }
+  const newRecipe = {
+    id: 'RCP-' + String(RECIPES.length + 1).padStart(3, '0'),
+    name,
+    icon:          document.getElementById('cr-icon').value || '🍽',
+    category:      document.getElementById('cr-cat').value,
+    brand:         document.getElementById('cr-brand').value,
+    selling_price: parseFloat(document.getElementById('cr-price').value) || 0,
+    serving:       document.getElementById('cr-serving').value || '1 serving',
+    lines: [], method: '', notes: '',
+  };
+  try { await API.createRecipe(newRecipe); } catch(e) { /* local */ }
+  RECIPES.push(newRecipe);
+  closeModal('create-modal');
+  activeRecipeId = newRecipe.id;
+  renderRecipeList();
+  renderDetail();
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+});
+
+// INIT
+async function loadRecipeData() {
+  try {
+    const data = await API.recipes({ brand_id: Auth.getBrand() });
+    if (data && data.length) {
+      // Merge API recipes with static ones
+      data.forEach(r => {
+        const existing = RECIPES.findIndex(x => x.id === (r.id || r.recipe_id));
+        const norm = {
+          id: r.id || r.recipe_id,
+          name: r.name, icon: r.icon || '🍽',
+          category: r.category || 'beverage',
+          brand: r.brand_id || 'BB',
+          selling_price: r.selling_price || 0,
+          serving: r.serving || '1 serving',
+          lines: r.lines || [],
+          method: r.method || '', notes: r.notes || '',
+        };
+        if (existing >= 0) RECIPES[existing] = norm; else RECIPES.push(norm);
+      });
+    }
+  } catch(e) { /* use static RECIPES */ }
+  renderRecipeList();
+  if (RECIPES.length) selectRecipe(RECIPES[0].id);
+}
+
+document.addEventListener('DOMContentLoaded', loadRecipeData);
+</script>
+<script src="api.js"></script>
+</body>
+</html>

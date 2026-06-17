@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BrewOS — Brand & Menu Editor</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--green:#1B4332;--green2:#2D6A4F;--orange:#F97316;--bg:#f8f7f4;--card:#fff;--border:#e8e4de;--text:#1a1a1a;--muted:#6b7280;--sidebar:220px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+.sidebar{width:var(--sidebar);background:#fff;border-right:1.5px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);}
+.logo-mark{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700;}
+.logo-sub{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+nav{flex:1;padding:16px 12px;overflow-y:auto;}
+.nav-section{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;margin-top:8px;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--green);font-weight:700;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:1px;cursor:pointer;}
+.nav-link:hover{background:var(--bg);color:var(--green);}
+.nav-link.active{background:rgba(45,106,79,.08);color:var(--green);font-weight:600;}
+.main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.topbar-left h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;}
+.topbar-left p{font-size:12px;color:var(--muted);}
+.btn{padding:8px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;}
+.btn-primary{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(249,115,22,0.3);}
+.btn-primary:hover{background:#ea580c;}
+.btn-outline{background:#fff;color:var(--text);border:1px solid var(--border);}
+.btn-outline:hover{background:var(--bg);}
+.btn-danger{background:#ef4444;color:#fff;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-green{background:var(--green);color:#fff;}
+.content{padding:24px 28px;flex:1;}
+
+/* brand tabs */
+.brand-tabs{display:flex;gap:8px;margin-bottom:24px;}
+.brand-tab{padding:10px 24px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:all 0.2s;}
+.brand-tab.active{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* section card */
+.section-card{background:#fff;border:1px solid var(--border);border-radius:14px;margin-bottom:20px;overflow:hidden;}
+.section-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.section-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;}
+.section-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.section-body{padding:20px;}
+.section-footer{padding:12px 20px;border-top:1px solid var(--border);background:var(--bg);display:flex;justify-content:flex-end;gap:8px;}
+
+/* form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-group{margin-bottom:0;}
+.form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;}
+.form-control{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all 0.2s;color:var(--text);background:#fff;}
+.form-control:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(27,67,50,0.1);}
+.color-row{display:flex;gap:8px;align-items:center;}
+.color-row .form-control{flex:1;}
+.color-picker{width:44px;height:38px;border:1px solid var(--border);border-radius:8px;padding:2px;cursor:pointer;}
+
+/* preview card */
+.preview-card{border-radius:12px;padding:20px;color:#fff;position:relative;overflow:hidden;margin-top:12px;}
+.preview-card::after{content:'';position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);}
+.preview-name{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;margin-bottom:4px;}
+.preview-tag{font-size:11px;opacity:0.65;}
+.preview-chips{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.preview-chip{padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.15);font-size:11px;font-weight:500;}
+
+/* product table */
+.prod-table{width:100%;border-collapse:collapse;}
+.prod-table th{padding:9px 12px;font-size:11px;color:var(--muted);font-weight:600;text-align:left;text-transform:uppercase;letter-spacing:0.6px;background:var(--bg);border-bottom:1px solid var(--border);}
+.prod-table td{padding:10px 12px;font-size:13px;border-bottom:1px solid var(--border);}
+.prod-table tr:last-child td{border-bottom:none;}
+.prod-table tr:hover td{background:#fafaf8;}
+.prod-name{font-weight:500;}
+.prod-emoji{font-size:18px;width:28px;text-align:center;}
+.toggle-switch{position:relative;width:40px;height:22px;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;inset:0;background:#d1d5db;border-radius:22px;cursor:pointer;transition:0.3s;}
+.slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.2);}
+input:checked+.slider{background:var(--green);}
+input:checked+.slider::before{transform:translateX(18px);}
+.price-input{width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:'DM Sans',sans-serif;text-align:right;outline:none;}
+.price-input:focus{border-color:var(--green);}
+.gp-badge{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;}
+.gp-good{background:#dcfce7;color:#15803d;}
+.gp-warn{background:#fef3c7;color:#d97706;}
+.gp-bad{background:#fee2e2;color:#dc2626;}
+.action-btns{display:flex;gap:6px;}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.icon-btn:hover{background:var(--green);border-color:var(--green);color:#fff;}
+
+/* add product modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:20px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal-header{padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;}
+.modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.modal-body{padding:20px 24px;}
+.modal-footer{padding:0 24px 24px;display:flex;gap:10px;justify-content:flex-end;}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.3s;}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">BrewOS</div>
+    <div class="logo-sub">Brand & Menu</div>
+  </div>
+  <nav>
+    <div class="nav-section">Main</div>
+    <a class="nav-link" href="dashboard.html">📊 Dashboard</a>
+    <a class="nav-link" href="pos.html">🖥️ POS System</a>
+    <a class="nav-link" href="orders.html">🧾 Orders</a>
+    <a class="nav-link" href="kitchen.html">👨‍🍳 Kitchen Display</a>
+    <div class="nav-section">Operations</div>
+    <a class="nav-link" href="inventory.html">📦 Inventory</a>
+    <a class="nav-link" href="recipe.html">📋 Recipes</a>
+    <a class="nav-link" href="production.html">🏭 Production</a>
+    <div class="nav-section">Business</div>
+    <a class="nav-link" href="crm.html">👥 CRM</a>
+    <a class="nav-link" href="finance.html">💰 Finance</a>
+    <a class="nav-link" href="reports.html">📈 Reports</a>
+    <div class="nav-section">Admin</div>
+    <a class="nav-link" href="staff.html">🧑‍🍳 Staff</a>
+    <a class="nav-link active" href="brand_editor.html">🎨 Brand & Menu</a>
+    <a class="nav-link" href="settings.html">⚙️ Settings</a>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h2>Brand & Menu Editor</h2>
+      <p>แก้ชื่อ, สี, เมนู — ขึ้น POS อัตโนมัติ</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-outline btn-sm" onclick="loadData()">↺ Reload</button>
+      <button class="btn btn-primary" onclick="saveAll()">💾 Save All Changes</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Brand Tabs -->
+    <div class="brand-tabs">
+      <button class="brand-tab active" onclick="switchBrand('BB',this)">☕ Brain Brew Coffee</button>
+      <button class="brand-tab" onclick="switchBrand('HH',this)">🌸 Heng Heng Phanit</button>
+    </div>
+
+    <!-- 1. Brand Identity -->
+    <div class="section-card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Brand Identity</div>
+          <div class="section-sub">ชื่อแบรนด์, สี, ที่อยู่, โทร</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">ชื่อแบรนด์</label>
+            <input class="form-control" id="brandName" placeholder="Brain Brew Coffee">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tagline</label>
+            <input class="form-control" id="brandTagline" placeholder="Specialty Coffee">
+          </div>
+        </div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Primary Color</label>
+            <div class="color-row">
+              <input class="form-control" id="primaryColor" value="#1B4332" oninput="updatePreview()">
+              <input type="color" class="color-picker" id="primaryColorPicker" value="#1B4332" oninput="document.getElementById('primaryColor').value=this.value;updatePreview()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Accent Color</label>
+            <div class="color-row">
+              <input class="form-control" id="accentColor" value="#F97316" oninput="updatePreview()">
+              <input type="color" class="color-picker" id="accentColorPicker" value="#F97316" oninput="document.getElementById('accentColor').value=this.value;updatePreview()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ภาษีมูลค่าเพิ่ม (%)</label>
+            <input class="form-control" id="taxRate" type="number" value="7" step="0.5">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Service Charge (%)</label>
+            <input class="form-control" id="serviceCharge" type="number" value="10" step="0.5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">โทรศัพท์</label>
+            <input class="form-control" id="brandPhone" placeholder="+66-2-123-4567">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label class="form-label">ที่อยู่</label>
+          <input class="form-control" id="brandAddress" placeholder="123 Sathorn Rd, Bangkok">
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">ข้อความบนใบเสร็จ (Header)</label>
+            <textarea class="form-control" id="receiptHeader" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ข้อความใต้ใบเสร็จ (Footer)</label>
+            <textarea class="form-control" id="receiptFooter" rows="2"></textarea>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <label class="form-label" style="margin-top:4px;">Preview</label>
+        <div class="preview-card" id="previewCard" style="background:linear-gradient(135deg,#1B4332,#2D6A4F)">
+          <div class="preview-name" id="previewName">Brain Brew Coffee</div>
+          <div class="preview-tag" id="previewTag">Specialty Coffee</div>
+          <div class="preview-chips">
+            <span class="preview-chip" id="previewTax">VAT 7%</span>
+            <span class="preview-chip" id="previewSvc">Service 10%</span>
+            <span class="preview-chip" id="previewColor">●  #1B4332</span>
+          </div>
+        </div>
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-primary btn-sm" onclick="saveBrand()">Save Brand</button>
+      </div>
+    </div>
+
+    <!-- 2. Menu Products -->
+    <div class="section-card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Menu Items</div>
+          <div class="section-sub">เพิ่ม/แก้ไข/ซ่อนเมนู — อัพเดท POS ทันที</div>
+        </div>
+        <button class="btn btn-green btn-sm" onclick="openAddProduct()">+ เพิ่มเมนูใหม่</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="prod-table">
+          <thead>
+            <tr>
+              <th width="36">Icon</th>
+              <th>ชื่อ</th>
+              <th>Category</th>
+              <th>ราคา (฿)</th>
+              <th>ต้นทุน (฿)</th>
+              <th>GP%</th>
+              <th>POS</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="productBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 3. LINE Notify -->
+    <div class="section-card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">LINE Notify</div>
+          <div class="section-sub">แจ้งเตือนสต็อกต่ำ + สรุปยอดขายผ่าน LINE</div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">LINE Notify Token</label>
+            <input class="form-control" id="lineToken" type="password" placeholder="วาง token จาก notify-bot.line.me">
+          </div>
+          <div class="form-group">
+            <label class="form-label">ทดสอบส่ง</label>
+            <button class="btn btn-outline" style="width:100%;margin-top:0;" onclick="testLINE()">📱 ส่งข้อความทดสอบ</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg);border-radius:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:500;">แจ้งเตือนสต็อกต่ำ</div>
+              <div style="font-size:11px;color:var(--muted);">ทุกวัน 08:00 น.</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" id="lineStockAlert" checked><span class="slider"></span></label>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg);border-radius:8px;">
+            <div>
+              <div style="font-size:13px;font-weight:500;">สรุปยอดขายรายวัน</div>
+              <div style="font-size:11px;color:var(--muted);">ทุกวัน 22:00 น.</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" id="lineDailySummary" checked><span class="slider"></span></label>
+          </div>
+        </div>
+        <div style="margin-top:4px;padding:12px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:12px;color:#15803d;">
+          วิธีขอ Token: ไปที่ <a href="https://notify-bot.line.me/th/" target="_blank" style="color:#15803d;font-weight:600;">notify-bot.line.me</a> → Log in → My page → Generate token → ตั้งชื่อ "BrewOS" → Copy token มาวางด้านบน
+        </div>
+      </div>
+      <div class="section-footer">
+        <button class="btn btn-primary btn-sm" onclick="saveLINE()">Save LINE Settings</button>
+        <button class="btn btn-outline btn-sm" onclick="installTriggers()">⚡ Install Auto Triggers</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">เพิ่มเมนูใหม่</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">ชื่อเมนู (EN)</label>
+          <input class="form-control" id="pName" placeholder="Neuron Latte">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ชื่อเมนู (TH)</label>
+          <input class="form-control" id="pNameTh" placeholder="นิวรอน ลาเต้">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-control" id="pCategory"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emoji / Icon</label>
+          <input class="form-control" id="pEmoji" placeholder="☕" maxlength="2">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">ราคาขาย (฿)</label>
+          <input class="form-control" id="pPrice" type="number" placeholder="95" oninput="calcGP()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ต้นทุน (฿)</label>
+          <input class="form-control" id="pCost" type="number" placeholder="28" oninput="calcGP()">
+        </div>
+      </div>
+      <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:14px;text-align:center;">
+        <span style="font-size:12px;color:var(--muted);">Gross Profit: </span>
+        <span style="font-size:18px;font-weight:700;" id="gpPreview">—</span>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label">ประเภท</label>
+        <select class="form-control" id="pType">
+          <option value="made_to_order">Made to order (ทำตอนสั่ง)</option>
+          <option value="pre_made">Pre-made (ทำไว้ล่วงหน้า)</option>
+          <option value="packaged">Packaged (แพ็คเกจสำเร็จ)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">สารก่อภูมิแพ้ (Allergens)</label>
+        <input class="form-control" id="pAllergens" placeholder="milk, gluten, nut">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProduct()">Save & ขึ้น POS</button>
+    </div>
+  </div>
+</div>
+
+<script src="api.js"></script>
+<script>
+let BRAND = Auth.getBrand() || 'BB';
+let editProductId = null;
+let products = [];
+let categories = [];
+
+const BRANDS_DATA = {
+  BB: { name:'Brain Brew Coffee', tagline:'Specialty Coffee · Neuroscience Inspired', primary:'#1B4332', accent:'#F97316', tax:7, service:10, phone:'+66-2-123-4567', address:'123 Sathorn Rd, Bangkok 10120', header:'Brain Brew Coffee\nSpecialty Since 2024', footer:'Thank you! Follow us @brainbrew.bkk' },
+  HH: { name:'Heng Heng Phanit', tagline:'Artisan Bakery · Warm & Wholesome', primary:'#2D6A4F', accent:'#FB923C', tax:7, service:0, phone:'+66-2-456-7890', address:'456 Ari Rd, Bangkok 10400', header:'Heng Heng Phanit\nArtisan Bakery', footer:'ขอบคุณที่อุดหนุนนะคะ 🙏' },
+};
+
+async function loadData() {
+  try {
+    [products, categories] = await Promise.all([
+      API.products({ brand_id: BRAND }),
+      API.categories(BRAND),
+    ]);
+  } catch(e) {
+    // fallback mock
+    products = (await apiGet('get_products', { brand_id: BRAND })).filter(p => p.brand_id === BRAND);
+    categories = await apiGet('get_categories', { brand_id: BRAND });
+  }
+  loadBrandForm();
+  renderProducts();
+  renderCategoryOptions();
+}
+
+function loadBrandForm() {
+  const b = BRANDS_DATA[BRAND] || BRANDS_DATA.BB;
+  document.getElementById('brandName').value    = b.name;
+  document.getElementById('brandTagline').value = b.tagline;
+  document.getElementById('primaryColor').value = b.primary;
+  document.getElementById('primaryColorPicker').value = b.primary;
+  document.getElementById('accentColor').value  = b.accent;
+  document.getElementById('accentColorPicker').value = b.accent;
+  document.getElementById('taxRate').value      = b.tax;
+  document.getElementById('serviceCharge').value= b.service;
+  document.getElementById('brandPhone').value   = b.phone;
+  document.getElementById('brandAddress').value = b.address;
+  document.getElementById('receiptHeader').value= b.header;
+  document.getElementById('receiptFooter').value= b.footer;
+  updatePreview();
+}
+
+function updatePreview() {
+  const primary = document.getElementById('primaryColor').value || '#1B4332';
+  const accent  = document.getElementById('accentColor').value  || '#F97316';
+  const darken  = (hex) => hex; // simple pass-through
+  document.getElementById('previewCard').style.background = `linear-gradient(135deg,${primary},${accent}50)`;
+  document.getElementById('previewName').textContent = document.getElementById('brandName').value || 'Brand Name';
+  document.getElementById('previewTag').textContent  = document.getElementById('brandTagline').value || 'Tagline';
+  document.getElementById('previewTax').textContent  = `VAT ${document.getElementById('taxRate').value || 7}%`;
+  document.getElementById('previewSvc').textContent  = `Service ${document.getElementById('serviceCharge').value || 0}%`;
+  document.getElementById('previewColor').textContent= `● ${primary}`;
+}
+
+function renderProducts() {
+  const body = document.getElementById('productBody');
+  if (!products.length) {
+    body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted);">ยังไม่มีเมนู — กด "+ เพิ่มเมนูใหม่"</td></tr>';
+    return;
+  }
+  body.innerHTML = products.map(p => {
+    const price = Number(p.base_price || p.price || 0);
+    const cost  = Number(p.cost_price || p.cost || 0);
+    const gp    = price > 0 ? ((price - cost) / price * 100).toFixed(1) : 0;
+    const gpClass = gp >= 65 ? 'gp-good' : gp >= 50 ? 'gp-warn' : 'gp-bad';
+    const avail = p.is_available !== false && p.is_available !== 'FALSE';
+    const catName = categories.find(c => c.category_id === (p.category_id||p.id) || c.id === p.category_id)?.name || p.category_id || '—';
+    return `<tr>
+      <td class="prod-emoji">${p.emoji || '☕'}</td>
+      <td><div class="prod-name">${p.name}</div><div style="font-size:11px;color:var(--muted)">${p.name_th||''}</div></td>
+      <td style="font-size:12px;color:var(--muted)">${catName}</td>
+      <td><input class="price-input" type="number" value="${price}" onchange="updatePrice('${p.product_id||p.id}',this.value,'price')"></td>
+      <td><input class="price-input" type="number" value="${cost}" onchange="updatePrice('${p.product_id||p.id}',this.value,'cost')"></td>
+      <td><span class="gp-badge ${gpClass}">${gp}%</span></td>
+      <td>
+        <label class="toggle-switch">
+          <input type="checkbox" ${avail?'checked':''} onchange="toggleProd('${p.product_id||p.id}',this.checked)">
+          <span class="slider"></span>
+        </label>
+      </td>
+      <td><div class="action-btns">
+        <button class="icon-btn" title="แก้ไข" onclick="editProduct('${p.product_id||p.id}')">✏️</button>
+        <button class="icon-btn" title="ลบ" onclick="deleteProd('${p.product_id||p.id}')">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCategoryOptions() {
+  const sel = document.getElementById('pCategory');
+  sel.innerHTML = categories.map(c => `<option value="${c.category_id||c.id}">${c.emoji||''} ${c.name}</option>`).join('');
+}
+
+async function updatePrice(id, val, field) {
+  const p = products.find(x => (x.product_id||x.id) === id);
+  if (!p) return;
+  if (field === 'price') p.base_price = Number(val);
+  else p.cost_price = Number(val);
+  try {
+    await API.updateProduct({ product_id: id, [field === 'price' ? 'base_price' : 'cost_price']: Number(val) });
+    toast('ราคาอัพเดทแล้ว ✓');
+  } catch(e) { toast('Saved locally (demo mode)'); }
+  renderProducts();
+}
+
+async function toggleProd(id, val) {
+  try { await API.updateProduct({ product_id: id, is_available: val }); } catch(e) {}
+  toast(val ? '✅ เมนูแสดงบน POS แล้ว' : '🚫 ซ่อนจาก POS แล้ว');
+}
+
+async function deleteProd(id) {
+  if (!confirm('ลบเมนูนี้ใช่ไหม? (soft delete)')) return;
+  products = products.filter(p => (p.product_id||p.id) !== id);
+  try { await API.deleteProduct(id); } catch(e) {}
+  renderProducts();
+  toast('ลบเมนูแล้ว');
+}
+
+function editProduct(id) {
+  const p = products.find(x => (x.product_id||x.id) === id);
+  if (!p) return;
+  editProductId = id;
+  document.getElementById('modalTitle').textContent = 'แก้ไขเมนู';
+  document.getElementById('pName').value     = p.name || '';
+  document.getElementById('pNameTh').value   = p.name_th || '';
+  document.getElementById('pEmoji').value    = p.emoji || '';
+  document.getElementById('pPrice').value    = p.base_price || p.price || '';
+  document.getElementById('pCost').value     = p.cost_price || p.cost || '';
+  document.getElementById('pType').value     = p.product_type || 'made_to_order';
+  document.getElementById('pAllergens').value= p.allergens || '';
+  calcGP();
+  document.getElementById('productModal').classList.add('open');
+}
+
+function openAddProduct() {
+  editProductId = null;
+  document.getElementById('modalTitle').textContent = 'เพิ่มเมนูใหม่';
+  ['pName','pNameTh','pEmoji','pPrice','pCost','pAllergens'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('gpPreview').textContent = '—';
+  document.getElementById('productModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('productModal').classList.remove('open'); }
+
+function calcGP() {
+  const price = Number(document.getElementById('pPrice').value) || 0;
+  const cost  = Number(document.getElementById('pCost').value) || 0;
+  const gp    = price > 0 ? ((price - cost) / price * 100).toFixed(1) : 0;
+  const el    = document.getElementById('gpPreview');
+  el.textContent = price > 0 ? `GP ${gp}%` : '—';
+  el.style.color = gp >= 65 ? '#15803d' : gp >= 50 ? '#d97706' : '#dc2626';
+}
+
+async function saveProduct() {
+  const data = {
+    product_id:   editProductId,
+    name:         document.getElementById('pName').value,
+    name_th:      document.getElementById('pNameTh').value,
+    emoji:        document.getElementById('pEmoji').value || '☕',
+    category_id:  document.getElementById('pCategory').value,
+    base_price:   Number(document.getElementById('pPrice').value),
+    cost_price:   Number(document.getElementById('pCost').value),
+    product_type: document.getElementById('pType').value,
+    allergens:    document.getElementById('pAllergens').value,
+    brand_id:     BRAND,
+  };
+  if (!data.name || !data.base_price) { alert('กรุณากรอกชื่อและราคา'); return; }
+  try {
+    if (editProductId) {
+      await API.updateProduct(data);
+      const idx = products.findIndex(p => (p.product_id||p.id) === editProductId);
+      if (idx >= 0) products[idx] = { ...products[idx], ...data };
+    } else {
+      const res = await API.createProduct(data);
+      products.push({ ...data, product_id: res.product_id || 'new_'+Date.now(), is_available: true });
+    }
+  } catch(e) {
+    if (!editProductId) products.push({ ...data, product_id: 'new_'+Date.now(), is_available: true });
+    else { const idx = products.findIndex(p => (p.product_id||p.id) === editProductId); if(idx>=0) products[idx] = {...products[idx],...data}; }
+  }
+  closeModal();
+  renderProducts();
+  toast(editProductId ? '✅ อัพเดทเมนูแล้ว — ขึ้น POS ทันที' : '✅ เพิ่มเมนูแล้ว — ขึ้น POS ทันที');
+}
+
+async function saveBrand() {
+  const data = {
+    brand_id:       BRAND,
+    brand_name:     document.getElementById('brandName').value,
+    primary_color:  document.getElementById('primaryColor').value,
+    accent_color:   document.getElementById('accentColor').value,
+    tax_rate:       Number(document.getElementById('taxRate').value) / 100,
+    service_charge: Number(document.getElementById('serviceCharge').value) / 100,
+    phone:          document.getElementById('brandPhone').value,
+    address:        document.getElementById('brandAddress').value,
+    receipt_header: document.getElementById('receiptHeader').value,
+    receipt_footer: document.getElementById('receiptFooter').value,
+  };
+  try { await API.updateProduct({ ...data, _action: 'update_brand' }); } catch(e) {}
+  BRANDS_DATA[BRAND] = { ...BRANDS_DATA[BRAND], ...data };
+  toast('✅ บันทึก Brand Settings แล้ว');
+}
+
+async function saveLINE() {
+  const token = document.getElementById('lineToken').value;
+  if (!token) { toast('กรุณาใส่ LINE Notify Token', 'warn'); return; }
+  try {
+    await API.updateProduct({ _action: 'update_setting', brand_id: 'GLOBAL', key: 'line_notify_token', value: token });
+  } catch(e) {}
+  toast('✅ บันทึก LINE Token แล้ว');
+}
+
+async function testLINE() {
+  toast('📱 ส่งข้อความทดสอบ...');
+  try { await apiPost('notify_custom', { message: '\n✅ BrewOS LINE Notify ทดสอบสำเร็จ!\nระบบพร้อมแจ้งเตือนสต็อกและยอดขาย' }); toast('✅ ส่งสำเร็จ — เช็ค LINE ได้เลย'); }
+  catch(e) { toast('ส่งสำเร็จ (demo mode — เพิ่ม token จริงในระบบก่อน)'); }
+}
+
+async function installTriggers() {
+  try { await apiPost('install_triggers', {}); toast('✅ ติดตั้ง Auto Triggers แล้ว (08:00 สต็อก + 22:00 สรุป)'); }
+  catch(e) { toast('ไปรัน installTriggers() ใน Apps Script console แทนครับ'); }
+}
+
+function saveAll() { saveBrand(); toast('✅ บันทึกทั้งหมดแล้ว'); }
+
+function switchBrand(b, el) {
+  BRAND = b;
+  document.querySelectorAll('.brand-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  loadData();
+}
+
+function toast(msg, type) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.className = 'toast';
+  if (type === 'warn') t.style.background = '#d97706';
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+// Init
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BrewOS Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700;800&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gd:#1e3a1e; --gm:#2d5a27; --gl:#3d7a35;
+  --or:#e07b2a; --ol:#f0934a;
+  --cr:#f5f0e8; --cd:#ede5d5;
+  --wh:#ffffff; --td:#1a2e1a; --tm:#4a6741;
+  --sh:0 4px 20px rgba(30,58,30,.12); --rc:18px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--cr);font-family:'Sarabun',sans-serif;color:var(--td);display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--gd);padding:10px 14px 8px;flex-shrink:0;position:relative;overflow:hidden}
+.topbar::after{content:'';position:absolute;right:-24px;top:-24px;width:110px;height:110px;background:radial-gradient(circle,rgba(224,123,42,.18) 0%,transparent 70%);pointer-events:none}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.brand-duo{display:flex;align-items:center;gap:10px}
+.brand-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:#fff;line-height:1}
+.brand-sep{width:1px;height:28px;background:rgba(255,255,255,.2)}
+.hh-tag{font-size:9px;font-weight:800;color:var(--or);letter-spacing:1.5px}
+.brand-mode{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.total-pill{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.13);border-radius:12px;padding:8px 14px;display:flex;align-items:center;justify-content:space-between}
+.tp-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.tp-val{font-size:26px;font-weight:900;color:var(--or);line-height:1}
+.tp-count{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px}
+.staff-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border-radius:20px;padding:4px 10px}
+.staff-dot{width:7px;height:7px;border-radius:50%;background:#4ade80}
+.staff-name{font-size:11px;color:rgba(255,255,255,.6);font-weight:600}
+
+/* ── CAT TABS ── */
+.cat-tabs{background:var(--gd);padding:0 10px 10px;flex-shrink:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.cat-tabs::-webkit-scrollbar{display:none}
+.cat-tab{flex-shrink:0;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;font-family:'Sarabun',sans-serif;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:rgba(255,255,255,.45);cursor:pointer;transition:all .15s;white-space:nowrap}
+.cat-tab.active{background:var(--or);border-color:var(--or);color:#fff}
+
+/* ── CUSTOMER BAR ── */
+.cust-bar{background:var(--wh);border-bottom:1.5px solid var(--cd);padding:8px 12px;flex-shrink:0;display:flex;align-items:center;gap:8px}
+.cust-input{flex:1;border:1.5px solid var(--cd);border-radius:10px;padding:7px 10px 7px 32px;font-size:13px;font-family:'Sarabun',sans-serif;background:var(--cr);outline:none;color:var(--td)}
+.cust-input:focus{border-color:var(--gl);background:#fff}
+.cust-icon{position:absolute;left:22px;font-size:14px;pointer-events:none;transform:translateY(-50%);top:50%}
+.cust-wrap{position:relative;flex:1}
+.room-input{width:72px;border:1.5px solid var(--cd);border-radius:10px;padding:7px 8px;font-size:13px;font-family:'Sarabun',sans-serif;background:var(--cr);outline:none;color:var(--td);text-align:center}
+.room-input:focus{border-color:var(--gl)}
+
+/* ── MAIN CONTENT ── */
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── SEARCH ── */
+.search-bar{padding:8px 12px;background:var(--wh);border-bottom:1px solid var(--cd);flex-shrink:0}
+.search-input{width:100%;border:1.5px solid var(--cd);border-radius:10px;padding:8px 12px 8px 34px;font-size:13px;font-family:'Sarabun',sans-serif;background:var(--cr);outline:none;color:var(--td)}
+.search-input:focus{border-color:var(--gl);background:#fff}
+.search-wrap{position:relative}
+.search-wrap::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+
+/* ── SPLIT VIEW ── */
+.split{flex:1;overflow:hidden;display:flex}
+.menu-col{flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+.cart-col{width:175px;flex-shrink:0;background:var(--gd);display:flex;flex-direction:column;border-left:1.5px solid rgba(255,255,255,.08)}
+
+/* ── MENU CARD ── */
+.menu-card{background:var(--wh);border-radius:13px;padding:10px 11px;border:1.5px solid transparent;display:flex;align-items:flex-start;gap:9px;cursor:pointer;transition:all .15s;box-shadow:0 2px 8px rgba(30,58,30,.06)}
+.menu-card:active{transform:scale(.97)}
+.menu-card.in-cart{border-color:rgba(61,122,53,.3);background:#f0fdf0}
+.mc-emoji{font-size:22px;flex-shrink:0;width:32px;text-align:center;padding-top:2px}
+.mc-info{flex:1;min-width:0}
+.mc-name{font-size:11px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.mc-sub{font-size:10px;color:var(--tm);margin-top:1px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
+.mc-price{font-size:13px;font-weight:800;color:var(--gd);flex-shrink:0;padding-top:2px}
+.mc-stepper{display:flex;align-items:center;gap:0;background:var(--cr);border-radius:20px;border:1.5px solid var(--cd);overflow:hidden;flex-shrink:0;margin-top:2px}
+.in-cart .mc-stepper{border-color:rgba(61,122,53,.3)}
+.ms-btn{width:28px;height:28px;border:none;background:none;cursor:pointer;font-size:18px;font-weight:300;color:var(--gd);display:flex;align-items:center;justify-content:center;line-height:1}
+.ms-btn:active{background:var(--cd)}
+.ms-val{width:22px;text-align:center;font-size:12px;font-weight:800}
+
+/* ── CART COLUMN ── */
+.cart-head{padding:10px 10px 6px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cart-head-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35)}
+.cart-head-cnt{font-size:18px;font-weight:900;color:var(--or);line-height:1;margin-top:1px}
+.cart-items{flex:1;overflow-y:auto;padding:6px 6px}
+.cart-item{background:rgba(255,255,255,.06);border-radius:9px;padding:7px 8px;margin-bottom:5px;position:relative}
+.ci-name{font-size:11px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:3px;padding-right:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-row{display:flex;align-items:center;justify-content:space-between}
+.ci-qty-ctrl{display:flex;align-items:center;gap:4px}
+.ci-btn{width:20px;height:20px;border-radius:50%;border:1px solid rgba(255,255,255,.2);background:none;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.ci-btn:active{background:rgba(255,255,255,.1)}
+.ci-qty{font-size:12px;font-weight:800;color:#fff;min-width:14px;text-align:center}
+.ci-price{font-size:11px;font-weight:700;color:var(--or)}
+.ci-del{position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.3);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.ci-del:active{background:rgba(220,60,60,.4);color:#fff}
+.cart-empty{padding:20px 10px;text-align:center;font-size:11px;color:rgba(255,255,255,.2)}
+.cart-footer{padding:8px 8px 10px;border-top:1px solid rgba(255,255,255,.08)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.ct-lbl{font-size:10px;color:rgba(255,255,255,.4)}
+.ct-val{font-size:20px;font-weight:900;color:var(--or);line-height:1}
+.btn-pay{width:100%;background:linear-gradient(135deg,var(--or),var(--ol));border:none;border-radius:12px;padding:11px 8px;font-size:13px;font-weight:800;font-family:'Sarabun',sans-serif;color:#fff;cursor:pointer;letter-spacing:.5px;transition:transform .15s}
+.btn-pay:active{transform:scale(.97)}
+.btn-pay:disabled{opacity:.4;pointer-events:none}
+.btn-clear{width:100%;background:none;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:7px;font-size:10px;font-weight:700;font-family:'Sarabun',sans-serif;color:rgba(255,255,255,.3);cursor:pointer;margin-top:5px;letter-spacing:.5px}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{background:var(--gd);border-top:2px solid rgba(224,123,42,.35);display:flex;flex-shrink:0}
+.nav-btn{flex:1;padding:9px 8px 7px;border:none;background:none;color:rgba(255,255,255,.35);font-family:'Sarabun',sans-serif;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+.nav-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn.active{color:var(--or)}
+
+/* ── NOTE MODAL ── */
+.overlay{display:none;position:absolute;inset:0;background:rgba(15,28,15,.65);z-index:200;align-items:flex-end;justify-content:center;backdrop-filter:blur(5px)}
+.overlay.open{display:flex;animation:faIn .2s}
+@keyframes faIn{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--wh);border-radius:24px 24px 0 0;width:100%;padding:20px 16px 28px;animation:slUp .3s cubic-bezier(.16,1,.3,1)}
+@keyframes slUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet-handle{width:36px;height:4px;background:var(--cd);border-radius:2px;margin:0 auto 16px}
+.sheet-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:900;color:var(--td);margin-bottom:14px}
+.note-field{width:100%;border:1.5px solid var(--cd);border-radius:12px;padding:11px 13px;font-size:13px;font-family:'Sarabun',sans-serif;background:var(--cr);resize:none;outline:none;color:var(--td)}
+.note-field:focus{border-color:var(--gl)}
+.sheet-actions{display:flex;gap:10px;margin-top:12px}
+.btn-done{flex:1;background:linear-gradient(135deg,var(--or),var(--ol));border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:800;font-family:'Sarabun',sans-serif;color:#fff;cursor:pointer}
+.btn-cancel2{padding:13px 16px;border-radius:12px;border:1.5px solid var(--cd);background:none;font-size:13px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;color:var(--tm)}
+
+/* ── RECEIPT MODAL ── */
+.rcpt-overlay{display:none;position:absolute;inset:0;background:rgba(15,28,15,.7);z-index:300;align-items:flex-end;justify-content:center;backdrop-filter:blur(6px)}
+.rcpt-overlay.open{display:flex;animation:faIn .22s}
+.rcpt-sheet{background:var(--wh);border-radius:28px 28px 0 0;width:100%;max-height:88%;overflow-y:auto;animation:slUp .32s cubic-bezier(.16,1,.3,1)}
+.rcpt-head{background:var(--gd);border-radius:28px 28px 0 0;padding:20px 18px 16px;text-align:center;position:relative;overflow:hidden}
+.rcpt-head::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:10px;background:#fff;border-radius:10px 10px 0 0}
+.rcpt-brand{font-family:'Playfair Display',serif;font-size:18px;font-weight:900;color:#fff;line-height:1.2}
+.rcpt-brand small{display:block;font-size:10px;color:rgba(255,255,255,.35);font-weight:400}
+.rcpt-sub2{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-top:4px}
+.rcpt-logos2{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:4px}
+.rcpt-dv{width:1px;height:28px;background:rgba(255,255,255,.2)}
+.rcpt-body{padding:12px 16px 24px}
+.cut2{display:flex;align-items:center;margin:10px -4px}
+.cut2 span{flex:1;border-top:2px dashed var(--cd)}
+.cut2-dot{width:14px;height:14px;border-radius:50%;background:var(--cr);flex-shrink:0;margin:0 -7px;z-index:1}
+.rcpt-meta{display:flex;justify-content:space-between;font-size:11px;color:#aaa;margin-bottom:10px}
+.rcpt-meta strong{color:var(--td)}
+.rcpt-cust{background:var(--cr);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.rcpt-avatar{width:32px;height:32px;border-radius:50%;background:var(--gd);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.rcpt-cn{font-weight:700;font-size:14px}
+.rcpt-cr{font-size:11px;color:var(--tm)}
+.rcpt-sec-lbl{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--or);margin-bottom:6px;margin-top:8px}
+.rcpt-item{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--cd)}
+.rcpt-item:last-child{border-bottom:none}
+.ri-n{font-size:13px;font-weight:700}
+.ri-s{font-size:11px;color:#aaa;margin-top:1px}
+.ri-r{text-align:right;flex-shrink:0;margin-left:8px}
+.ri-q{font-size:11px;color:#aaa}
+.ri-p{font-size:14px;font-weight:800}
+.rcpt-total-box{background:var(--gd);border-radius:12px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin:12px 0}
+.rtl{font-size:12px;font-weight:700;color:rgba(255,255,255,.65)}
+.rtv{font-size:22px;font-weight:900;color:var(--or)}
+.rcpt-note-box{background:rgba(224,123,42,.07);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--tm);margin-bottom:10px}
+.rcpt-foot{text-align:center;font-size:11px;color:#ccc;margin-bottom:12px;line-height:1.7}
+.rcpt-id-txt{font-size:9px;letter-spacing:1px;color:#ddd}
+.rcpt-acts{display:flex;gap:10px}
+.btn-print{flex:1;padding:13px;border:none;border-radius:13px;background:var(--or);color:#fff;font-size:14px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer}
+.btn-close{padding:13px 14px;border-radius:13px;border:1.5px solid var(--cd);background:none;font-size:13px;font-weight:600;font-family:'Sarabun',sans-serif;cursor:pointer;color:var(--tm)}
+
+/* ── DASHBOARD PAGE ── */
+.dash-page{display:none;flex:1;overflow-y:auto;padding:12px}
+.dash-page.show{display:block}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
+.kpi-card{background:var(--wh);border-radius:13px;padding:12px 13px;border:1.5px solid rgba(61,122,53,.07);box-shadow:var(--sh)}
+.kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--tm);margin-bottom:4px}
+.kpi-val{font-size:20px;font-weight:900;color:var(--gd);line-height:1}
+.kpi-val.orange{color:var(--or)}
+.kpi-note{font-size:10px;color:var(--tm);margin-top:2px}
+.dash-card{background:var(--wh);border-radius:var(--rc);box-shadow:var(--sh);margin-bottom:12px;border:1.5px solid rgba(61,122,53,.07);overflow:hidden}
+.dash-ch{background:var(--gd);padding:10px 14px;display:flex;align-items:center;gap:8px}
+.dash-ch span{font-size:11px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--or)}
+.chart-wrap{padding:12px 14px;position:relative;height:180px}
+.d-table{width:100%;border-collapse:collapse;font-size:12px}
+.d-table th{background:var(--cd);color:var(--tm);font-weight:700;padding:7px 11px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.3px}
+.d-table td{padding:8px 11px;border-bottom:1px solid var(--cd)}
+.d-table tr:last-child td{border-bottom:none}
+.d-table .r{text-align:right;font-weight:700}
+.d-table .ghi{color:var(--gm);font-weight:800}
+.d-table .glo{color:var(--or)}
+.btn-refresh{width:100%;background:linear-gradient(135deg,var(--or),var(--ol));border:none;border-radius:13px;padding:12px;font-size:13px;font-weight:800;font-family:'Sarabun',sans-serif;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
+.btn-refresh svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.mbar-bg{flex:1;height:5px;background:var(--cd);border-radius:3px;overflow:hidden}
+.mbar-fg{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gm),var(--gl))}
+.cpill{display:inline-block;font-size:9px;font-weight:800;border-radius:4px;padding:2px 6px}
+.cp-c{background:rgba(45,90,39,.1);color:var(--gm)}
+.cp-f{background:rgba(224,123,42,.1);color:#a0521a}
+.cp-d{background:rgba(45,90,39,.07);color:#2d5a27}
+.dash-updated{font-size:10px;color:rgba(255,255,255,.3);margin-top:3px}
+
+/* ── TOAST ── */
+#toast{position:absolute;bottom:75px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--gd);color:#fff;padding:10px 20px;border-radius:28px;font-size:13px;font-weight:600;z-index:500;opacity:0;pointer-events:none;transition:all .25s cubic-bezier(.16,1,.3,1);white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── NOTE CHIP ── */
+.note-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(224,123,42,.1);border:1px solid rgba(224,123,42,.25);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--or);font-weight:600;cursor:pointer;margin:0 12px 8px}
+.note-chip:active{background:rgba(224,123,42,.18)}
+
+@media print{
+  .topbar,.cat-tabs,.cust-bar,.content,.bottom-nav,#toast{display:none!important}
+  .rcpt-overlay{display:flex!important;position:static!important;background:none!important;backdrop-filter:none!important}
+  .rcpt-sheet{max-height:none;border-radius:0;box-shadow:none;animation:none}
+  .rcpt-acts,.btn-close,.btn-print{display:none!important}
+}
+
+/* ── DISCOUNT ── */
+.disc-bar{background:var(--wh);border-bottom:1px solid var(--cd);padding:6px 12px;flex-shrink:0;display:flex;align-items:center;gap:8px;}
+.disc-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(224,123,42,.1);border:1px solid rgba(224,123,42,.25);border-radius:8px;padding:4px 10px;font-size:11px;color:var(--or);font-weight:600;cursor:pointer;}
+.disc-chip.active{background:rgba(224,123,42,.2);border-color:var(--or);}
+.disc-badge{background:var(--or);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:800;margin-left:3px;}
+.disc-type-row{display:flex;gap:8px;margin-bottom:12px;}
+.disc-type-btn{flex:1;padding:8px;border:1.5px solid var(--cd);border-radius:9px;font-size:12px;font-weight:700;font-family:'Sarabun',sans-serif;cursor:pointer;background:none;color:var(--tm);transition:all .15s;}
+.disc-type-btn.active{background:var(--or);color:#fff;border-color:var(--or);}
+</style>
+</head>
+<body>
+
+<!-- ── TOPBAR ── -->
+<div class="topbar">
+  <div class="topbar-row">
+    <div class="brand-duo">
+      <div>
+        <div class="brand-name">Brain Brew</div>
+        <div class="brand-mode">× Heng Heng Phanit</div>
+      </div>
+    </div>
+    <div class="staff-chip">
+      <div class="staff-dot"></div>
+      <span class="staff-name" id="staffName">Staff</span>
+    </div>
+  </div>
+  <div class="total-pill">
+    <div>
+      <div class="tp-label">Total Amount</div>
+      <div class="tp-val">฿<span id="heroTotal">0</span></div>
+    </div>
+    <div>
+      <div class="tp-label" style="text-align:right">Items</div>
+      <div class="tp-count" id="heroCount" style="font-size:18px;font-weight:900;color:rgba(255,255,255,.5);text-align:right">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CATEGORY TABS ── -->
+<div class="cat-tabs" id="catTabs"></div>
+
+<!-- ── CUSTOMER BAR ── -->
+<div class="cust-bar">
+  <div class="cust-wrap">
+    <span class="cust-icon">👤</span>
+    <input class="cust-input" id="custName" type="text" placeholder="ชื่อลูกค้า / Name">
+  </div>
+  <input class="room-input" id="roomNo" type="text" placeholder="ห้อง">
+  <input class="room-input" id="pickupTime" type="time" style="width:78px">
+</div>
+
+<!-- ── BACKDATE BAR ── -->
+<div style="padding:6px 12px 0;background:var(--wh);border-bottom:1px solid var(--cd);display:flex;align-items:center;gap:8px;flex-shrink:0;" id="backdateBar">
+  <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--tm);cursor:pointer;user-select:none;">
+    <input type="checkbox" id="backdateToggle" onchange="toggleBackdate()" style="width:14px;height:14px;accent-color:var(--or);cursor:pointer"/>
+    ลงออเดอร์ย้อนหลัง
+  </label>
+  <div id="backdateFields" style="display:none;display:flex;gap:6px;align-items:center;flex:1;">
+    <input class="room-input" type="date" id="orderDate" style="width:130px;">
+    <input class="room-input" type="time" id="orderTime" style="width:78px;">
+  </div>
+  <div id="backdateWarn" style="display:none;font-size:10px;color:var(--or);font-weight:600;">⚠️ กำลังบันทึกย้อนหลัง</div>
+</div>
+
+<!-- ── MAIN CONTENT ── -->
+<div class="content" id="posContent">
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" type="text" placeholder="ค้นหาเมนู..." oninput="filterMenus()">
+    </div>
+  </div>
+
+  <!-- ACTION CHIPS -->
+  <div style="padding:6px 0 0;display:flex;gap:6px;flex-wrap:wrap">
+    <button class="note-chip" onclick="openNoteModal()">
+      📝 <span id="noteChipTxt">เพิ่มหมายเหตุ</span>
+    </button>
+    <button class="note-chip" id="discChip" onclick="openDiscModal()" style="background:rgba(224,123,42,.1);border-color:rgba(224,123,42,.25);color:var(--or);">
+      💝 <span id="discChipTxt">ส่วนลด</span>
+    </button>
+  </div>
+
+  <!-- SPLIT: MENU + CART -->
+  <div class="split">
+    <!-- MENU LIST -->
+    <div class="menu-col" id="menuCol"></div>
+
+    <!-- CART -->
+    <div class="cart-col">
+      <div class="cart-head">
+        <div class="cart-head-lbl">รายการ</div>
+        <div class="cart-head-cnt" id="cartCount">0 items</div>
+      </div>
+      <div class="cart-items" id="cartItems">
+        <div class="cart-empty">ยังไม่ได้เลือก<br>เมนู</div>
+      </div>
+      <div class="cart-footer">
+        <div class="cart-total-row">
+          <span class="ct-lbl">ยอดรวม</span>
+          <span class="ct-val" id="cartTotal">฿0</span>
+        </div>
+        <button class="btn-pay" id="btnPay" onclick="confirmOrder()" disabled>
+          ยืนยัน / บันทึก
+        </button>
+        <button class="btn-clear" onclick="clearCart()">ล้าง</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DASHBOARD PAGE ── -->
+<div class="dash-page" id="dashPage">
+  <button class="btn-refresh" onclick="loadDashboard()">
+    <svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+    รีเฟรชข้อมูล
+  </button>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-lbl">ยอดขายรวม</div><div class="kpi-val orange" id="d-rev">—</div><div class="kpi-note">ทุกแบรนด์</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">กำไรรวม</div><div class="kpi-val" id="d-profit">—</div><div class="kpi-note" id="d-gp">GP —%</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">☕ Brain Brew</div><div class="kpi-val" id="d-bb">—</div><div class="kpi-note" id="d-bbgp">—</div></div>
+    <div class="kpi-card"><div class="kpi-lbl">🌸 Heng Heng</div><div class="kpi-val" id="d-hh">—</div><div class="kpi-note" id="d-hhgp">—</div></div>
+  </div>
+  <div class="dash-card">
+    <div class="dash-ch"><span>📅 ยอดขายรายวัน</span></div>
+    <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+  </div>
+  <div class="dash-card">
+    <div class="dash-ch"><span>🏆 เมนูขายดี</span></div>
+    <div style="padding:10px 13px" id="d-menus"><p style="text-align:center;font-size:12px;color:var(--tm);padding:14px 0">กำลังโหลด...</p></div>
+  </div>
+  <div class="dash-card">
+    <div class="dash-ch"><span>📋 แยก Category</span></div>
+    <div style="overflow:auto"><table class="d-table"><thead><tr><th>Category</th><th class="r">ยอดขาย</th><th class="r">กำไร</th><th class="r">GP%</th></tr></thead><tbody id="d-cats"><tr><td colspan="4" style="text-align:center;padding:14px;color:var(--tm);font-size:12px">กำลังโหลด...</td></tr></tbody></table></div>
+  </div>
+  <div class="dash-card">
+    <div class="dash-ch"><span>👥 ลูกค้าขาประจำ</span></div>
+    <div style="overflow:auto"><table class="d-table"><thead><tr><th>ชื่อ</th><th class="r">ยอดรวม</th><th class="r">ครั้ง</th></tr></thead><tbody id="d-custs"><tr><td colspan="3" style="text-align:center;padding:14px;color:var(--tm);font-size:12px">กำลังโหลด...</td></tr></tbody></table></div>
+  </div>
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-pos" onclick="switchPage('pos')">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+    สั่งออเดอร์
+  </button>
+  <button class="nav-btn" id="nav-dash" onclick="switchPage('dash')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+</div>
+
+<!-- ── NOTE MODAL ── -->
+<div class="overlay" id="noteOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">หมายเหตุ / Note</div>
+    <textarea class="note-field" id="noteField" rows="3" placeholder="เช่น ไม่หวาน, น้ำแข็งน้อย..."></textarea>
+    <div class="sheet-actions">
+      <button class="btn-cancel2" onclick="closeNoteModal()">ยกเลิก</button>
+      <button class="btn-done" onclick="saveNote()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── RECEIPT MODAL ── -->
+<div class="rcpt-overlay" id="rcptOverlay">
+  <div class="rcpt-sheet">
+    <div class="rcpt-head">
+      <div class="rcpt-logos2">
+        <div class="rcpt-brand">Brain Brew<small>Coffee</small></div>
+        <div class="rcpt-dv"></div>
+        <div class="rcpt-brand" style="color:var(--or)">Heng Heng<small style="color:rgba(255,255,255,.3)">Phanit</small></div>
+      </div>
+      <div class="rcpt-sub2">Receipt · ใบเสร็จรับเงิน</div>
+    </div>
+    <div class="rcpt-body">
+      <div class="cut2"><div class="cut2-dot"></div><span></span><div class="cut2-dot"></div></div>
+      <div class="rcpt-meta">
+        <div>เลขที่: <strong id="rcpId">—</strong></div>
+        <div style="text-align:right"><div id="rcpDate"></div><div id="rcpTime" style="color:#bbb"></div></div>
+      </div>
+      <div class="rcpt-cust">
+        <div class="rcpt-avatar" id="rcpAvatar">?</div>
+        <div><div class="rcpt-cn" id="rcpName">—</div><div class="rcpt-cr">ห้อง: <span id="rcpRoom">—</span> · รับ: <span id="rcpPickup">—</span></div></div>
+      </div>
+      <div id="rcpSections"></div>
+      <div class="cut2"><div class="cut2-dot"></div><span></span><div class="cut2-dot"></div></div>
+      <!-- rcpDisc -->
+      <div id="rcpDisc" style="display:none;background:rgba(224,123,42,.08);border-radius:9px;padding:7px 12px;font-size:12px;color:var(--or);font-weight:700;margin-bottom:6px;text-align:center;"></div>
+      <div class="rcpt-total-box"><span class="rtl">ยอดรวมทั้งหมด</span><span class="rtv" id="rcpTotal">฿0</span></div>
+      <div class="rcpt-note-box" id="rcpNote" style="display:none"></div>
+      <div class="rcpt-foot">ขอบคุณที่ใช้บริการ 🙏<br>กาแฟดี · อาหารอร่อย · ราคาเป็นมิตร<br><span class="rcpt-id-txt" id="rcpIdFull"></span></div>
+      <div class="rcpt-acts">
+        <button class="btn-print" onclick="window.print()">🖨️ พิมพ์ใบเสร็จ</button>
+        <button class="btn-close" onclick="closeReceipt()">✕ ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── DISCOUNT MODAL ── -->
+<div class="overlay" id="discOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">ส่วนลด 💝</div>
+    <div class="disc-type-row">
+      <button class="disc-type-btn active" id="dTypePct" onclick="setDiscType('pct')">ลด % (เปอร์เซ็นต์)</button>
+      <button class="disc-type-btn" id="dTypeAmt" onclick="setDiscType('amt')">ลด ฿ (บาท)</button>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--tm);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;" id="dInputLbl">ลดกี่ % ?</div>
+    <input class="note-field" type="number" id="discInput" placeholder="เช่น 10" min="0" style="resize:none;margin-bottom:10px;">
+    <div style="font-size:10px;font-weight:700;color:var(--tm);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">เหตุผล (ไม่บังคับ)</div>
+    <input class="note-field" type="text" id="discReason" placeholder="เช่น โปรโมชั่น, ลูกค้า VIP..." style="resize:none;margin-bottom:10px;">
+    <div class="sheet-actions">
+      <button class="btn-cancel2" onclick="clearDisc()">ยกเลิกส่วนลด</button>
+      <button class="btn-done" onclick="applyDisc()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DISCOUNT MODAL ── -->
+<div class="overlay" id="discOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">ส่วนลด 💝</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button id="dTypePct" onclick="setDiscType('pct')" class="btn-cancel2" style="flex:1;background:var(--or);color:#fff;border-color:var(--or);">ลด %</button>
+      <button id="dTypeAmt" onclick="setDiscType('amt')" class="btn-cancel2" style="flex:1;">ลด ฿</button>
+    </div>
+    <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;margin-bottom:6px;" id="dInputLbl">ลดกี่ % ?</div>
+    <input class="note-field" type="number" id="discInput" placeholder="เช่น 10" min="0" style="resize:none;margin-bottom:10px;">
+    <div style="font-size:10px;font-weight:700;color:var(--tm);text-transform:uppercase;margin-bottom:6px;">เหตุผล (ไม่บังคับ)</div>
+    <input class="note-field" type="text" id="discReason" placeholder="เช่น โปรโมชั่น, ลูกค้า VIP..." style="resize:none;margin-bottom:10px;">
+    <div class="sheet-actions">
+      <button class="btn-cancel2" onclick="clearDisc()">ยกเลิกส่วนลด</button>
+      <button class="btn-done" onclick="applyDisc()">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG — BrewOS API (ใส่ URL หลัง deploy Apps Script)
+// ═══════════════════════════════════════════════════════════
+const BREWOS_API = 'https://script.google.com/macros/s/AKfycbyUR7OHN3YqKGgI3XOsVuimJ13bl7nLdWvLO6MkdeRo98lTBeo6_q556utmkq2J0zyR9Q/exec';
+
+// ═══════════════════════════════════════════════════════════
+// FALLBACK MENU DATA (เหมือน WACHI app เดิม)
+// ═══════════════════════════════════════════════════════════
+const FALLBACK = {
+  cats: [
+    { id:'all',   name:'ทั้งหมด', emoji:'🍽', brand:'ALL' },
+    { id:'bb',    name:'Brain Brew ☕', emoji:'☕', brand:'BB' },
+    { id:'food',  name:'อาหาร HH', emoji:'🥪', brand:'HH' },
+    { id:'drink', name:'เครื่องดื่ม HH', emoji:'🧋', brand:'HH' },
+  ],
+  products: [
+    // Brain Brew
+    {id:'bb1',cat:'bb',emoji:'☕',name:'Living Origin 01',sub:'Specialty · Iced Long Black',price:50,cost:22,brand:'BB'},
+    {id:'bb2',cat:'bb',emoji:'☕',name:'Living Origin 02',sub:'Specialty · เดอม้ง',price:50,cost:23.5,brand:'BB'},
+    {id:'bb3',cat:'bb',emoji:'🌑',name:'Dark Matter 95%',sub:'Signature · คั่วเข้ม',price:50,cost:23.5,brand:'BB'},
+    {id:'bb4',cat:'bb',emoji:'🌑',name:'Dark Matter 27%',sub:'Signature · คั่วกลาง',price:50,cost:23.5,brand:'BB'},
+    {id:'bb5',cat:'bb',emoji:'🧊',name:'Iced Espresso',sub:'Standard Coffee',price:50,cost:24,brand:'BB'},
+    {id:'bb6',cat:'bb',emoji:'🧊',name:'Iced Cappuccino',sub:'Standard Coffee',price:50,cost:24,brand:'BB'},
+    {id:'bb7',cat:'bb',emoji:'🧊',name:'Iced Latte',sub:'Standard Coffee',price:50,cost:24,brand:'BB'},
+    {id:'bb8',cat:'bb',emoji:'🍯',name:'Iced Honey Americano',sub:'Standard Coffee',price:50,cost:24,brand:'BB'},
+    {id:'bb9',cat:'bb',emoji:'🫘',name:'Community Series 1',sub:'Whole Beans 250g',price:250,cost:120,brand:'BB'},
+    // Food HH
+    {id:'f1',cat:'food',emoji:'🥪',name:'แซนวิช ปูอัด/ไข่กุ้ง',sub:'ปูอัด + ไข่กุ้ง + มายองเนส',price:25,cost:13,brand:'HH'},
+    {id:'f2',cat:'food',emoji:'🥪',name:'แซนวิช ทูน่า',sub:'ทูน่า + มายองเนส',price:25,cost:12,brand:'HH'},
+    {id:'f3',cat:'food',emoji:'🥪',name:'แซนวิชข้าวโพดชีส',sub:'ข้าวโพด + ชีสแผ่น',price:25,cost:12,brand:'HH'},
+    {id:'f4',cat:'food',emoji:'🥪',name:'แซนวิชไข่ต้ม',sub:'ไข่ต้ม + ซอส',price:25,cost:12,brand:'HH'},
+    {id:'f5',cat:'food',emoji:'🥪',name:'แซนวิชแฮมชีส',sub:'แฮม + ชีสแผ่น',price:25,cost:12,brand:'HH'},
+    {id:'f6',cat:'food',emoji:'🥪',name:'แซนวิช ไก่อบ',sub:'ไก่อบ + ผักสลัด + มายองเนส',price:25,cost:20.8,brand:'HH'},
+    {id:'f7',cat:'food',emoji:'🥪',name:'แซนวิช หมูสับ',sub:'หมูสับ + ซอสปรุงรส',price:25,cost:21.6,brand:'HH'},
+    {id:'f8',cat:'food',emoji:'🥗',name:'สลัดผัก ทูน่า/ไข่ต้ม',sub:'ผักรวม + น้ำสลัด',price:59,cost:28,brand:'HH'},
+    {id:'f9',cat:'food',emoji:'🥗',name:'สลัดผัก ปูอัด/ไข่กุ้ง',sub:'ผักรวม + น้ำสลัด',price:59,cost:28,brand:'HH'},
+    {id:'f10',cat:'food',emoji:'🍜',name:'ส้นหมี่ไก่ฉีกหมาล่า',sub:'เส้นหมาล่า + ไก่ฉีก',price:59,cost:28,brand:'HH'},
+    {id:'f11',cat:'food',emoji:'🍜',name:'ส้นหมี่ไก่ฉีก ออรจินอล',sub:'เส้นหมีออริจินอล + ไก่ฉีก',price:59,cost:28,brand:'HH'},
+    // Drink HH
+    {id:'d1',cat:'drink',emoji:'🥤',name:'โค้กบ๊วยเย็น เปรี้ยวซ่า',sub:'Signature · กำไรสูง',price:35,cost:11,brand:'HH',freebie:true},
+    {id:'d2',cat:'drink',emoji:'🍵',name:'ชาไทยเย็น',sub:'⭐ ขายดี · สูตรเด็ด',price:35,cost:14,brand:'HH',freebie:true},
+    {id:'d3',cat:'drink',emoji:'🍵',name:'ชาเขียวเย็น',sub:'หอมกลิ่นชาเขียวแท้',price:35,cost:12,brand:'HH',freebie:true},
+    {id:'d4',cat:'drink',emoji:'🍋',name:'ชามะนาวเย็น',sub:'เปรี้ยวหวานลงตัว',price:35,cost:13,brand:'HH',freebie:true},
+    {id:'d5',cat:'drink',emoji:'🍵',name:'ชาดำเย็น',sub:'เข้มข้นถึงใจ',price:35,cost:15,brand:'HH',freebie:true},
+    {id:'d6',cat:'drink',emoji:'🍯',name:'ชาเขียวน้ำผึ้งมะนาว',sub:'ผึ้งแท้ + มะนาวสด',price:40,cost:17,brand:'HH',freebie:true},
+    {id:'d7',cat:'drink',emoji:'🍯',name:'ชาไทยน้ำผึ้งมะนาว',sub:'ผึ้งแท้ + มะนาวสด',price:40,cost:17,brand:'HH',freebie:true},
+  ]
+};
+
+// ═══════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════
+let CATS = FALLBACK.cats;
+let PRODUCTS = FALLBACK.products;
+let cart = {};
+let activeCat = 'all';
+let searchQ = '';
+let orderNote = '';
+let currentPage = 'pos';
+let _dashLoaded = false;
+let _dailyChart = null;
+
+// ═══════════════════════════════════════════════════════════
+// INIT — ใช้ google.script.run ก่อนเสมอ (เหมือน WACHI)
+// ═══════════════════════════════════════════════════════════
+async function initMenus() {
+  // ถ้าเปิดจาก Apps Script URL — ใช้ google.script.run (ไม่มีปัญหา CORS)
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(raw => {
+        if (raw) {
+          // รูปแบบใหม่ — getMenuData() ดึงจาก Sheet โดยตรง
+          if (raw.categories && raw.products) {
+            CATS = [
+              { id:'all', name:'ทั้งหมด', emoji:'🍽', brand:'ALL' },
+              ...raw.categories.map(c => ({ id: c.category_id||c.id, name: c.name, emoji: c.emoji||'☕', brand: c.brand_id||'BB' }))
+            ];
+            PRODUCTS = raw.products.map(p => ({
+              id: p.product_id||p.id, cat: p.category_id,
+              emoji: p.emoji||'☕', name: p.name, sub: p.name_th||'',
+              price: Number(p.base_price||p.price||0), cost: Number(p.cost_price||p.cost||0),
+              brand: p.brand_id||'BB',
+            }));
+          }
+          // รูปแบบเก่า — WACHI format (bbMenus, foodMenus, drinkMenus)
+          else if (raw.bbMenus || raw.foodMenus || raw.drinkMenus) {
+            const parsed = parseWachiMenus(raw);
+            CATS = parsed.cats;
+            PRODUCTS = parsed.products;
+          }
+        }
+        buildCatTabs();
+        renderMenu();
+      })
+      .withFailureHandler(() => {
+        buildCatTabs();
+        renderMenu();
+      })
+      .getMenuData();
+  } else {
+    // เปิดจาก Netlify — ใช้ fallback data
+    buildCatTabs();
+    renderMenu();
+  }
+
+  // Staff name
+  const urlParams = new URLSearchParams(window.location.search);
+  const staffParam = urlParams.get('staff') || sessionStorage.getItem('brewos_user');
+  if (staffParam) {
+    try { document.getElementById('staffName').textContent = JSON.parse(staffParam).name || 'Staff'; }
+    catch(e) { document.getElementById('staffName').textContent = staffParam; }
+  }
+}
+
+// Parse WACHI format → BrewOS format
+function parseWachiMenus(raw) {
+  const cats = [
+    { id:'all', name:'ทั้งหมด', emoji:'🍽', brand:'ALL' },
+    { id:'bb', name:'Brain Brew ☕', emoji:'☕', brand:'BB' },
+    { id:'food', name:'อาหาร HH', emoji:'🥪', brand:'HH' },
+    { id:'drink', name:'เครื่องดื่ม HH', emoji:'🧋', brand:'HH' },
+  ];
+  const products = [
+    ...(raw.bbMenus||[]).map((m,i) => ({id:'bb'+(i+1),cat:'bb',emoji:guessEmoji(m.name),name:m.name,sub:m.category||'',price:Number(m.price)||0,cost:Number(m.cost)||0,brand:'BB'})),
+    ...(raw.foodMenus||[]).map((m,i) => ({id:'f'+(i+1),cat:'food',emoji:guessEmoji(m.name),name:String(m.name).trim(),sub:m.desc||'',price:Number(m.price)||0,cost:Number(m.cost)||0,brand:'HH'})),
+    ...(raw.drinkMenus||[]).map((m,i) => ({id:'d'+(i+1),cat:'drink',emoji:guessEmoji(m.name),name:String(m.name).trim(),sub:m.note||'',price:Number(m.price)||0,cost:Number(m.cost)||0,brand:'HH',freebie:!!m.freebie})),
+  ];
+  return { cats, products };
+}
+
+const EMOJI_MAP=[['living origin','☕'],['dark matter','🌑'],['community','🫘'],['iced','🧊'],['espresso','☕'],['latte','☕'],['cappuccino','☕'],['americano','☕'],['ชาเขียว','🍵'],['ชาไทย','🍵'],['ชาดำ','🍵'],['ชา','🍵'],['มะนาว','🍋'],['โค้ก','🥤'],['น้ำผึ้ง','🍯'],['สลัด','🥗'],['แซนวิช','🥪'],['หมี่','🍜'],['ส้นหมี่','🍜']];
+function guessEmoji(n){const s=(n||'').toLowerCase();for(const[k,v]of EMOJI_MAP)if(s.includes(k))return v;return'🍽️';}
+
+// ═══════════════════════════════════════════════════════════
+// UI BUILDERS
+// ═══════════════════════════════════════════════════════════
+function buildCatTabs() {
+  const el = document.getElementById('catTabs');
+  el.innerHTML = CATS.map(c =>
+    `<button class="cat-tab ${c.id===activeCat?'active':''}" onclick="setCat('${c.id}')">${c.emoji} ${c.name}</button>`
+  ).join('');
+}
+
+function setCat(id) {
+  activeCat = id;
+  document.getElementById('searchInput').value = '';
+  searchQ = '';
+  buildCatTabs();
+  renderMenu();
+}
+
+function filterMenus() {
+  searchQ = document.getElementById('searchInput').value.toLowerCase();
+  renderMenu();
+}
+
+function renderMenu() {
+  let prods = PRODUCTS;
+  if (activeCat !== 'all') prods = prods.filter(p => p.cat === activeCat);
+  if (searchQ) prods = prods.filter(p => p.name.toLowerCase().includes(searchQ) || (p.sub||'').toLowerCase().includes(searchQ));
+
+  const el = document.getElementById('menuCol');
+  if (!prods.length) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;font-size:13px;color:var(--tm)">ไม่พบเมนู</div>';
+    return;
+  }
+  el.innerHTML = prods.map(p => {
+    const qty = cart[p.id]?.qty || 0;
+    return `<div class="menu-card ${qty>0?'in-cart':''}" id="mc-${p.id}">
+      <div class="mc-emoji">${p.emoji}</div>
+      <div class="mc-info">
+        <div class="mc-name">${p.name}</div>
+        <div class="mc-sub">${p.sub||''}${p.freebie?' 🎉 แถมเฉาก๊วย':''}</div>
+      </div>
+      <div class="mc-price">฿${p.price}</div>
+      <div class="mc-stepper">
+        <button class="ms-btn" onclick="changeQty('${p.id}',-1)">−</button>
+        <span class="ms-val" id="msv-${p.id}">${qty}</span>
+        <button class="ms-btn" onclick="changeQty('${p.id}',1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function changeQty(id, delta) {
+  const prod = PRODUCTS.find(p => p.id === id);
+  if (!prod) return;
+  const cur = cart[id]?.qty || 0;
+  const next = Math.max(0, cur + delta);
+  if (next === 0) delete cart[id];
+  else cart[id] = { product: prod, qty: next };
+
+  const msvEl = document.getElementById('msv-' + id);
+  if (msvEl) msvEl.textContent = next;
+  const cardEl = document.getElementById('mc-' + id);
+  if (cardEl) cardEl.classList.toggle('in-cart', next > 0);
+
+  updateCartUI();
+}
+
+function updateCartUI() {
+  const items = Object.values(cart);
+  const totalQty = items.reduce((s, i) => s + i.qty, 0);
+  const totalAmt = items.reduce((s, i) => s + i.product.price * i.qty, 0);
+  // หักส่วนลด
+  const discAmt = (typeof getDisc === 'function') ? getDisc(totalAmt) : 0;
+  const grandTotal = Math.max(0, totalAmt - discAmt);
+
+  document.getElementById('heroTotal').textContent = grandTotal;
+  document.getElementById('heroCount').textContent = totalQty;
+  // แสดงยอดสุทธิ + ส่วนลด (ถ้ามี)
+  document.getElementById('cartTotal').textContent = discAmt > 0
+    ? '฿' + grandTotal + ' (-฿' + discAmt + ')'
+    : '฿' + grandTotal;
+  document.getElementById('cartCount').textContent = totalQty + ' item' + (totalQty !== 1 ? 's' : '');
+  document.getElementById('btnPay').disabled = totalQty === 0;
+
+  const cartEl = document.getElementById('cartItems');
+  if (!items.length) {
+    cartEl.innerHTML = '<div class="cart-empty">ยังไม่ได้เลือก<br>เมนู</div>';
+    return;
+  }
+  cartEl.innerHTML = items.map(i => `
+    <div class="cart-item">
+      <div class="ci-name">${i.product.name}</div>
+      <div class="ci-row">
+        <div class="ci-qty-ctrl">
+          <button class="ci-btn" onclick="changeQty('${i.product.id}',-1)">−</button>
+          <span class="ci-qty">${i.qty}</span>
+          <button class="ci-btn" onclick="changeQty('${i.product.id}',1)">+</button>
+        </div>
+        <span class="ci-price">฿${i.product.price * i.qty}</span>
+      </div>
+      <button class="ci-del" onclick="removeItem('${i.product.id}')">✕</button>
+    </div>`).join('');
+}
+
+function removeItem(id) {
+  delete cart[id];
+  const msvEl = document.getElementById('msv-' + id);
+  if (msvEl) msvEl.textContent = '0';
+  const cardEl = document.getElementById('mc-' + id);
+  if (cardEl) cardEl.classList.remove('in-cart');
+  updateCartUI();
+}
+
+function clearCart() {
+  Object.keys(cart).forEach(id => {
+    delete cart[id];
+    const el = document.getElementById('msv-' + id);
+    if (el) el.textContent = '0';
+    const card = document.getElementById('mc-' + id);
+    if (card) card.classList.remove('in-cart');
+  });
+  updateCartUI();
+}
+
+// ═══════════════════════════════════════════════════════════
+// NOTE MODAL
+// ═══════════════════════════════════════════════════════════
+function openNoteModal() {
+  document.getElementById('noteField').value = orderNote;
+  document.getElementById('noteOverlay').classList.add('open');
+}
+function closeNoteModal() { document.getElementById('noteOverlay').classList.remove('open'); }
+function saveNote() {
+  orderNote = document.getElementById('noteField').value.trim();
+  document.getElementById('noteChipTxt').textContent = orderNote || 'เพิ่มหมายเหตุ';
+  closeNoteModal();
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIRM ORDER
+// ═══════════════════════════════════════════════════════════
+function confirmOrder() {
+  const name = document.getElementById('custName').value.trim();
+  const room = document.getElementById('roomNo').value.trim();
+  if (!name) { showToast('⚠️ กรุณาใส่ชื่อลูกค้า'); return; }
+  if (!Object.keys(cart).length) { showToast('⚠️ กรุณาเลือกเมนู'); return; }
+
+  const p = n => String(n).padStart(2,'0');
+  const isBackdate = document.getElementById('backdateToggle').checked;
+  let dateStr, timeStr, rcpId;
+  if (isBackdate) {
+    dateStr = document.getElementById('orderDate').value;
+    timeStr = document.getElementById('orderTime').value;
+    if (!dateStr || !timeStr) { showToast('⚠️ กรุณาเลือกวันที่และเวลาย้อนหลัง'); return; }
+    const [y,mo,d] = dateStr.split('-');
+    const [h,mi] = timeStr.split(':');
+    const rnd = Math.random().toString(36).substr(2,5).toUpperCase();
+    rcpId = `RCP-${y}${mo}${d}-${h}${mi}-${rnd}`;
+  } else {
+    const bkk = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+    const y=bkk.getFullYear(), mo=p(bkk.getMonth()+1), d=p(bkk.getDate());
+    const h=p(bkk.getHours()), mi=p(bkk.getMinutes()), s=p(bkk.getSeconds());
+    dateStr = `${y}-${mo}-${d}`;
+    timeStr = `${h}:${mi}`;
+    rcpId = `RCP-${y}${mo}${d}-${h}${mi}${s}-${String(bkk.getMilliseconds()).padStart(3,'0')}`;
+  }
+
+  // Build groups
+  const catMap = {
+    bb:'☕ Brain Brew Coffee','CAT-BB-01':'☕ BB Signature','CAT-BB-02':'☕ BB Classic',
+    food:'🥪 อาหาร HH','CAT-HH-01':'🥪 แซนวิช','CAT-HH-02':'🥗 สลัด',
+    'CAT-HH-03':'🍜 หมี่ไก่ฉีก','CAT-HH-04':'🥤 เครื่องดื่ม HH',
+    drink:'🧋 เครื่องดื่ม HH'
+  };
+  const groups = {};
+  let subTotal = 0;
+  Object.values(cart).forEach(i => {
+    const cat = i.product.cat || 'other';
+    if (!groups[cat]) groups[cat] = [];
+    const line = i.product.price * i.qty;
+    subTotal += line;
+    groups[cat].push({ ...i, line });
+  });
+
+  // คำนวณส่วนลด
+  const discAmt = getDisc(subTotal);
+  const grand = Math.max(0, subTotal - discAmt);
+
+  document.getElementById('rcpId').textContent = rcpId.slice(-12);
+  document.getElementById('rcpIdFull').textContent = rcpId;
+  const [rcpY, rcpMo, rcpD] = dateStr.split('-');
+  document.getElementById('rcpDate').textContent = rcpD+'/'+rcpMo+'/'+rcpY+(isBackdate?' ⏪':'');
+  document.getElementById('rcpTime').textContent = timeStr;
+  document.getElementById('rcpName').textContent = name;
+  document.getElementById('rcpRoom').textContent = room || '—';
+  document.getElementById('rcpAvatar').textContent = name[0].toUpperCase();
+  document.getElementById('rcpPickup').textContent = document.getElementById('pickupTime').value || '—';
+  document.getElementById('rcpTotal').textContent = '฿' + grand;
+  const rcpDiscEl = document.getElementById('rcpDisc');
+  if (rcpDiscEl) {
+    if (discAmt > 0) {
+      rcpDiscEl.textContent = '💝 ส่วนลด ' + (discType==='pct' ? discValue+'%' : '฿'+discValue) + ' = -฿' + discAmt;
+      rcpDiscEl.style.display = 'block';
+    } else { rcpDiscEl.style.display = 'none'; }
+  }
+
+  let html = '';
+  Object.entries(groups).forEach(([cat, items]) => {
+    html += `<div class="rcpt-sec-lbl">${catMap[cat]||cat}</div>`;
+    items.forEach(i => {
+      html += `<div class="rcpt-item">
+        <div><div class="ri-n">${i.product.name}</div>${i.product.freebie?'<div class="ri-s" style="color:var(--or)">🎉 + เฉาก๊วยหนึบ</div>':''}</div>
+        <div class="ri-r"><div class="ri-q">×${i.qty} @ ฿${i.product.price}</div><div class="ri-p">฿${i.line}</div></div>
+      </div>`;
+    });
+  });
+  document.getElementById('rcpSections').innerHTML = html;
+
+  const noteEl = document.getElementById('rcpNote');
+  if (orderNote) { noteEl.textContent = '📝 ' + orderNote; noteEl.style.display = 'block'; }
+  else noteEl.style.display = 'none';
+
+  document.getElementById('rcptOverlay').classList.add('open');
+  showToast('✅ บันทึกออเดอร์สำเร็จ!');
+
+  // Submit to backend — ใช้ชื่อ sendOrderToBackend เพื่อไม่ชนกับ google.script.run.submitOrder
+  const cartItemsToSend = Object.values(cart).map(i => ({
+    name: i.product.name, cat: i.product.cat, qty: i.qty,
+    price: i.product.price, cost: i.product.cost || 0, freebie: i.product.freebie || false,
+  }));
+  // สร้าง dateTimeStr สำหรับบันทึกลง Sheet
+  const dateTimeStr = isBackdate
+    ? `${dateStr}T${timeStr}:00`  // ย้อนหลัง: ใช้วันเวลาที่เลือก
+    : null;                        // ปัจจุบัน: ให้ Apps Script ใช้ now()
+
+  sendOrderToBackend(name, room, document.getElementById('pickupTime').value, orderNote, cartItemsToSend, grand, rcpId, dateTimeStr);
+}
+
+function toggleBackdate() {
+  const on = document.getElementById('backdateToggle').checked;
+  const fields = document.getElementById('backdateFields');
+  const warn = document.getElementById('backdateWarn');
+  fields.style.display = on ? 'flex' : 'none';
+  warn.style.display = on ? 'block' : 'none';
+  if (on) {
+    const bkk = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+    const p = n => String(n).padStart(2,'0');
+    document.getElementById('orderDate').value = bkk.getFullYear()+'-'+p(bkk.getMonth()+1)+'-'+p(bkk.getDate());
+    document.getElementById('orderTime').value = p(bkk.getHours())+':'+p(bkk.getMinutes());
+  }
+}
+
+function sendOrderToBackend(customerName, room, pickupTime, note, cartItems, grand, rcpId, dateTimeStr) {
+  // ส่งผ่าน google.script.run เรียก submitOrder ใน Apps Script โดยตรง
+  if (typeof google !== 'undefined' && google.script) {
+    google.script.run
+      .withSuccessHandler(function(res) { console.log('✅ Order saved:', res); })
+      .withFailureHandler(function(err) { console.error('❌ GAS Error:', err); })
+      .submitOrder(
+        customerName,
+        room,
+        pickupTime,
+        note,
+        JSON.stringify(cartItems),
+        grand,
+        rcpId,
+        dateTimeStr  // เพิ่ม: วันเวลาจริง (ย้อนหลังหรือปัจจุบัน)
+      );
+  }
+}
+
+function closeReceipt() {
+  document.getElementById('rcptOverlay').classList.remove('open');
+  resetForm();
+}
+
+function resetForm() {
+  document.getElementById('custName').value = '';
+  document.getElementById('roomNo').value = '';
+  document.getElementById('pickupTime').value = '';
+  orderNote = '';
+  document.getElementById('noteChipTxt').textContent = 'เพิ่มหมายเหตุ';
+  clearCart();
+}
+
+// ═══════════════════════════════════════════════════════════
+// PAGE SWITCH
+// ═══════════════════════════════════════════════════════════
+function switchPage(page) {
+  currentPage = page;
+  document.getElementById('posContent').style.display = page === 'pos' ? 'flex' : 'none';
+  document.getElementById('dashPage').classList.toggle('show', page === 'dash');
+  document.getElementById('nav-pos').classList.toggle('active', page === 'pos');
+  document.getElementById('nav-dash').classList.toggle('active', page === 'dash');
+  window.scrollTo(0, 0);
+  if (page === 'dash' && !_dashLoaded) loadDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════
+const DASH_DEMO = {
+  updatedAt:'Demo mode', totalRows:73, totalRev:3861, totalProfit:2042,
+  bb:{rev:1420,profit:771}, hh:{rev:2441,profit:1271},
+  daily:[
+    {day:'19/4',rev:144,profit:80},{day:'20/4',rev:352,profit:194},{day:'21/4',rev:143,profit:75},
+    {day:'22/4',rev:552,profit:282},{day:'23/4',rev:210,profit:90},{day:'24/4',rev:143,profit:75},
+    {day:'29/4',rev:105,profit:58},{day:'1/5',rev:100,profit:53},{day:'5/5',rev:200,profit:106},
+    {day:'6/5',rev:564,profit:304},{day:'7/5',rev:309,profit:161},{day:'8/5',rev:277,profit:146},
+    {day:'11/5',rev:109,profit:58},{day:'14/5',rev:218,profit:115},{day:'20/5',rev:337,profit:194},{day:'21/5',rev:100,profit:53}
+  ],
+  menus:[
+    {name:'ส้นหมี่ไก่ฉีก',cat:'Food',rev:1003,gp:52.5},
+    {name:'Dark Matter 95%',cat:'Coffee',rev:455,gp:53.5},
+    {name:'Dark Matter 27%',cat:'Coffee',rev:450,gp:53.0},
+    {name:'สลัดผัก ทูน่า',cat:'Food',rev:295,gp:52.5},
+    {name:'Community Series 1',cat:'Coffee',rev:250,gp:52.0},
+    {name:'ชาเขียวเย็น',cat:'Drink',rev:105,gp:65.7},
+    {name:'ชาไทยเย็น',cat:'Drink',rev:105,gp:60.0},
+  ],
+  cats:[
+    {cat:'Food',rev:2231,profit:1139,gp:51.0},
+    {cat:'Coffee',rev:1420,profit:771,gp:54.3},
+    {cat:'Drink',rev:210,profit:132,gp:62.9},
+  ],
+  customers:[
+    {name:'อ.เอิร์น',rev:496,visits:9},{name:'เสาวนี',rev:393,visits:11},
+    {name:'แก้มยุ้ย',rev:355,visits:7},{name:'อ.โบนัส',rev:327,visits:6},
+    {name:'Pimvichada',rev:263,visits:7},
+  ]
+};
+
+async function loadDashboard() {
+  let data = DASH_DEMO;
+  try {
+    if (BREWOS_API !== 'YOUR_APPS_SCRIPT_WEB_APP_URL') {
+      const res = await fetch(BREWOS_API + '?action=dashboard_summary').then(r => r.json());
+      if (res.success) data = normalizeDashData(res.data);
+    } else if (typeof google !== 'undefined' && google.script) {
+      google.script.run.withSuccessHandler(raw => renderDash(normWachi(raw))).withFailureHandler(()=>renderDash(DASH_DEMO)).getDashboardData();
+      return;
+    }
+  } catch(e) {}
+  renderDash(data);
+}
+
+function normalizeDashData(d) {
+  return {
+    updatedAt: new Date().toLocaleString('th-TH'),
+    totalRows: d.today?.orders || 0,
+    totalRev: d.today?.revenue || d.totalRev || 0,
+    totalProfit: (d.today?.revenue || 0) * 0.54,
+    bb: { rev: d.brand_bb?.revenue || 0, profit: (d.brand_bb?.revenue||0)*0.54 },
+    hh: { rev: d.brand_hh?.revenue || 0, profit: (d.brand_hh?.revenue||0)*0.52 },
+    daily: (d.revenue_trend||[]).map((rev,i) => ({ day: d.revenue_labels?.[i]||`Day ${i+1}`, rev, profit: Math.round(rev*0.54) })),
+    menus: (d.best_sellers||[]).map(m => ({ name: m.name, cat:'Coffee', rev: m.revenue||0, gp:54 })),
+    cats: [], customers: [],
+  };
+}
+function normWachi(d) { return d || DASH_DEMO; }
+
+function fmt(n) { return '฿' + Math.round(n).toLocaleString(); }
+function pct(a, b) { return b > 0 ? (Math.round(a/b*1000)/10) + '%' : '—'; }
+const cpill = { Coffee:'cp-c', Food:'cp-f', Drink:'cp-d' };
+
+function renderDash(d) {
+  _dashLoaded = true;
+  document.getElementById('d-rev').textContent    = fmt(d.totalRev);
+  document.getElementById('d-profit').textContent = fmt(d.totalProfit);
+  document.getElementById('d-gp').textContent     = 'GP ' + pct(d.totalProfit, d.totalRev);
+  document.getElementById('d-bb').textContent     = fmt(d.bb.rev);
+  document.getElementById('d-bbgp').textContent   = 'GP ' + pct(d.bb.profit, d.bb.rev);
+  document.getElementById('d-hh').textContent     = fmt(d.hh.rev);
+  document.getElementById('d-hhgp').textContent   = 'GP ' + pct(d.hh.profit, d.hh.rev);
+
+  if (_dailyChart) _dailyChart.destroy();
+  _dailyChart = new Chart(document.getElementById('dailyChart'), {
+    type:'bar',
+    data:{
+      labels: d.daily.map(r => r.day),
+      datasets:[
+        {label:'ยอดขาย',data:d.daily.map(r=>r.rev),backgroundColor:'rgba(45,90,39,.35)',borderColor:'#2d5a27',borderWidth:1.5,borderSkipped:false},
+        {label:'กำไร',data:d.daily.map(r=>r.profit||0),backgroundColor:'rgba(224,123,42,.45)',borderColor:'#e07b2a',borderWidth:1.5,borderSkipped:false},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9},autoSkip:false,maxRotation:45}},y:{ticks:{font:{size:9},callback:v=>'฿'+v}}}}
+  });
+
+  const maxRev = d.menus[0]?.rev || 1;
+  document.getElementById('d-menus').innerHTML = d.menus.map((m,i) => `
+    <div style="padding:8px 0;border-bottom:1px solid var(--cd);display:flex;align-items:center;gap:9px">
+      <span style="font-size:10px;font-weight:800;color:var(--tm);width:14px;text-align:center;flex-shrink:0">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.name}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+          <span class="cpill ${cpill[m.cat]||'cp-c'}">${m.cat}</span>
+          <div class="mbar-bg"><div class="mbar-fg" style="width:${Math.round(m.rev/maxRev*100)}%"></div></div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;font-weight:800;color:var(--gd)">${fmt(m.rev)}</div>
+        <div style="font-size:10px;color:${m.gp>=60?'var(--gm)':'var(--or)'}">GP ${m.gp}%</div>
+      </div>
+    </div>`).join('') || '<p style="font-size:12px;color:var(--tm);padding:12px 0;text-align:center">ยังไม่มีข้อมูล</p>';
+
+  document.getElementById('d-cats').innerHTML = d.cats.map(c => `
+    <tr>
+      <td><span class="cpill ${cpill[c.cat]||'cp-c'}">${c.cat}</span></td>
+      <td class="r">${fmt(c.rev)}</td>
+      <td class="r">${fmt(c.profit)}</td>
+      <td class="r ${c.gp>=60?'ghi':'glo'}">${c.gp}%</td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;padding:14px;color:var(--tm);font-size:12px">ยังไม่มีข้อมูล</td></tr>';
+
+  document.getElementById('d-custs').innerHTML = (d.customers||[]).map(c => `
+    <tr>
+      <td style="font-weight:700">${c.name}</td>
+      <td class="r">${fmt(c.rev)}</td>
+      <td class="r">${c.visits}</td>
+    </tr>`).join('') || '<tr><td colspan="3" style="text-align:center;padding:14px;color:var(--tm);font-size:12px">ยังไม่มีข้อมูล</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════
+let _tt;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+
+// ── DISCOUNT ──────────────────────────────────────────────────────────────
+var discType = 'pct', discValue = 0, discReason = '';
+
+function getDisc(sub) {
+  if (!discValue) return 0;
+  if (discType === 'pct') return Math.round(sub * discValue / 100);
+  return Math.min(discValue, sub);
+}
+function openDiscModal() {
+  document.getElementById('discInput').value = discValue || '';
+  document.getElementById('discReason').value = discReason || '';
+  document.getElementById('discOverlay').classList.add('open');
+}
+function setDiscType(t) {
+  discType = t;
+  var pct = document.getElementById('dTypePct');
+  var amt = document.getElementById('dTypeAmt');
+  var lbl = document.getElementById('dInputLbl');
+  if(pct) pct.style.background = t==='pct' ? 'var(--or)' : '';
+  if(pct) pct.style.color = t==='pct' ? '#fff' : '';
+  if(amt) amt.style.background = t==='amt' ? 'var(--or)' : '';
+  if(amt) amt.style.color = t==='amt' ? '#fff' : '';
+  if(lbl) lbl.textContent = t==='pct' ? 'ลดกี่ % ?' : 'ลดกี่บาท?';
+}
+function applyDisc() {
+  var v = parseFloat(document.getElementById('discInput').value) || 0;
+  if (v < 0) { showToast('⚠️ กรอกตัวเลขให้ถูกต้อง'); return; }
+  discValue = v;
+  discReason = document.getElementById('discReason').value.trim();
+  document.getElementById('discOverlay').classList.remove('open');
+  updateDiscChip();
+  showToast('💝 ส่วนลด ' + (discType==='pct' ? v+'%' : '฿'+v) + ' บันทึกแล้ว');
+}
+function clearDisc() {
+  discValue = 0; discReason = '';
+  document.getElementById('discOverlay').classList.remove('open');
+  updateDiscChip();
+}
+function updateDiscChip() {
+  var chip = document.getElementById('discChip');
+  var txt = document.getElementById('discChipTxt');
+  if (!chip || !txt) return;
+  if (discValue > 0) {
+    txt.innerHTML = 'ส่วนลด <b style="background:var(--or);color:#fff;border-radius:12px;padding:1px 7px;font-size:10px;margin-left:3px;">' + (discType==='pct' ? discValue+'%' : '฿'+discValue) + '</b>';
+    chip.style.background = 'rgba(224,123,42,.2)';
+  } else {
+    txt.textContent = 'เพิ่มส่วนลด';
+    chip.style.background = 'rgba(224,123,42,.1)';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════════════
+initMenus();
+</script>
+</body>
+</html>
