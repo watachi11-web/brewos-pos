@@ -644,6 +644,17 @@ function scrollToAlerts() {
 // ============================================================
 // INIT
 // ============================================================
+function dateKeyBkk(dateStrOrObj) {
+  // รองรับทั้ง ISO string "2026-06-17T13:05:39" และ JS Date string "Wed Jun 17 2026 13:05:39 GMT+0700..."
+  const d = new Date(dateStrOrObj);
+  if (isNaN(d.getTime())) return '';
+  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+  const y = bkk.getFullYear();
+  const mo = String(bkk.getMonth()+1).padStart(2,'0');
+  const dd = String(bkk.getDate()).padStart(2,'0');
+  return `${y}-${mo}-${dd}`;
+}
+
 async function loadDashboard() {
   try {
     // ดึง orders จาก Sheet จริง แล้วคำนวณ KPI เอง
@@ -657,7 +668,7 @@ async function loadDashboard() {
     const todayStr = `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
     const todayOrders = orders.filter(o => {
       if (!o.created_at) return false;
-      return String(o.created_at).startsWith(todayStr);
+      return dateKeyBkk(o.created_at) === todayStr;
     });
     const todayRevenue = todayOrders.reduce((s,o) => s + Number(o.total_amount||0), 0);
 
@@ -673,7 +684,7 @@ async function loadDashboard() {
       const label = `${dd}/${mo}`;
       const dayOrders = orders.filter(o => {
         if (!o.created_at) return false;
-        return String(o.created_at).startsWith(dayPrefix);
+        return dateKeyBkk(o.created_at) === dayPrefix;
       });
       days7.push({
         date: label,
@@ -705,7 +716,7 @@ async function loadDashboard() {
     const monthPrefix = `${thisYear}-${thisMonth}`;
     const monthOrders = orders.filter(o => {
       if (!o.created_at) return false;
-      return String(o.created_at).startsWith(monthPrefix);
+      return dateKeyBkk(o.created_at).startsWith(monthPrefix);
     });
     const monthRevenue = monthOrders.reduce((s,o) => s + Number(o.total_amount||0), 0);
 
@@ -724,7 +735,11 @@ async function loadDashboard() {
         total_amount: o.total_amount||0,
         payment_status: o.payment_status||'paid',
         order_type: o.order_type||'takeaway',
-        created_at: o.created_at ? String(o.created_at).substr(11,5) : '--:--',
+        created_at: o.created_at ? (() => {
+          const dt = new Date(o.created_at);
+          if (isNaN(dt.getTime())) return '--:--';
+          return dt.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
+        })() : '--:--',
       })),
     };
 
