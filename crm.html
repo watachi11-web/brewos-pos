@@ -3,588 +3,457 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRM / Members — Brain Brew × Heng Heng</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<title>CRM / Members — BrewOS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
-:root { --brand-dark:#1B4332; --brand-mid:#2D6A4F; --brand-light:#52B788; --brand-accent:#F97316; }
+:root {
+  --green:#1B4332; --green2:#2D6A4F; --orange:#F97316;
+  --bg:#f5f0e8; --card:#ffffff; --border:#e8e2d6;
+  --text:#1a2e1a; --muted:#6b7d68;
+  --gold:#D97706; --gold-bg:#FFFBEB;
+  --silver:#6B7280; --silver-bg:#F9FAFB;
+  --bronze:#92400E; --bronze-bg:#FEF3C7;
+  --success:#16A34A; --success-bg:#F0FDF4;
+}
 * { box-sizing:border-box; margin:0; padding:0; }
-html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; color:#1a2e1a; overflow-x:hidden; }
+html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
 .app { display:flex; height:100vh; }
-.sidebar { width:220px; background:#1B4332; border-right:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
+.sidebar { width:220px; background:var(--green); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
 .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
-.sidebar-logo-brand { font-family:'Playfair Display',serif; font-size:13px; color:#1a2e1a; }
-.sidebar-logo-sub { font-size:10px; color:#4a6741; margin-top:2px; letter-spacing:0.05em; text-transform:uppercase; }
-.nav-section { padding:12px 12px 4px; }
-.nav-label { font-size:9px; color:rgba(0,0,0,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:4px; }
-.nav-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; font-size:12px; color:#4a6741; cursor:pointer; transition:all 0.15s; text-decoration:none; }
-.nav-item:hover { background:rgba(255,255,255,0.05); color:#1a2e1a; }
-.nav-item.active { background:var(--brand-dark); color:#1a2e1a; }
+.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:8px; }
+.sidebar-logo span { font-family:'Playfair Display',serif; font-size:13px; color:#fff; }
+.sidebar-logo-sub { font-size:9px; color:rgba(255,255,255,0.5); margin-top:6px; letter-spacing:0.08em; text-transform:uppercase; padding:0 20px; }
+.nav-section { padding:12px 12px 4px; flex:1; overflow-y:auto; }
+.nav-label { font-size:9px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; font-size:12.5px; color:rgba(255,255,255,0.65); cursor:pointer; transition:all 0.15s; text-decoration:none; margin-bottom:1px; }
+.nav-item:hover { background:rgba(255,255,255,0.08); color:#fff; }
+.nav-item.active { background:rgba(255,255,255,0.15); color:#fff; font-weight:500; }
 .nav-icon { width:16px; text-align:center; font-size:13px; }
-.topbar { background:#1B4332; border-bottom:1px solid rgba(255,255,255,0.06); padding:0 24px; height:56px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
-.topbar-title { font-size:15px; font-weight:600; color:#1a2e1a; }
+.sidebar-footer { padding:12px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:11px; color:rgba(255,255,255,0.4); }
+
+.topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
+.topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+.topbar-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:600; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; }
-.btn { padding:7px 16px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
-.btn-ghost { background:rgba(255,255,255,0.06); color:#1a2e1a; border:1px solid rgba(255,255,255,0.08); }
-.btn-ghost:hover { background:rgba(255,255,255,0.1); color:#1a2e1a; }
-.btn-primary { background:var(--brand-dark); color: #fff; }
-.btn-primary:hover { background:var(--brand-mid); }
+.btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
+.btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
+.btn-primary { background:var(--green); color:#fff; }
+.btn-primary:hover { background:var(--green2); }
+.btn-sm { padding:6px 12px; font-size:11.5px; }
 
-/* SPLIT LAYOUT */
-.crm-layout { display:flex; flex:1; overflow:hidden; }
-.member-list-panel { width:340px; border-right:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; flex-shrink:0; }
-.member-detail-panel { flex:1; overflow-y:auto; }
-.member-detail-panel::-webkit-scrollbar { width:4px; }
-.member-detail-panel::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+.content { flex:1; overflow-y:auto; padding:20px 28px 28px; }
 
-/* LIST */
-.list-header { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05); }
-.list-search { width:100%; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; font-size:12px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; margin-bottom:8px; }
-.list-search:focus { border-color:var(--brand-light); }
-.list-search::placeholder { color:rgba(0,0,0,0.35); }
-.list-filter-row { display:flex; gap:4px; }
-.tier-filter { padding:4px 10px; border-radius:6px; font-size:10px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,0.08); background:transparent; color:#4a6741; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
-.tier-filter.active { background:rgba(255,255,255,0.1); color:#1a2e1a; }
-.member-list { flex:1; overflow-y:auto; }
-.member-list::-webkit-scrollbar { width:3px; }
-.member-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:2px; }
-.member-item { padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.04); cursor:pointer; transition:background 0.1s; display:flex; align-items:center; gap:10px; }
-.member-item:hover { background:rgba(255,255,255,0.03); }
-.member-item.active { background:rgba(27,67,50,0.4); border-left:3px solid var(--brand-light); }
-.member-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#1a2e1a; flex-shrink:0; }
-.member-info { flex:1; min-width:0; }
-.member-name { font-size:13px; font-weight:500; color:#1a2e1a; }
-.member-meta { font-size:10px; color:#4a6741; margin-top:2px; }
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
+.kpi-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; font-weight:600; }
+.kpi-value { font-size:22px; font-weight:700; }
+.kpi-sub { font-size:11px; color:var(--muted); margin-top:4px; }
 
-/* TIER BADGES */
-.tier-badge { display:inline-flex; align-items:center; gap:4px; padding:2px 8px; border-radius:10px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; }
-.tier-bronze   { background:rgba(180,119,0,0.15);   color:#CD7F32; }
-.tier-silver   { background:rgba(160,160,160,0.15); color:#A0A0A0; }
-.tier-gold     { background:rgba(255,200,0,0.15);   color:#FFD700; }
-.tier-platinum { background:rgba(229,228,226,0.15); color:#E5E4E2; }
+.filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
+.search-wrap { position:relative; }
+.search-input { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px 9px 36px; font-size:12.5px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; width:240px; }
+.search-input:focus { border-color:var(--green2); }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:0.4; pointer-events:none; }
+.select-filter { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
 
-/* DETAIL */
-.detail-body { padding:24px; }
+.table-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+.table-header { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; background:var(--green); font-size:10.5px; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
+.table-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; border-bottom:1px solid var(--border); align-items:center; transition:background 0.1s; }
+.table-row:last-child { border-bottom:none; }
+.table-row:hover { background:#faf8f3; }
 
-/* MEMBER HERO */
-.member-hero { background:#1B4332; border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; margin-bottom:20px; display:flex; align-items:flex-start; gap:20px; }
-.hero-avatar { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:#1a2e1a; flex-shrink:0; }
-.hero-name { font-family:'Playfair Display',serif; font-size:20px; color:#1a2e1a; margin-bottom:4px; }
-.hero-meta { font-size:12px; color:#4a6741; display:flex; gap:12px; align-items:center; margin-bottom:12px; }
-.hero-kpis { display:flex; gap:16px; flex-wrap:wrap; }
-.hero-kpi { background:rgba(255,255,255,0.04); border-radius:10px; padding:10px 14px; }
-.hero-kpi-label { font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.05em; }
-.hero-kpi-value { font-size:16px; font-weight:700; color:#1a2e1a; margin-top:2px; }
-.hero-kpi-sub { font-size:10px; color:#4a6741; margin-top:1px; }
+.member-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
+.member-name { font-size:13px; font-weight:600; color:var(--text); }
+.member-id { font-size:10.5px; color:var(--muted); margin-top:1px; }
 
-/* POINTS BAR */
-.points-progress { margin-top:12px; }
-.points-bar-labels { display:flex; justify-content:space-between; font-size:10px; color:#4a6741; margin-bottom:5px; }
-.points-bar-track { height:6px; background:rgba(255,255,255,0.06); border-radius:3px; }
-.points-bar-fill  { height:100%; border-radius:3px; transition:width 0.4s; }
+.tier-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; }
+.tier-Gold   { background:var(--gold-bg); color:var(--gold); }
+.tier-Silver { background:var(--silver-bg); color:var(--silver); }
+.tier-Bronze { background:var(--bronze-bg); color:var(--bronze); }
 
-/* SECTION */
-.section { background: #ffffff; border:1px solid rgba(255,255,255,0.06); border-radius:14px; margin-bottom:16px; overflow:hidden; }
-.section-header { padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; }
-.section-title { font-size:12px; font-weight:600; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; }
-.section-body { padding:16px 18px; }
+.points-bar-wrap { width:100%; height:4px; background:var(--bg); border-radius:2px; margin-top:4px; }
+.points-bar { height:100%; border-radius:2px; background:var(--green2); }
 
-/* TX HISTORY */
-.tx-row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-.tx-row:last-child { border-bottom:none; }
-.tx-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
-.tx-earn  { background:rgba(16,185,129,0.1); }
-.tx-redeem{ background:rgba(249,115,22,0.1); }
-.tx-info { flex:1; }
-.tx-desc { font-size:12px; color:#1a2e1a; }
-.tx-date { font-size:10px; color:#4a6741; margin-top:2px; }
-.tx-pts { font-size:13px; font-weight:700; }
-.pts-earn  { color:#10B981; }
-.pts-redeem{ color:#F97316; }
-
-/* ORDERS MINI */
-.order-row { display:flex; align-items:center; gap:12px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); }
-.order-row:last-child { border-bottom:none; }
-.order-id { font-size:11px; font-weight:600; color:var(--brand-light); width:80px; }
-.order-desc { font-size:12px; color:var(--green);font-weight:700; flex:1; }
-.order-amount { font-size:13px; font-weight:600; color:#1a2e1a; }
-.order-date { font-size:10px; color:#4a6741; }
+.empty-state { padding:60px 24px; text-align:center; color:var(--muted); }
 
 /* MODAL */
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
-.modal { background:#ffffff; border-radius:20px; width:480px; max-height:85vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); }
-.modal-header { padding:20px 24px 16px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; }
-.modal-title { font-size:15px; font-weight:600; color:#1a2e1a; }
-.modal-close { background:none; border:none; color:#4a6741; font-size:20px; cursor:pointer; }
-.modal-close:hover { color:#1a2e1a; }
+.modal { background:var(--card); border-radius:18px; width:460px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.modal-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:15px; font-weight:600; }
+.modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
 .modal-body { padding:20px 24px; }
 .form-group { margin-bottom:16px; }
-.form-label { font-size:11px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; display:block; }
-.form-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:9px 12px; font-size:13px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; }
-.form-input:focus { border-color:var(--brand-light); }
-.form-input::placeholder { color:rgba(0,0,0,0.35); }
+.form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block; font-weight:600; }
+.form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.form-input:focus { border-color:var(--green2); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
 
-/* KPI ROW */
-.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:20px 24px 0; }
-.kpi-card { background:#1B4332; border:1px solid rgba(255,255,255,0.06); border-radius:14px; padding:14px 18px; }
-.kpi-label { font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
-.kpi-value { font-size:22px; font-weight:700; color:#1a2e1a; }
-.kpi-sub { font-size:10px; color:rgba(0,0,0,0.35); margin-top:3px; }
+/* DETAIL PANEL */
+.detail-panel { position:fixed; right:0; top:0; bottom:0; width:360px; background:var(--card); border-left:1px solid var(--border); transform:translateX(100%); transition:transform 0.25s; z-index:150; display:flex; flex-direction:column; }
+.detail-panel.open { transform:translateX(0); }
+.detail-header { padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.detail-body { flex:1; overflow-y:auto; padding:20px; }
+.detail-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+.detail-stat { background:var(--bg); border-radius:12px; padding:14px; margin-bottom:12px; }
+.detail-stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin-bottom:4px; }
+.detail-stat-value { font-size:18px; font-weight:700; }
+.points-input-row { display:flex; gap:8px; margin-top:12px; }
+.points-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; color:var(--text); }
 </style>
 </head>
 <body>
-
 <div class="app">
-  <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-brand">Brain Brew × Heng Heng</div>
-      <div class="sidebar-logo-sub">Back Office</div>
-    </div>
-    <div class="nav-section" style="flex:1">
-      <div class="nav-label">Main</div>
-      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⬛</span>Dashboard</a>
-      <a href="pos.html"       class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
-      <div class="nav-label" style="margin-top:12px">Operations</div>
-      <a href="kitchen.html"   class="nav-item"><span class="nav-icon">👨‍🍳</span>Kitchen</a>
+    <div class="sidebar-logo">☕ <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo-sub">Back Office</div>
+    <div class="nav-section">
+      <div class="nav-label" style="margin-top:14px">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span>Dashboard</a>
+      <a href="pos.html" class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
+      <div class="nav-label" style="margin-top:14px">Operations</div>
+      <a href="kitchen.html" class="nav-item"><span class="nav-icon">👨‍🍳</span>Kitchen</a>
+      <a href="orders.html" class="nav-item"><span class="nav-icon">📋</span>Orders</a>
       <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
-      <a href="recipe.html"    class="nav-item"><span class="nav-icon">🧪</span>Recipes</a>
-      <a href="production.html"class="nav-item"><span class="nav-icon">🏭</span>Production</a>
-      <div class="nav-label" style="margin-top:12px">Business</div>
-      <a href="crm.html"       class="nav-item active"><span class="nav-icon">👥</span>CRM / Members</a>
-      <a href="finance.html"   class="nav-item"><span class="nav-icon">💰</span>Finance</a>
-      <a href="reports.html"   class="nav-item"><span class="nav-icon">📊</span>Reports</a>
-      <div class="nav-label" style="margin-top:12px">Settings</div>
-      <a href="settings.html"  class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
+      <a href="recipe.html" class="nav-item"><span class="nav-icon">📝</span>Recipes</a>
+      <div class="nav-label" style="margin-top:14px">Business</div>
+      <a href="crm.html" class="nav-item active"><span class="nav-icon">👥</span>CRM / Members</a>
+      <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
+      <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span>Reports</a>
+      <div class="nav-label" style="margin-top:14px">Settings</div>
+      <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);">
-      <div style="font-size:11px;color:rgba(0,0,0,0.35)">Owner · All Brands</div>
-    </div>
+    <div class="sidebar-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
-    <!-- Topbar -->
     <div class="topbar">
-      <div class="topbar-title">CRM / Members</div>
-      <div class="topbar-actions">
-        <button class="btn btn-ghost">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 8l3 3 3-3"/></svg>
-          Export CSV
-        </button>
-        <button class="btn btn-primary" onclick="openModal('add-member-modal')">+ Add Member</button>
+      <div class="topbar-top">
+        <div class="topbar-title">CRM / Members</div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost" onclick="loadMembers()">⟳ Refresh</button>
+          <button class="btn btn-primary" onclick="openModal('add-modal')">+ Add Member</button>
+        </div>
       </div>
     </div>
 
-    <!-- KPI Row -->
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <div class="kpi-label">Total Members</div>
-        <div class="kpi-value" id="kpi-members">—</div>
-        <div class="kpi-sub">Registered customers</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Active This Month</div>
-        <div class="kpi-value" id="kpi-active">—</div>
-        <div class="kpi-sub">Made a purchase</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Points Outstanding</div>
-        <div class="kpi-value" id="kpi-points">—</div>
-        <div class="kpi-sub">Unredeemed loyalty pts</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Avg Lifetime Value</div>
-        <div class="kpi-value" id="kpi-ltv">—</div>
-        <div class="kpi-sub">Per member spend</div>
-      </div>
-    </div>
-
-    <div class="crm-layout" style="margin-top:16px">
-
-      <!-- Left List -->
-      <div class="member-list-panel">
-        <div class="list-header">
-          <input class="list-search" type="text" placeholder="Search by name or phone…" oninput="filterMembers(this.value)">
-          <div class="list-filter-row">
-            <button class="tier-filter active" onclick="filterTier('', this)">All</button>
-            <button class="tier-filter" onclick="filterTier('bronze', this)">Bronze</button>
-            <button class="tier-filter" onclick="filterTier('silver', this)">Silver</button>
-            <button class="tier-filter" onclick="filterTier('gold', this)">Gold</button>
-            <button class="tier-filter" onclick="filterTier('platinum', this)">Platinum</button>
-          </div>
+    <div class="content">
+      <!-- KPIs -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Members</div>
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-sub">Registered</div>
         </div>
-        <div class="member-list" id="member-list"></div>
-      </div>
-
-      <!-- Right Detail -->
-      <div class="member-detail-panel">
-        <div id="empty-detail" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:rgba(0,0,0,0.35);padding:40px;text-align:center">
-          <div style="font-size:48px;margin-bottom:16px;opacity:0.3">👥</div>
-          <div style="font-size:14px;margin-bottom:20px">Select a member to view their profile,<br>loyalty points, and order history</div>
+        <div class="kpi-card">
+          <div class="kpi-label">Gold Members</div>
+          <div class="kpi-value" id="kpi-gold" style="color:var(--gold)">—</div>
+          <div class="kpi-sub">≥ ฿2,000 spent</div>
         </div>
-        <div id="member-detail" style="display:none"></div>
+        <div class="kpi-card">
+          <div class="kpi-label">Silver Members</div>
+          <div class="kpi-value" id="kpi-silver" style="color:var(--silver)">—</div>
+          <div class="kpi-sub">≥ ฿1,000 spent</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Points Issued</div>
+          <div class="kpi-value" id="kpi-points">—</div>
+          <div class="kpi-sub">Outstanding points</div>
+        </div>
       </div>
 
+      <!-- Filters -->
+      <div class="filter-row">
+        <div class="search-wrap">
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#6b7d68" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+          <input class="search-input" type="text" placeholder="Search members…" oninput="filterMembers(this.value)">
+        </div>
+        <select class="select-filter" onchange="filterByTier(this.value)">
+          <option value="">All Tiers</option>
+          <option value="Gold">🥇 Gold</option>
+          <option value="Silver">🥈 Silver</option>
+          <option value="Bronze">🥉 Bronze</option>
+        </select>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--muted)" id="member-count">0 members</span>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-header">
+          <div>Member</div>
+          <div>Tier</div>
+          <div>Points</div>
+          <div>Total Spent</div>
+          <div>Joined</div>
+          <div style="text-align:right">Actions</div>
+        </div>
+        <div id="member-body">
+          <div class="empty-state">⏳ Loading…</div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div style="font-size:14px;font-weight:600" id="detail-name">Member Detail</div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
 
 <!-- ADD MEMBER MODAL -->
-<div class="modal-overlay" id="add-member-modal">
+<div class="modal-overlay" id="add-modal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Add Member</div>
-      <button class="modal-close" onclick="closeModal('add-member-modal')">×</button>
+      <div class="modal-title">Add New Member</div>
+      <button class="modal-close" onclick="closeModal('add-modal')">×</button>
     </div>
     <div class="modal-body">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">First Name</label>
-          <input class="form-input" type="text" id="m-fname" placeholder="First name">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Last Name</label>
-          <input class="form-input" type="text" id="m-lname" placeholder="Last name">
-        </div>
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" id="add-name" placeholder="e.g. สมชาย ใจดี">
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">Phone Number</label>
-          <input class="form-input" type="text" id="m-phone" placeholder="08X-XXX-XXXX">
+          <label class="form-label">Phone</label>
+          <input class="form-input" type="tel" id="add-phone" placeholder="0812345678">
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input class="form-input" type="email" id="m-email" placeholder="email@example.com">
+          <label class="form-label">Email (optional)</label>
+          <input class="form-input" type="email" id="add-email" placeholder="email@example.com">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Birthday</label>
-          <input class="form-input" type="date" id="m-bday">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Primary Brand</label>
-          <select class="form-input" id="m-brand">
-            <option value="BB">Brain Brew Coffee</option>
-            <option value="HH">Heng Heng Phanit</option>
-            <option value="BOTH">Both</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input class="form-input" type="text" id="add-notes" placeholder="e.g. ลูกค้าขาประจำ">
       </div>
       <div class="form-footer">
-        <button class="btn btn-ghost" onclick="closeModal('add-member-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveMember()">Register Member</button>
+        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveMember()">Add Member</button>
       </div>
     </div>
   </div>
 </div>
 
-
 <script>
-let MEMBERS = [
-  { id:'CUS-001', first_name:'Somsak',    last_name:'Kittipong',   phone:'081-234-5678', email:'somsak@email.com', tier:'gold',     points:1240, total_spend:18600, visit_count:52, brand:'BB', join_date:'2024-02-14', last_visit:'2026-05-26', birthday:'1990-03-15' },
-  { id:'CUS-002', first_name:'Nong',      last_name:'Siriporn',    phone:'086-345-6789', email:'nong@email.com',   tier:'platinum', points:4820, total_spend:67400, visit_count:187,brand:'BOTH',join_date:'2023-08-01', last_visit:'2026-05-27', birthday:'1988-07-22' },
-  { id:'CUS-003', first_name:'Prae',      last_name:'Wandee',      phone:'089-456-7890', email:'prae@email.com',   tier:'silver',   points:380,  total_spend:5800,  visit_count:18, brand:'HH', join_date:'2025-01-10', last_visit:'2026-05-20', birthday:'1995-11-30' },
-  { id:'CUS-004', first_name:'Krit',      last_name:'Mahachai',    phone:'082-567-8901', email:'krit@email.com',   tier:'bronze',   points:90,   total_spend:1350,  visit_count:5,  brand:'BB', join_date:'2026-03-05', last_visit:'2026-05-15', birthday:'1998-05-12' },
-  { id:'CUS-005', first_name:'Mook',      last_name:'Chanphen',    phone:'095-678-9012', email:'mook@email.com',   tier:'gold',     points:2100, total_spend:31500, visit_count:88, brand:'BB', join_date:'2024-06-20', last_visit:'2026-05-25', birthday:'1992-09-08' },
-  { id:'CUS-006', first_name:'Arthit',    last_name:'Suwannarat',  phone:'087-789-0123', email:'',                 tier:'silver',   points:650,  total_spend:9800,  visit_count:27, brand:'BOTH',join_date:'2025-04-18', last_visit:'2026-05-22', birthday:'' },
-  { id:'CUS-007', first_name:'Fah',       last_name:'Rattanaphon', phone:'091-890-1234', email:'fah@email.com',    tier:'platinum', points:7200, total_spend:108000,visit_count:310,brand:'BB', join_date:'2023-01-15', last_visit:'2026-05-27', birthday:'1985-12-01' },
-  { id:'CUS-008', first_name:'Tum',       last_name:'Piyanat',     phone:'083-901-2345', email:'tum@email.com',    tier:'bronze',   points:120,  total_spend:1800,  visit_count:8,  brand:'HH', join_date:'2026-01-22', last_visit:'2026-05-10', birthday:'2000-04-18' },
-];
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+let MEMBERS = [];
+let filterText = '';
+let filterTier = '';
 
-const LOYALTY_TX = {
-  'CUS-001': [
-    { type:'earn',   desc:'Neuron Latte × 2', pts:+24, date:'2026-05-26', amount:240 },
-    { type:'earn',   desc:'Cold Brew 24hr',   pts:+13, date:'2026-05-20', amount:130 },
-    { type:'redeem', desc:'Free drink reward', pts:-200,date:'2026-05-15', amount:0 },
-    { type:'earn',   desc:'Axon Flat White',  pts:+11, date:'2026-05-10', amount:110 },
-  ],
-  'CUS-007': [
-    { type:'earn',   desc:'Monthly purchase',  pts:+500, date:'2026-05-27', amount:5000 },
-    { type:'earn',   desc:'Birthday bonus',    pts:+200, date:'2026-05-01', amount:0 },
-    { type:'redeem', desc:'Birthday free item',pts:-500, date:'2026-05-01', amount:0 },
-  ],
-};
+const TIER_COLORS = { Gold:'#D97706', Silver:'#6B7280', Bronze:'#92400E' };
+const TIER_BG    = { Gold:'#f8e7c0', Silver:'#e5e7eb', Bronze:'#fde68a' };
 
-const ORDER_HISTORY = {
-  'CUS-001': [
-    { id:'ORD-892', desc:'Neuron Latte, Banana Bread', amount:185, date:'2026-05-26', brand:'BB' },
-    { id:'ORD-841', desc:'Axon Flat White × 2',        amount:220, date:'2026-05-20', brand:'BB' },
-    { id:'ORD-790', desc:'Cold Brew 24hr, Croissant',  amount:205, date:'2026-05-15', brand:'BB' },
-  ],
-  'CUS-007': [
-    { id:'ORD-895', desc:'Office order × 12 items',    amount:1440, date:'2026-05-27', brand:'BB' },
-    { id:'ORD-850', desc:'Cortex Espresso × 4',        amount:320,  date:'2026-05-24', brand:'BB' },
-  ],
-};
+function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
 
-const TIER_CONFIG = {
-  bronze:   { color:'#CD7F32', bg:'rgba(180,119,0,0.15)',   next:'silver',   nextAt:5000 },
-  silver:   { color:'#A0A0A0', bg:'rgba(160,160,160,0.15)', next:'gold',     nextAt:20000 },
-  gold:     { color:'#FFD700', bg:'rgba(255,200,0,0.15)',   next:'platinum', nextAt:50000 },
-  platinum: { color:'#E5E4E2', bg:'rgba(229,228,226,0.15)', next:null,       nextAt:null },
-};
+function avatarColor(name) {
+  const colors = ['#1B4332','#2D6A4F','#F97316','#6366F1','#0EA5E9','#D97706'];
+  let hash = 0;
+  for (let i=0; i<name.length; i++) hash = name.charCodeAt(i) + hash * 31;
+  return colors[Math.abs(hash) % colors.length];
+}
 
-const AVATAR_COLORS = ['#1B4332','#2D6A4F','#78350F','#B45309','#1E40AF','#7C3AED','#BE185D'];
+async function loadMembers() {
+  try {
+    const res = await fetch(`${GAS_URL}?action=get_members`);
+    const json = await res.json();
+    MEMBERS = (json.success && json.data) ? json.data : [];
+  } catch(e) {
+    console.error('loadMembers:', e);
+    MEMBERS = [];
+  }
+  renderKPIs();
+  renderMembers();
+}
 
-let activeFilter = '';
-let activeTier = '';
-let activeMemberId = null;
+document.addEventListener('DOMContentLoaded', loadMembers);
 
-function avatarColor(id) { return AVATAR_COLORS[parseInt(id.replace('CUS-','')) % AVATAR_COLORS.length]; }
-function initials(m) { return (m.first_name[0] || '') + (m.last_name[0] || ''); }
+function renderKPIs() {
+  document.getElementById('kpi-total').textContent = MEMBERS.length;
+  document.getElementById('kpi-gold').textContent = MEMBERS.filter(m=>m.tier==='Gold').length;
+  document.getElementById('kpi-silver').textContent = MEMBERS.filter(m=>m.tier==='Silver').length;
+  document.getElementById('kpi-points').textContent = MEMBERS.reduce((s,m)=>s+m.points,0).toLocaleString();
+}
 
-function getFilteredMembers(search, tier) {
+function getFiltered() {
   return MEMBERS.filter(m => {
-    const q = search.toLowerCase();
-    if (search && !`${m.first_name} ${m.last_name} ${m.phone}`.toLowerCase().includes(q)) return false;
-    if (tier && m.tier !== tier) return false;
+    if (filterTier && m.tier !== filterTier) return false;
+    if (filterText && !m.name.toLowerCase().includes(filterText) && !m.phone.includes(filterText)) return false;
     return true;
   });
 }
 
-function updateKPIs() {
-  const total = MEMBERS.length;
-  const active = MEMBERS.filter(m => m.last_visit >= '2026-05-01').length;
-  const points = MEMBERS.reduce((s, m) => s + m.points, 0);
-  const ltv    = Math.round(MEMBERS.reduce((s, m) => s + m.total_spend, 0) / MEMBERS.length);
-  document.getElementById('kpi-members').textContent = total;
-  document.getElementById('kpi-active').textContent  = active;
-  document.getElementById('kpi-points').textContent  = points.toLocaleString();
-  document.getElementById('kpi-ltv').textContent     = '฿' + ltv.toLocaleString();
-}
+function filterMembers(q) { filterText = q.toLowerCase(); renderMembers(); }
+function filterByTier(t)  { filterTier = t; renderMembers(); }
 
-function renderMemberList() {
-  const list = document.getElementById('member-list');
-  const members = getFilteredMembers(activeFilter, activeTier);
-  if (members.length === 0) {
-    list.innerHTML = `<div style="padding:40px;text-align:center;color:rgba(0,0,0,0.35);font-size:13px">No members found</div>`;
+function renderMembers() {
+  const items = getFiltered();
+  document.getElementById('member-count').textContent = `${items.length} member${items.length!==1?'s':''}`;
+
+  const body = document.getElementById('member-body');
+  if (!items.length) {
+    body.innerHTML = `<div class="empty-state">No members found</div>`;
     return;
   }
-  list.innerHTML = members.map(m => `
-    <div class="member-item ${activeMemberId===m.id?'active':''}" onclick="selectMember('${m.id}')">
-      <div class="member-avatar" style="background:${avatarColor(m.id)}">${initials(m)}</div>
-      <div class="member-info">
-        <div class="member-name">${m.first_name} ${m.last_name}</div>
-        <div class="member-meta">
-          ${m.phone} · <span class="tier-badge tier-${m.tier}">${m.tier}</span> · ★ ${m.points.toLocaleString()} pts
+
+  // Max points for bar scaling
+  const maxPts = Math.max(...MEMBERS.map(m=>m.points), 1);
+
+  body.innerHTML = items.map(m => {
+    const initials = m.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
+    const color = avatarColor(m.name);
+    const pct = Math.min(100, (m.points/maxPts)*100);
+
+    return `
+      <div class="table-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="member-avatar" style="background:${color}">${initials}</div>
+          <div>
+            <div class="member-name">${m.name}</div>
+            <div class="member-id">${m.member_id}${m.phone ? ' · ' + m.phone : ''}</div>
+          </div>
         </div>
+        <div><span class="tier-badge tier-${m.tier}">${m.tier==='Gold'?'🥇':m.tier==='Silver'?'🥈':'🥉'} ${m.tier}</span></div>
+        <div>
+          <div style="font-size:13px;font-weight:600">${m.points.toLocaleString()} pts</div>
+          <div class="points-bar-wrap"><div class="points-bar" style="width:${pct}%"></div></div>
+        </div>
+        <div style="font-size:13px;font-weight:500">${fmt(m.total_spent)}</div>
+        <div style="font-size:12px;color:var(--muted)">${m.join_date ? m.join_date.slice(0,10) : '—'}</div>
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" onclick="openDetail('${m.member_id}')">View</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+function openDetail(memberId) {
+  const m = MEMBERS.find(x => x.member_id === memberId);
+  if (!m) return;
+
+  document.getElementById('detail-name').textContent = m.name;
+  document.getElementById('detail-panel').classList.add('open');
+
+  const nextTier = m.tier === 'Bronze' ? { name:'Silver', need:1000 } : m.tier === 'Silver' ? { name:'Gold', need:2000 } : null;
+  const progressPct = nextTier ? Math.min(100, (m.total_spent/nextTier.need)*100) : 100;
+
+  document.getElementById('detail-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <div class="member-avatar" style="background:${avatarColor(m.name)};width:50px;height:50px;font-size:18px">${m.name.slice(0,2).toUpperCase()}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700">${m.name}</div>
+        <div style="margin-top:4px"><span class="tier-badge tier-${m.tier}">${m.tier==='Gold'?'🥇':m.tier==='Silver'?'🥈':'🥉'} ${m.tier}</span></div>
       </div>
     </div>
-  `).join('');
-}
 
-function selectMember(id) {
-  activeMemberId = id;
-  renderMemberList();
-  renderMemberDetail();
-}
-
-function renderMemberDetail() {
-  const m = MEMBERS.find(x => x.id === activeMemberId);
-  if (!m) return;
-  document.getElementById('empty-detail').style.display = 'none';
-  document.getElementById('member-detail').style.display = 'block';
-
-  const tier = TIER_CONFIG[m.tier];
-  const nextAt = tier.nextAt || m.total_spend;
-  const progress = tier.nextAt ? Math.min(100, (m.total_spend / tier.nextAt) * 100) : 100;
-  const loyaltyTx = LOYALTY_TX[m.id] || [];
-  const orders    = ORDER_HISTORY[m.id] || [];
-
-  document.getElementById('member-detail').innerHTML = `
-    <div class="detail-body">
-      <!-- HERO -->
-      <div class="member-hero">
-        <div class="hero-avatar" style="background:${avatarColor(m.id)};font-size:24px">${initials(m)}</div>
-        <div style="flex:1">
-          <div class="hero-name">${m.first_name} ${m.last_name}</div>
-          <div class="hero-meta">
-            <span class="tier-badge tier-${m.tier}">★ ${m.tier}</span>
-            <span>${m.phone}</span>
-            ${m.email ? `<span>${m.email}</span>` : ''}
-            <span style="font-size:10px;color:rgba(0,0,0,0.35)">Member since ${m.join_date}</span>
-          </div>
-          <div class="hero-kpis">
-            <div class="hero-kpi">
-              <div class="hero-kpi-label">Points Balance</div>
-              <div class="hero-kpi-value" style="color:var(--brand-light)">★ ${m.points.toLocaleString()}</div>
-              <div class="hero-kpi-sub">≈ ฿${m.points.toFixed(0)} value</div>
-            </div>
-            <div class="hero-kpi">
-              <div class="hero-kpi-label">Total Spend</div>
-              <div class="hero-kpi-value">฿${m.total_spend.toLocaleString()}</div>
-              <div class="hero-kpi-sub">Lifetime</div>
-            </div>
-            <div class="hero-kpi">
-              <div class="hero-kpi-label">Visits</div>
-              <div class="hero-kpi-value">${m.visit_count}</div>
-              <div class="hero-kpi-sub">Last: ${m.last_visit}</div>
-            </div>
-            <div class="hero-kpi">
-              <div class="hero-kpi-label">Avg Order</div>
-              <div class="hero-kpi-value">฿${Math.round(m.total_spend/m.visit_count).toLocaleString()}</div>
-              <div class="hero-kpi-sub">Per visit</div>
-            </div>
-          </div>
-          ${tier.next ? `
-            <div class="points-progress" style="margin-top:12px;max-width:400px">
-              <div class="points-bar-labels">
-                <span>Progress to ${tier.next.charAt(0).toUpperCase()+tier.next.slice(1)}</span>
-                <span>฿${m.total_spend.toLocaleString()} / ฿${tier.nextAt.toLocaleString()}</span>
-              </div>
-              <div class="points-bar-track">
-                <div class="points-bar-fill" style="width:${progress}%;background:${TIER_CONFIG[tier.next].color}"></div>
-              </div>
-            </div>
-          ` : `<div style="margin-top:10px;font-size:11px;color:#E5E4E2;background:rgba(229,228,226,0.08);border-radius:8px;padding:6px 12px;display:inline-block">✦ Platinum Member — Top Tier Achieved</div>`}
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <button class="btn btn-primary" style="font-size:11px" onclick="addPoints('${m.id}')">+ Adjust Points</button>
-          <button class="btn btn-ghost" style="font-size:11px" onclick="editMember('${m.id}')">Edit Profile</button>
-        </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="detail-stat">
+        <div class="detail-stat-label">Points</div>
+        <div class="detail-stat-value">${m.points.toLocaleString()}</div>
       </div>
-
-      <!-- LOYALTY HISTORY -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Points History</div>
-          <span style="font-size:11px;color:#4a6741">${loyaltyTx.length} transactions</span>
-        </div>
-        <div class="section-body">
-          ${loyaltyTx.length === 0 ? `<div style="text-align:center;color:rgba(0,0,0,0.35);font-size:12px;padding:20px">No transactions yet</div>` :
-            loyaltyTx.map(tx => `
-              <div class="tx-row">
-                <div class="tx-icon ${tx.type==='earn'?'tx-earn':'tx-redeem'}">${tx.type==='earn'?'★':'🎁'}</div>
-                <div class="tx-info">
-                  <div class="tx-desc">${tx.desc}${tx.amount ? ` · ฿${tx.amount.toLocaleString()}` : ''}</div>
-                  <div class="tx-date">${tx.date}</div>
-                </div>
-                <div class="tx-pts ${tx.pts>0?'pts-earn':'pts-redeem'}">${tx.pts>0?'+':''}${tx.pts} pts</div>
-              </div>
-            `).join('')}
-        </div>
+      <div class="detail-stat">
+        <div class="detail-stat-label">Total Spent</div>
+        <div class="detail-stat-value" style="font-size:15px">${fmt(m.total_spent)}</div>
       </div>
+    </div>
 
-      <!-- RECENT ORDERS -->
-      <div class="section">
-        <div class="section-header">
-          <div class="section-title">Recent Orders</div>
-          <span style="font-size:11px;color:#4a6741">${orders.length} shown</span>
+    ${nextTier ? `
+      <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Progress to ${nextTier.name}</div>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:6px">
+          <div style="width:${progressPct}%;height:100%;border-radius:3px;background:var(--green2)"></div>
         </div>
-        <div class="section-body">
-          ${orders.length === 0 ? `<div style="text-align:center;color:rgba(0,0,0,0.35);font-size:12px;padding:20px">No orders yet</div>` :
-            orders.map(o => `
-              <div class="order-row">
-                <div class="order-id">${o.id}</div>
-                <div class="order-desc">${o.desc}</div>
-                <div>
-                  <div class="order-amount">฿${o.amount.toLocaleString()}</div>
-                  <div class="order-date">${o.date}</div>
-                </div>
-              </div>
-            `).join('')}
-        </div>
+        <div style="font-size:11px;color:var(--muted)">${fmt(m.total_spent)} / ${fmt(nextTier.need)} — ${fmt(nextTier.need - m.total_spent)} more to ${nextTier.name}</div>
       </div>
+    ` : `
+      <div style="background:var(--gold-bg);border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--gold);font-weight:500">🥇 Gold member — highest tier!</div>
+    `}
 
-      <!-- NOTES -->
-      <div class="section" style="margin-bottom:40px">
-        <div class="section-header"><div class="section-title">Staff Notes</div></div>
-        <div class="section-body">
-          <textarea style="width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;font-size:12px;color:#1a2e1a;font-family:'DM Sans',sans-serif;resize:none;outline:none;line-height:1.5" rows="3"
-            placeholder="Add internal notes about this member…" onfocus="this.style.borderColor='var(--brand-light)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'"></textarea>
-        </div>
-      </div>
+    ${m.phone ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">📞 ${m.phone}</div>` : ''}
+    ${m.email ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">✉️ ${m.email}</div>` : ''}
+    ${m.notes ? `<div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px;margin:10px 0">${m.notes}</div>` : ''}
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Joined: ${m.join_date ? m.join_date.slice(0,10) : '—'}</div>
+
+    <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Add Points</div>
+    <div class="points-input-row">
+      <input class="points-input" type="number" id="pts-input" placeholder="Points to add" min="1">
+      <input class="points-input" type="number" id="pts-amount" placeholder="Purchase amount (฿)">
+      <button class="btn btn-primary btn-sm" onclick="givePoints('${m.member_id}')">Add</button>
     </div>
   `;
 }
 
-function filterMembers(val) { activeFilter = val; renderMemberList(); }
-function filterTier(tier, btn) {
-  activeTier = tier;
-  document.querySelectorAll('.tier-filter').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderMemberList();
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
 }
 
-function addPoints(id) {
-  const pts = parseInt(prompt('Adjust points (+ to add, - to subtract):'));
-  if (isNaN(pts)) return;
-  const m = MEMBERS.find(x => x.id === id);
-  if (!m) return;
-  m.points = Math.max(0, m.points + pts);
-  LOYALTY_TX[id] = LOYALTY_TX[id] || [];
-  LOYALTY_TX[id].unshift({ type: pts > 0 ? 'earn' : 'redeem', desc: 'Manual adjustment', pts, date: new Date().toISOString().slice(0,10), amount: 0 });
-  renderMemberDetail();
-  renderMemberList();
-  updateKPIs();
+async function givePoints(memberId) {
+  const pts = parseInt(document.getElementById('pts-input').value);
+  const amount = parseFloat(document.getElementById('pts-amount').value) || 0;
+  if (!pts || pts < 1) { alert('Please enter a valid point amount.'); return; }
+
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'add_member_points', member_id: memberId, points: pts, amount })
+    });
+    const json = await res.json();
+    if (json.success) {
+      await loadMembers();
+      openDetail(memberId);
+    } else {
+      alert('Failed: ' + (json.error || 'unknown'));
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
 }
 
-function editMember(id) { alert('Edit member modal — connect to API in production.'); }
-
-function saveMember() {
-  const fname = document.getElementById('m-fname').value.trim();
-  if (!fname) { alert('Enter first name.'); return; }
-  const m = {
-    id: 'CUS-' + String(MEMBERS.length + 1).padStart(3,'0'),
-    first_name: fname,
-    last_name:  document.getElementById('m-lname').value.trim(),
-    phone:      document.getElementById('m-phone').value,
-    email:      document.getElementById('m-email').value,
-    tier:       'bronze',
-    points:     0,
-    total_spend:0,
-    visit_count:0,
-    brand:      document.getElementById('m-brand').value,
-    join_date:  new Date().toISOString().slice(0,10),
-    last_visit: new Date().toISOString().slice(0,10),
-    birthday:   document.getElementById('m-bday').value,
-  };
-  MEMBERS.push(m);
-  closeModal('add-member-modal');
-  renderMemberList();
-  updateKPIs();
-}
-
+// ── MODALS ────────────────────────────────────────────────────────────────────
 function openModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-document.querySelectorAll('.modal-overlay').forEach(el => el.addEventListener('click', e => {
-  if (e.target === el) el.classList.remove('show');
-}));
+async function saveMember() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { alert('Please enter a name.'); return; }
 
-async function saveMemberToAPI(m) {
   try {
-    await API.createCustomer(m);
-  } catch(e) { /* local only */ }
-}
-
-async function loadCRMData() {
-  try {
-    const data = await API.customers();
-    if (data && data.length) {
-      MEMBERS = data.map((c, i) => ({
-        id: c.id || c.customer_id || 'CUS-' + (i+1),
-        name: c.name, phone: c.phone || '—', email: c.email || '—',
-        tier: c.tier || 'Bronze', points: Number(c.points || 0),
-        total_spend: Number(c.total_spend || 0), visit_count: Number(c.visit_count || 0),
-        brand: c.brand_id || 'BB', join_date: c.join_date || c.created_at?.slice(0,10) || '2026-01-01',
-        last_visit: c.last_visit || '2026-05-27', birthday: c.birthday || '',
-        notes: c.notes || '',
-      }));
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'create_member',
+        name,
+        phone: document.getElementById('add-phone').value.trim(),
+        email: document.getElementById('add-email').value.trim(),
+        notes: document.getElementById('add-notes').value.trim(),
+      })
+    });
+    const json = await res.json();
+    if (json.success) {
+      closeModal('add-modal');
+      ['add-name','add-phone','add-email','add-notes'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      await loadMembers();
+    } else {
+      alert('Failed: ' + (json.error || 'unknown'));
     }
-  } catch(e) { /* keep static MEMBERS */ }
-  updateKPIs();
-  renderMemberList();
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
 }
 
-document.addEventListener('DOMContentLoaded', loadCRMData);
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+});
 </script>
-<script src="api.js"></script>
 </body>
 </html>
