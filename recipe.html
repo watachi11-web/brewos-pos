@@ -119,6 +119,17 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg)
 .modal-title { font-size:15px; font-weight:600; color:var(--text); }
 .modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1; }
 .modal-body { padding:20px 24px; font-size:13px; color:var(--text); line-height:1.6; }
+.modal-wide { width:560px; max-height:85vh; overflow-y:auto; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block; font-weight:600; }
+.form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.form-input:focus { border-color:var(--green2); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.ing-line-row { display:grid; grid-template-columns:2fr 1fr 0.8fr auto; gap:8px; align-items:center; margin-bottom:8px; }
+.ing-line-remove { width:30px; height:30px; border-radius:8px; background:var(--danger-bg); border:1px solid #FECACA; color:var(--danger); cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.ing-line-remove:hover { background:#FEE2E2; }
+.ing-lines-header { display:grid; grid-template-columns:2fr 1fr 0.8fr auto; gap:8px; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:700; margin-bottom:8px; }
 </style>
 </head>
 <body>
@@ -156,6 +167,7 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg)
         </div>
         <div class="topbar-actions">
           <button class="btn btn-ghost" onclick="loadRecipeData()">⟳ Refresh</button>
+          <button class="btn btn-primary" onclick="openAddRecipeModal()">+ Add Recipe</button>
         </div>
       </div>
     </div>
@@ -176,6 +188,44 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg)
           <div style="font-size:13px">Select a recipe to view costing details</div>
         </div>
         <div id="recipe-detail" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADD RECIPE MODAL ===== -->
+<div class="modal-overlay" id="add-recipe-modal">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <div class="modal-title">Add / Edit Recipe</div>
+      <button class="modal-close" onclick="closeAddRecipeModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Product</label>
+        <select class="form-input" id="ar-product" onchange="onProductSelected()">
+          <option value="">— Select a menu item —</option>
+        </select>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:6px">
+          Selecting a product that already has a recipe will let you edit/overwrite it.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Ingredients</label>
+        <div class="ing-lines-header">
+          <div>Ingredient</div>
+          <div>Qty</div>
+          <div>Unit</div>
+          <div></div>
+        </div>
+        <div id="ar-lines"></div>
+        <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:7px 14px" onclick="addIngredientLine()">+ Add ingredient line</button>
+      </div>
+
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="closeAddRecipeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRecipeForm()">Save Recipe</button>
       </div>
     </div>
   </div>
@@ -429,6 +479,156 @@ function renderDetail() {
     </div>
   `;
 }
+
+// ============================================================
+// ADD / EDIT RECIPE FORM
+// ============================================================
+let ALL_PRODUCTS = [];
+let ALL_INGREDIENTS = [];
+let formLines = []; // [{ ingredient_id, qty }]
+
+async function openAddRecipeModal() {
+  document.getElementById('add-recipe-modal').classList.add('show');
+  document.getElementById('ar-product').innerHTML = '<option value="">⏳ Loading…</option>';
+  document.getElementById('ar-lines').innerHTML = '';
+  formLines = [];
+
+  try {
+    const [menuRes, ingRes] = await Promise.all([
+      fetch(`${GAS_URL}?action=get_menu_data`).then(r => r.json()),
+      fetch(`${GAS_URL}?action=get_ingredients`).then(r => r.json()),
+    ]);
+
+    ALL_PRODUCTS = (menuRes.success && menuRes.data && menuRes.data.products) ? menuRes.data.products : [];
+    ALL_INGREDIENTS = (ingRes.success && ingRes.data) ? ingRes.data : [];
+
+    const recipeProductNames = new Set(RECIPES.map(r => r.name));
+
+    const sel = document.getElementById('ar-product');
+    sel.innerHTML = '<option value="">— Select a menu item —</option>' +
+      ALL_PRODUCTS.map(p => {
+        const hasRecipe = recipeProductNames.has(p.name);
+        return `<option value="${p.product_id}" data-name="${p.name}">${p.emoji||'🍽'} ${p.name}${hasRecipe ? ' (has recipe — will overwrite)' : ''}</option>`;
+      }).join('');
+
+    addIngredientLine(); // start with one empty line
+  } catch(e) {
+    document.getElementById('ar-product').innerHTML = `<option value="">⚠️ Failed to load: ${e.message}</option>`;
+  }
+}
+
+function closeAddRecipeModal() {
+  document.getElementById('add-recipe-modal').classList.remove('show');
+}
+
+function onProductSelected() {
+  const sel = document.getElementById('ar-product');
+  const productId = sel.value;
+  if (!productId) return;
+
+  const selectedOption = sel.options[sel.selectedIndex];
+  const productName = selectedOption.getAttribute('data-name');
+
+  // ถ้าสินค้านี้มี recipe อยู่แล้ว ให้โหลดมาแก้ไขต่อ
+  const existing = RECIPES.find(r => r.name === productName);
+  if (existing && existing.lines && existing.lines.length) {
+    formLines = existing.lines.map(l => ({ ingredient_id: l.ingredient_id, qty: l.qty }));
+    renderIngredientLines();
+  }
+}
+
+function ingredientOptionsHtml(selectedId) {
+  return '<option value="">— Select ingredient —</option>' +
+    ALL_INGREDIENTS.map(i =>
+      `<option value="${i.ingredient_id}" ${i.ingredient_id===selectedId?'selected':''}>${i.name} (${i.unit})</option>`
+    ).join('');
+}
+
+function addIngredientLine() {
+  formLines.push({ ingredient_id: '', qty: '' });
+  renderIngredientLines();
+}
+
+function removeIngredientLine(idx) {
+  formLines.splice(idx, 1);
+  renderIngredientLines();
+}
+
+function updateLineIngredient(idx, ingId) {
+  formLines[idx].ingredient_id = ingId;
+}
+
+function updateLineQty(idx, qty) {
+  formLines[idx].qty = qty;
+}
+
+function renderIngredientLines() {
+  const container = document.getElementById('ar-lines');
+  if (!formLines.length) {
+    container.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0">No ingredients added yet.</div>';
+    return;
+  }
+  container.innerHTML = formLines.map((line, idx) => {
+    const ing = ALL_INGREDIENTS.find(i => i.ingredient_id === line.ingredient_id);
+    const unit = ing ? ing.unit : '—';
+    return `
+      <div class="ing-line-row">
+        <select class="form-input" onchange="updateLineIngredient(${idx}, this.value)">
+          ${ingredientOptionsHtml(line.ingredient_id)}
+        </select>
+        <input class="form-input" type="number" step="0.1" min="0" placeholder="Qty" value="${line.qty}" oninput="updateLineQty(${idx}, this.value)">
+        <div style="font-size:12px;color:var(--muted);text-align:center">${unit}</div>
+        <button class="ing-line-remove" onclick="removeIngredientLine(${idx})">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function saveRecipeForm() {
+  const sel = document.getElementById('ar-product');
+  const productId = sel.value;
+  if (!productId) { alert('Please select a product.'); return; }
+
+  const selectedOption = sel.options[sel.selectedIndex];
+  const productName = selectedOption.getAttribute('data-name');
+
+  const validLines = formLines.filter(l => l.ingredient_id && l.qty && Number(l.qty) > 0);
+  if (!validLines.length) { alert('Please add at least one valid ingredient line.'); return; }
+
+  const payload = {
+    action: 'create_recipe',
+    product_id: productId,
+    product_name: productName,
+    lines: validLines.map(l => {
+      const ing = ALL_INGREDIENTS.find(i => i.ingredient_id === l.ingredient_id);
+      return {
+        ingredient_id: l.ingredient_id,
+        ingredient_name: ing ? ing.name : '',
+        qty_used: Number(l.qty),
+        unit: ing ? ing.unit : '',
+      };
+    }),
+  };
+
+  try {
+    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+    const json = await res.json();
+    if (json.success) {
+      closeAddRecipeModal();
+      await loadRecipeData();
+      const saved = RECIPES.find(r => r.name === productName);
+      if (saved) selectRecipe(saved.recipe_id);
+    } else {
+      alert('Failed to save: ' + (json.error || 'unknown error'));
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+});
 
 </script>
 </body>
