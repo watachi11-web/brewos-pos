@@ -165,23 +165,23 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
     <div class="kpi-row">
       <div class="kpi-card">
         <div class="kpi-label">Today's Orders</div>
-        <div class="kpi-value">147</div>
-        <div class="kpi-delta up">↑ 8 vs yesterday</div>
+        <div class="kpi-value" id="kpiTodayOrders">—</div>
+        <div class="kpi-delta neutral" id="kpiTodayOrdersSub">&nbsp;</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Revenue</div>
-        <div class="kpi-value">฿18,420</div>
-        <div class="kpi-delta up">↑ 12% vs yesterday</div>
+        <div class="kpi-value" id="kpiTodayRevenue">—</div>
+        <div class="kpi-delta neutral" id="kpiTodayRevenueSub">&nbsp;</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Avg. Order Value</div>
-        <div class="kpi-value">฿125.3</div>
-        <div class="kpi-delta neutral">Target: ฿120+</div>
+        <div class="kpi-value" id="kpiAvgOrder">—</div>
+        <div class="kpi-delta neutral">&nbsp;</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Refunds Today</div>
-        <div class="kpi-value">2</div>
-        <div class="kpi-delta down">฿380 refunded</div>
+        <div class="kpi-value" id="kpiRefunds">—</div>
+        <div class="kpi-delta neutral" id="kpiRefundsSub">&nbsp;</div>
       </div>
     </div>
 
@@ -304,20 +304,20 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 
 <script>
 const ORDERS = [
-  {id:'BB-270001',time:'08:14',customer:'Kru Sunisa',brand:'Brain Brew',type:'Dine In',items:3,total:'฿287',pay:'QR',status:'paid',staff:'Nong'},
-  {id:'BB-270002',time:'08:22',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items:2,total:'฿190',pay:'Cash',status:'paid',staff:'Pan'},
-  {id:'BB-270003',time:'08:35',customer:'Khun Prae',brand:'Brain Brew',type:'Dine In',items:4,total:'฿420',pay:'Card',status:'paid',staff:'Nong'},
-  {id:'HH-270001',time:'08:40',customer:'Walk-in',brand:'Heng Heng',type:'Takeaway',items:2,total:'฿145',pay:'QR',status:'paid',staff:'Pan'},
-  {id:'BB-270004',time:'08:55',customer:'Khun Wut',brand:'Brain Brew',type:'Delivery',items:3,total:'฿320',pay:'Transfer',status:'pending',staff:'Bank'},
-  {id:'HH-270002',time:'09:10',customer:'Kru Om',brand:'Heng Heng',type:'Dine In',items:5,total:'฿580',pay:'QR',status:'paid',staff:'Nam'},
-  {id:'BB-270005',time:'09:28',customer:'Khun Fah',brand:'Brain Brew',type:'Takeaway',items:1,total:'฿95',pay:'Cash',status:'paid',staff:'Pan'},
-  {id:'BB-270006',time:'09:44',customer:'Walk-in',brand:'Brain Brew',type:'Dine In',items:2,total:'฿220',pay:'QR',status:'refund',staff:'Nong'},
-  {id:'HH-270003',time:'10:05',customer:'Khun Joy',brand:'Heng Heng',type:'Pre-order',items:6,total:'฿720',pay:'Transfer',status:'paid',staff:'Bank'},
-  {id:'BB-270007',time:'10:20',customer:'Khun Bot',brand:'Brain Brew',type:'Dine In',items:2,total:'฿180',pay:'QR',status:'paid',staff:'Pan'},
-  {id:'BB-270008',time:'10:38',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items:1,total:'฿85',pay:'Cash',status:'paid',staff:'Nong'},
-  {id:'HH-270004',time:'10:52',customer:'Khun Mild',brand:'Heng Heng',type:'Dine In',items:3,total:'฿380',pay:'Card',status:'refund',staff:'Nam'},
-  {id:'BB-270009',time:'11:10',customer:'Khun Aim',brand:'Brain Brew',type:'Dine In',items:4,total:'฿460',pay:'QR',status:'paid',staff:'Bank'},
-  {id:'BB-270010',time:'11:25',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items:2,total:'฿200',pay:'Cash',status:'paid',staff:'Pan'},
+  {id:'BB-270001',time:'08:14',customer:'Kru Sunisa',brand:'Brain Brew',type:'Dine In',items_count:3,items:[],total:'฿287',pay:'QR',status:'paid',staff:'Nong'},
+  {id:'BB-270002',time:'08:22',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items_count:2,items:[],total:'฿190',pay:'Cash',status:'paid',staff:'Pan'},
+  {id:'BB-270003',time:'08:35',customer:'Khun Prae',brand:'Brain Brew',type:'Dine In',items_count:4,items:[],total:'฿420',pay:'Card',status:'paid',staff:'Nong'},
+  {id:'HH-270001',time:'08:40',customer:'Walk-in',brand:'Heng Heng',type:'Takeaway',items_count:2,items:[],total:'฿145',pay:'QR',status:'paid',staff:'Pan'},
+  {id:'BB-270004',time:'08:55',customer:'Khun Wut',brand:'Brain Brew',type:'Delivery',items_count:3,items:[],total:'฿320',pay:'Transfer',status:'pending',staff:'Bank'},
+  {id:'HH-270002',time:'09:10',customer:'Kru Om',brand:'Heng Heng',type:'Dine In',items_count:5,items:[],total:'฿580',pay:'QR',status:'paid',staff:'Nam'},
+  {id:'BB-270005',time:'09:28',customer:'Khun Fah',brand:'Brain Brew',type:'Takeaway',items_count:1,items:[],total:'฿95',pay:'Cash',status:'paid',staff:'Pan'},
+  {id:'BB-270006',time:'09:44',customer:'Walk-in',brand:'Brain Brew',type:'Dine In',items_count:2,items:[],total:'฿220',pay:'QR',status:'refund',staff:'Nong'},
+  {id:'HH-270003',time:'10:05',customer:'Khun Joy',brand:'Heng Heng',type:'Pre-order',items_count:6,items:[],total:'฿720',pay:'Transfer',status:'paid',staff:'Bank'},
+  {id:'BB-270007',time:'10:20',customer:'Khun Bot',brand:'Brain Brew',type:'Dine In',items_count:2,items:[],total:'฿180',pay:'QR',status:'paid',staff:'Pan'},
+  {id:'BB-270008',time:'10:38',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items_count:1,items:[],total:'฿85',pay:'Cash',status:'paid',staff:'Nong'},
+  {id:'HH-270004',time:'10:52',customer:'Khun Mild',brand:'Heng Heng',type:'Dine In',items_count:3,items:[],total:'฿380',pay:'Card',status:'refund',staff:'Nam'},
+  {id:'BB-270009',time:'11:10',customer:'Khun Aim',brand:'Brain Brew',type:'Dine In',items_count:4,items:[],total:'฿460',pay:'QR',status:'paid',staff:'Bank'},
+  {id:'BB-270010',time:'11:25',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items_count:2,items:[],total:'฿200',pay:'Cash',status:'paid',staff:'Pan'},
 ];
 
 let activeOrderId = 'BB-270001';
@@ -334,7 +334,7 @@ function renderOrders(data) {
       <td>${o.customer}</td>
       <td style="font-size:11px;">${o.brand==='Brain Brew'?'☕ BB':'🌸 HH'}</td>
       <td><span class="order-type-chip">${o.type}</span></td>
-      <td>${o.items} items</td>
+      <td>${o.items_count||1} items</td>
       <td class="td-bold">${o.total}</td>
       <td style="font-size:12px;color:var(--muted);">${o.pay}</td>
       <td><span class="badge ${sMap[o.status]}">${o.status}</span></td>
@@ -461,16 +461,19 @@ async function loadOrders() {
     if (json.success && json.data && json.data.length > 0) {
       _allOrders = json.data.map(o => ({
         id: o.order_id || o.id || '—',
-        time: o.created_at ? new Date(o.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit'}) : '—',
+        time: o.created_at ? new Date(o.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit', timeZone:'Asia/Bangkok'}) : '—',
+        rawCreatedAt: o.created_at || '',
         customer: o.customer_name || 'Walk-in',
         brand: (o.brand_id === 'HH') ? 'Heng Heng' : 'Brain Brew',
         type: o.order_type || 'takeaway',
-        items: o.items_count || 1,
+        items_count: o.items_count || 1,
+        items: Array.isArray(o.items) ? o.items : [],
         total: '฿' + Number(o.total_amount || o.grand_total || 0).toLocaleString(),
         pay: o.payment_method || 'cash',
         status: o.payment_status || o.order_status || 'paid',
         staff: o.staff_name || '—',
         note: o.notes || '',
+        table: o.table_number || '',
       }));
     } else {
       throw new Error('no data');
@@ -484,6 +487,33 @@ async function loadOrders() {
     return;
   }
   filterOrders();
+  updateKPIs();
+}
+
+function dateKeyBkk(val) {
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return '';
+  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+  return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
+}
+
+function updateKPIs() {
+  const todayStr = dateKeyBkk(new Date());
+  const todayOrders = _allOrders.filter(o => o.rawCreatedAt && dateKeyBkk(o.rawCreatedAt) === todayStr);
+
+  const totalRevenue = todayOrders.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
+  const avgOrder = todayOrders.length ? totalRevenue / todayOrders.length : 0;
+  const refunds = todayOrders.filter(o => o.status === 'refund');
+  const refundTotal = refunds.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
+
+  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setEl('kpiTodayOrders', todayOrders.length);
+  setEl('kpiTodayOrdersSub', todayOrders.length ? `${todayOrders.length} orders logged today` : 'No orders yet today');
+  setEl('kpiTodayRevenue', '฿' + totalRevenue.toLocaleString());
+  setEl('kpiTodayRevenueSub', `${todayOrders.length} orders`);
+  setEl('kpiAvgOrder', '฿' + avgOrder.toFixed(0));
+  setEl('kpiRefunds', refunds.length);
+  setEl('kpiRefundsSub', refunds.length ? `฿${refundTotal.toLocaleString()} refunded` : 'No refunds today');
 }
 
 renderOrders(_allOrders.length ? _allOrders : ORDERS);
