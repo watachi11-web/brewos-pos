@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrewOS — Orders</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#2D6A4F;--green2:#40916C;--orange:#D97706;--bg:#faf9f7;--card:#fff;--border:#e8e3db;--text:#1c1917;--muted:#78716c;--sidebar:220px;}
+:root{--green:#1E5A3F;--green2:#40916C;--orange:#D97706;--bg:#faf9f7;--card:#fff;--border:#e8e3db;--text:#1c1917;--muted:#78716c;--sidebar:220px;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+body{font-family:'Anuphan','Poppins',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
 .sidebar{width:var(--sidebar);background:#fff;border-right:1.5px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;}
 .sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);}
-.logo-mark{font-family:'Playfair Display',serif;font-size:20px;color:#fff;font-weight:700;}
+.logo-mark{font-family:'Poppins',sans-serif;font-size:20px;color:#fff;font-weight:700;}
 .logo-sub{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
 .brand-chip{margin:12px 20px 0;background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--green);font-weight:700;}
 nav{flex:1;padding:16px 12px;overflow-y:auto;}
@@ -23,9 +23,9 @@ nav{flex:1;padding:16px 12px;overflow-y:auto;}
 .sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);}
 .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
-.topbar-left h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;}
+.topbar-left h2{font-family:'Poppins',sans-serif;font-size:20px;font-weight:600;}
 .topbar-left p{font-size:12px;color:var(--muted);}
-.btn{padding:8px 16px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;}
+.btn{padding:8px 16px;border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;}
 .btn-primary{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(249,115,22,0.3);}
 .btn-primary:hover{background:#ea580c;}
 .btn-outline{background:#fff;color:var(--text);border:1px solid var(--border);}
@@ -40,17 +40,17 @@ nav{flex:1;padding:16px 12px;overflow-y:auto;}
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
 .kpi-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
 .kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
-.kpi-value{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;}
+.kpi-value{font-family:'Poppins',sans-serif;font-size:24px;font-weight:600;}
 .kpi-delta{font-size:11px;margin-top:3px;}
 .kpi-delta.up{color:#22c55e;}.kpi-delta.down{color:#ef4444;}.kpi-delta.neutral{color:var(--muted);}
 
 /* toolbar */
 .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
-.search-box{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:240px;}
+.search-box{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;outline:none;width:240px;}
 .search-box:focus{border-color:var(--green);}
 .filter-chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:#fff;cursor:pointer;color:var(--muted);transition:all 0.2s;}
 .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
-select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;color:var(--text);cursor:pointer;}
+select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:12px;outline:none;color:var(--text);cursor:pointer;}
 
 /* order list */
 .orders-panel{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
@@ -61,7 +61,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .orders-panel tr:hover td{background:#fafaf8;}
 .orders-panel tr.selected td{background:#f0fdf4;}
 .td-bold{font-weight:600;}
-.order-id{font-family:'DM Sans',sans-serif;font-weight:700;color:var(--green);font-size:12px;}
+.order-id{font-family:'Anuphan','Poppins',sans-serif;font-weight:700;color:var(--green);font-size:12px;}
 .table-scroll{overflow-y:auto;flex:1;}
 
 /* status badges */
@@ -75,7 +75,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 /* order detail */
 .detail-panel{background:#fff;border:1px solid var(--border);border-radius:14px;overflow-y:auto;position:sticky;top:24px;max-height:calc(100vh - 108px);}
 .detail-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.detail-order-id{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;}
+.detail-order-id{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;}
 .detail-meta{padding:16px 20px;display:flex;flex-direction:column;gap:0;}
 .meta-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
 .meta-row:last-child{border-bottom:none;}
@@ -98,13 +98,13 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .modal-overlay.open{display:flex;}
 .modal{background:#fff;border-radius:20px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
 .modal-header{padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;}
-.modal-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;}
+.modal-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;}
 .modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
 .modal-body{padding:20px 24px;}
 .modal-footer{padding:0 24px 24px;display:flex;gap:10px;justify-content:flex-end;}
 .form-group{margin-bottom:14px;}
 .form-label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;}
-.form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:all 0.2s;}
+.form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;outline:none;transition:all 0.2s;}
 .form-control:focus{border-color:var(--green);}
 
 /* receipt */
@@ -442,7 +442,7 @@ function openRefundModal(){document.getElementById('refundModal').classList.add(
 function closeRefundModal(){document.getElementById('refundModal').classList.remove('open');}
 function processRefund(){closeRefundModal();showToast('Refund processed successfully.');}
 function printReceipt(){showToast('Sending to printer...');}
-function showToast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:24px;right:24px;background:#1B4332;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;';document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+function showToast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:24px;right:24px;background:#143D2B;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;';document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
 
 let _allOrders = [];
 

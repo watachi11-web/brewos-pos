@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CRM / Members — BrewOS</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green:#1B4332; --green2:#2D6A4F; --orange:#F97316;
-  --bg:#f5f0e8; --card:#ffffff; --border:#e8e2d6;
+  --green:#143D2B; --green2:#1E5A3F; --orange:#F26C21;
+  --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
   --gold:#D97706; --gold-bg:#FFFBEB;
   --silver:#6B7280; --silver-bg:#F9FAFB;
@@ -16,12 +16,12 @@
   --success:#16A34A; --success-bg:#F0FDF4;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
+html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
 .app { display:flex; height:100vh; }
 .sidebar { width:220px; background:var(--green); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
 .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:8px; }
-.sidebar-logo span { font-family:'Playfair Display',serif; font-size:13px; color:#fff; }
+.sidebar-logo span { font-family:'Poppins',sans-serif; font-size:13px; color:#fff; }
 .sidebar-logo-sub { font-size:9px; color:rgba(255,255,255,0.5); margin-top:6px; letter-spacing:0.08em; text-transform:uppercase; padding:0 20px; }
 .nav-section { padding:12px 12px 4px; flex:1; overflow-y:auto; }
 .nav-label { font-size:9px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:6px; }
@@ -33,9 +33,9 @@ html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg);
 
 .topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
 .topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
-.topbar-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:600; }
+.topbar-title { font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; }
-.btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+.btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
 .btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
 .btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
 .btn-primary { background:var(--green); color:#fff; }
@@ -52,10 +52,10 @@ html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg);
 
 .filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
 .search-wrap { position:relative; }
-.search-input { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px 9px 36px; font-size:12.5px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; width:240px; }
+.search-input { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px 9px 36px; font-size:12.5px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; width:240px; }
 .search-input:focus { border-color:var(--green2); }
 .search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:0.4; pointer-events:none; }
-.select-filter { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
+.select-filter { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; cursor:pointer; }
 
 .table-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
 .table-header { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; background:var(--green); font-size:10.5px; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
@@ -87,7 +87,7 @@ html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg);
 .modal-body { padding:20px 24px; }
 .form-group { margin-bottom:16px; }
 .form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block; font-weight:600; }
-.form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; }
+.form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; }
 .form-input:focus { border-color:var(--green2); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
@@ -102,7 +102,7 @@ html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg);
 .detail-stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin-bottom:4px; }
 .detail-stat-value { font-size:18px; font-weight:700; }
 .points-input-row { display:flex; gap:8px; margin-top:12px; }
-.points-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; font-family:'DM Sans',sans-serif; outline:none; color:var(--text); }
+.points-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; font-family:'Anuphan','Poppins',sans-serif; outline:none; color:var(--text); }
 </style>
 </head>
 <body>
@@ -253,7 +253,7 @@ const TIER_BG    = { Gold:'#f8e7c0', Silver:'#e5e7eb', Bronze:'#fde68a' };
 function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
 
 function avatarColor(name) {
-  const colors = ['#1B4332','#2D6A4F','#F97316','#6366F1','#0EA5E9','#D97706'];
+  const colors = ['#143D2B','#1E5A3F','#F26C21','#6366F1','#0EA5E9','#D97706'];
   let hash = 0;
   for (let i=0; i<name.length; i++) hash = name.charCodeAt(i) + hash * 31;
   return colors[Math.abs(hash) % colors.length];

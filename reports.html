@@ -5,23 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reports — Brain Brew × Heng Heng</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green:#1B4332; --green2:#2D6A4F; --orange:#F97316;
-  --bg:#f5f0e8; --card:#ffffff; --border:#e8e2d6;
+  --green:#143D2B; --green2:#1E5A3F; --orange:#F26C21;
+  --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
   --danger:#DC2626; --danger-bg:#FEF2F2;
   --success:#16A34A; --success-bg:#F0FDF4;
   --bb:#52B788; --hh:#FB923C;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
+html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
 .app { display:flex; height:100vh; }
 .sidebar { width:220px; background:var(--green); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
 .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:8px; }
-.sidebar-logo span { font-family:'Playfair Display',serif; font-size:13px; color:#fff; }
+.sidebar-logo span { font-family:'Poppins',sans-serif; font-size:13px; color:#fff; }
 .sidebar-logo-sub { font-size:9px; color:rgba(255,255,255,0.5); margin-top:6px; letter-spacing:0.08em; text-transform:uppercase; padding:0 20px; }
 .nav-section { padding:12px 12px 4px; flex:1; overflow-y:auto; }
 .nav-label { font-size:9px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:6px; }
@@ -33,12 +33,12 @@ html,body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg);
 
 .topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
 .topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
-.topbar-title { font-family:'Playfair Display',serif; font-size:24px; font-weight:600; }
+.topbar-title { font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; }
 .period-selector { display:flex; gap:4px; background:var(--card); padding:4px; border-radius:10px; border:1px solid var(--border); }
-.period-btn { padding:7px 14px; border-radius:7px; font-size:12px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+.period-btn { padding:7px 14px; border-radius:7px; font-size:12px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'Anuphan','Poppins',sans-serif; }
 .period-btn.active { background:var(--green); color:#fff; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; }
-.btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+.btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
 .btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
 .btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
 
@@ -347,7 +347,7 @@ function renderRevenueChart(orders) {
     data: {
       labels,
       datasets:[{
-        data, backgroundColor: labels.map((_,i) => i === labels.length-1 ? '#1B4332' : '#52B788aa'),
+        data, backgroundColor: labels.map((_,i) => i === labels.length-1 ? '#143D2B' : '#52B788aa'),
         borderRadius:5, borderSkipped:false,
       }]
     },

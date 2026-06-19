@@ -4,31 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kitchen Display — BrewOS</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green:#1B4332; --green2:#2D6A4F;
-  --bg:#f5f0e8; --card:#ffffff; --border:#e8e2d6;
+  --green:#143D2B; --green2:#1E5A3F;
+  --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
-  --pending:#F97316; --pending-bg:#FFF7ED;
+  --pending:#F26C21; --pending-bg:#FFF7ED;
   --making:#3B82F6; --making-bg:#EFF6FF;
   --done:#16A34A; --done-bg:#F0FDF4;
   --hh:#FB923C; --bb:#52B788;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; font-family:'DM Sans',sans-serif; background:#1a2e1a; color:#fff; overflow:hidden; }
+html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:#1a2e1a; color:#fff; overflow:hidden; }
 
 .kds-header { background:#111; padding:12px 20px; display:flex; align-items:center; gap:16px; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0; }
-.kds-logo { font-family:'Playfair Display',serif; font-size:15px; color:#fff; }
+.kds-logo { font-family:'Poppins',sans-serif; font-size:15px; color:#fff; }
 .kds-brand-tabs { display:flex; gap:4px; }
-.kds-tab { padding:5px 16px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.5); font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+.kds-tab { padding:5px 16px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; background:rgba(255,255,255,0.08); border:none; color:rgba(255,255,255,0.5); font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; }
 .kds-tab.active { background:var(--green2); color:#fff; }
 .kds-stats { margin-left:auto; display:flex; gap:20px; }
 .kds-stat { text-align:center; }
 .kds-stat-val { font-size:18px; font-weight:700; line-height:1; }
 .kds-stat-lbl { font-size:9px; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.06em; margin-top:2px; }
 .kds-time { font-size:13px; color:rgba(255,255,255,0.5); }
-.kds-refresh { padding:6px 14px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); font-size:12px; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+.kds-refresh { padding:6px 14px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); font-size:12px; cursor:pointer; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; }
 .kds-refresh:hover { background:rgba(255,255,255,0.15); color:#fff; }
 
 .kds-body { flex:1; display:flex; overflow:hidden; height:calc(100vh - 57px); }
@@ -55,7 +55,7 @@ html,body { height:100%; font-family:'DM Sans',sans-serif; background:#1a2e1a; c
 .item-qty { font-size:14px; font-weight:700; color:#fff; min-width:20px; line-height:1.2; }
 .item-name { font-size:12px; font-weight:500; color:rgba(255,255,255,0.85); line-height:1.3; flex:1; }
 .order-card-footer { padding:8px 14px; display:flex; gap:6px; border-top:1px solid rgba(255,255,255,0.06); }
-.action-btn { flex:1; padding:7px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; }
+.action-btn { flex:1; padding:7px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; }
 .btn-start  { background:rgba(59,130,246,0.2); color:#93C5FD; border:1px solid rgba(59,130,246,0.3); }
 .btn-start:hover  { background:rgba(59,130,246,0.35); }
 .btn-done   { background:rgba(22,163,74,0.2); color:#86EFAC; border:1px solid rgba(22,163,74,0.3); }

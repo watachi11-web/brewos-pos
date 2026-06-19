@@ -4,14 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BrewOS — Sign In</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bb-green: #1B4332;
-  --bb-green-light: #2D6A4F;
-  --bb-orange: #F97316;
+  --bb-green: #143D2B;
+  --bb-green-light: #1E5A3F;
+  --bb-orange: #F26C21;
   --bb-cream: #FEFCE8;
-  --hh-green: #2D6A4F;
+  --hh-green: #1E5A3F;
   --hh-orange: #FB923C;
   --hh-cream: #FFFBF0;
   --active-brand: var(--bb-green);
@@ -19,7 +19,7 @@
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Anuphan','Poppins',sans-serif;
   height: 100vh;
   overflow: hidden;
   background: #0a1a0e;
@@ -29,9 +29,9 @@ body {
 /* ---- Animated background ---- */
 .bg-canvas {
   position: fixed; inset: 0; z-index: 0;
-  background: radial-gradient(ellipse 80% 80% at 20% 50%, #1B433240 0%, transparent 60%),
-              radial-gradient(ellipse 60% 60% at 80% 20%, #2D6A4F30 0%, transparent 50%),
-              radial-gradient(ellipse 40% 40% at 70% 80%, #F9731620 0%, transparent 40%),
+  background: radial-gradient(ellipse 80% 80% at 20% 50%, #143D2B40 0%, transparent 60%),
+              radial-gradient(ellipse 60% 60% at 80% 20%, #1E5A3F30 0%, transparent 50%),
+              radial-gradient(ellipse 40% 40% at 70% 80%, #F26C2120 0%, transparent 40%),
               #0a1a0e;
 }
 .blob {
@@ -41,9 +41,9 @@ body {
   opacity: 0.35;
   animation: float 8s ease-in-out infinite;
 }
-.blob-1 { width:500px; height:500px; background:#1B4332; top:-100px; left:-150px; animation-delay:0s; }
-.blob-2 { width:350px; height:350px; background:#F97316; bottom:-100px; right:-80px; animation-delay:-4s; }
-.blob-3 { width:250px; height:250px; background:#2D6A4F; top:40%; left:40%; animation-delay:-2s; }
+.blob-1 { width:500px; height:500px; background:#143D2B; top:-100px; left:-150px; animation-delay:0s; }
+.blob-2 { width:350px; height:350px; background:#F26C21; bottom:-100px; right:-80px; animation-delay:-4s; }
+.blob-3 { width:250px; height:250px; background:#1E5A3F; top:40%; left:40%; animation-delay:-2s; }
 @keyframes float {
   0%,100% { transform: translate(0,0) scale(1); }
   33% { transform: translate(30px,-40px) scale(1.05); }
@@ -88,7 +88,7 @@ body {
 }
 .brand-btn {
   padding: 8px 20px; border-radius: 50px; border: none;
-  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  font-family: 'Anuphan','Poppins',sans-serif; font-size: 13px; font-weight: 500;
   cursor: pointer; transition: all 0.3s ease;
   color: rgba(255,255,255,0.5); background: transparent;
 }
@@ -103,7 +103,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 24px;
   font-size: 42px;
-  background: linear-gradient(135deg, #1B4332, #2D6A4F);
+  background: linear-gradient(135deg, #143D2B, #1E5A3F);
   box-shadow: 0 20px 60px rgba(27,67,50,0.5), 0 0 0 1px rgba(255,255,255,0.1);
   position: relative; overflow: hidden;
   transition: all 0.5s ease;
@@ -113,7 +113,7 @@ body {
   background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
 }
 h1.brand-name {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Poppins',sans-serif;
   font-size: 38px; font-weight: 700;
   color: white; letter-spacing: -0.5px;
   margin-bottom: 8px;
@@ -145,7 +145,7 @@ h1.brand-name {
   backdrop-filter: blur(10px);
 }
 .stat-label { font-size: 11px; color: #4a6741; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-.stat-value { font-family: 'Playfair Display', serif; font-size: 26px; color: white; }
+.stat-value { font-family: 'Poppins',sans-serif; font-size: 26px; color: white; }
 .stat-delta { font-size: 12px; color: #22c55e; margin-top: 2px; }
 
 /* ---- Form ---- */
@@ -155,7 +155,7 @@ h1.brand-name {
 }
 .form-header { margin-bottom: 32px; }
 .form-header h2 {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Poppins',sans-serif;
   font-size: 28px; font-weight: 600; color: white;
   margin-bottom: 6px;
 }
@@ -172,7 +172,7 @@ h1.brand-name {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px; color: white;
-  font-family: 'DM Sans', sans-serif; font-size: 15px;
+  font-family: 'Anuphan','Poppins',sans-serif; font-size: 15px;
   outline: none; transition: all 0.25s ease;
 }
 .form-input:focus {
@@ -189,7 +189,7 @@ h1.brand-name {
 .role-btn {
   padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
   background: transparent; color: #4a6741;
-  font-family: 'DM Sans', sans-serif; font-size: 12px;
+  font-family: 'Anuphan','Poppins',sans-serif; font-size: 12px;
   cursor: pointer; transition: all 0.2s ease; text-align: center;
 }
 .role-btn:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.7); }
@@ -202,9 +202,9 @@ h1.brand-name {
 
 .btn-login {
   width: 100%; padding: 15px;
-  background: linear-gradient(135deg, #F97316, #ea580c);
+  background: linear-gradient(135deg, #F26C21, #ea580c);
   border: none; border-radius: 12px;
-  color: white; font-family: 'DM Sans', sans-serif;
+  color: white; font-family: 'Anuphan','Poppins',sans-serif;
   font-size: 15px; font-weight: 600;
   cursor: pointer; transition: all 0.3s ease;
   box-shadow: 0 8px 24px rgba(249,115,22,0.35);
@@ -224,7 +224,7 @@ h1.brand-name {
   font-size: 13px; color: #4a6741;
 }
 .form-footer a { color: rgba(249,115,22,0.8); text-decoration: none; }
-.form-footer a:hover { color: #F97316; }
+.form-footer a:hover { color: #F26C21; }
 
 /* demo credentials */
 .demo-creds {
@@ -378,14 +378,14 @@ const BRANDS = {
     name: 'Brain Brew Coffee',
     tagline: 'Specialty Coffee · Neuroscience Inspired',
     icon: '☕',
-    blob1: '#1B4332',
-    blob2: '#F97316',
+    blob1: '#143D2B',
+    blob2: '#F26C21',
   },
   hh: {
     name: 'Heng Heng Phanit',
     tagline: 'Artisan Bakery · Warm & Wholesome',
     icon: '🌸',
-    blob1: '#2D6A4F',
+    blob1: '#1E5A3F',
     blob2: '#FB923C',
   }
 };
