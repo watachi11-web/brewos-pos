@@ -188,14 +188,14 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 
     <!-- Toolbar -->
     <div class="toolbar">
-      <input class="search-box" placeholder="Search order ID, customer, item..." id="orderSearch" oninput="filterOrders()">
+      <input class="search-box" placeholder="Search order ID, customer, item..." id="orderSearch" oninput="filterOrders(); updateKPIs();">
       <button class="filter-chip active" onclick="setStatus('all',this)">All</button>
       <button class="filter-chip" onclick="setStatus('paid',this)">Paid</button>
       <button class="filter-chip" onclick="setStatus('pending',this)">Pending</button>
       <button class="filter-chip" onclick="setStatus('refund',this)">Refund</button>
-      <select class="sel" onchange="filterOrders()"><option>All Brands</option><option>Brain Brew</option><option>Heng Heng</option></select>
-      <select class="sel" onchange="filterOrders()"><option>All Types</option><option>Dine In</option><option>Takeaway</option><option>Delivery</option></select>
-      <select class="sel" onchange="filterOrders()"><option>Today</option><option>Yesterday</option><option>This Week</option><option>This Month</option></select>
+      <select class="sel" onchange="filterOrders(); updateKPIs();"><option>All Brands</option><option>Brain Brew</option><option>Heng Heng</option></select>
+      <select class="sel" onchange="filterOrders(); updateKPIs();"><option>All Types</option><option>Dine In</option><option>Takeaway</option><option>Delivery</option></select>
+      <select class="sel" onchange="filterOrders(); updateKPIs();"><option>Today</option><option>Yesterday</option><option>This Week</option><option>This Month</option></select>
     </div>
 
     <div class="orders-layout">
@@ -379,27 +379,29 @@ function getDateRangeFilter(dateSel) {
   return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt) === todayStr;
 }
 
+function getFilteredOrders() {
+  const q = document.getElementById('orderSearch').value.toLowerCase();
+  const src = _allOrders.length ? _allOrders : ORDERS;
+
+  const brandSel = document.querySelectorAll('.sel')[0]?.value || 'All Brands';
+  const dateSel = document.querySelectorAll('.sel')[2]?.value || 'Today';
+  const matchDate = getDateRangeFilter(dateSel);
+
+  return src.filter(o => {
+    const matchStatus = statusFilter === 'all' || o.status === statusFilter;
+    const matchQ = !q || (o.id||'').toLowerCase().includes(q)
+                      || (o.customer||'').toLowerCase().includes(q)
+                      || (o.type||'').toLowerCase().includes(q);
+    const matchBrand = brandSel === 'All Brands' || o.brand === brandSel;
+    return matchStatus && matchQ && matchBrand && matchDate(o);
+  });
+}
+
 function filterOrders() {
   const q = document.getElementById('orderSearch').value.toLowerCase();
   searchQ = q;
-  const src = _allOrders.length ? _allOrders : ORDERS;
-  
-  // filter brand
-  const brandSel = document.querySelectorAll('.sel')[0]?.value || 'All Brands';
-  // filter date
-  const dateSel = document.querySelectorAll('.sel')[2]?.value || 'Today';
-  const matchDate = getDateRangeFilter(dateSel);
-  
-  let filtered = src.filter(o => {
-    const matchStatus = statusFilter === 'all' || o.status === statusFilter;
-    const matchQ = !q || (o.id||'').toLowerCase().includes(q) 
-                      || (o.customer||'').toLowerCase().includes(q) 
-                      || (o.type||'').toLowerCase().includes(q);
-    const matchBrand = brandSel === 'All Brands' || o.brand === brandSel
-                    || (brandSel === 'Brain Brew' && o.brand === 'Brain Brew')
-                    || (brandSel === 'Heng Heng' && o.brand === 'Heng Heng');
-    return matchStatus && matchQ && matchBrand && matchDate(o);
-  });
+
+  const filtered = getFilteredOrders();
 
   // อัพเดท stats
   const statsEl = document.getElementById('ordersStats');
@@ -416,6 +418,7 @@ function setStatus(s, el) {
   document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   filterOrders();
+  updateKPIs();
 }
 
 function selectOrder(id) {
@@ -564,22 +567,28 @@ function dateKeyBkk(val) {
 }
 
 function updateKPIs() {
-  const todayStr = dateKeyBkk(new Date());
-  const todayOrders = _allOrders.filter(o => o.rawCreatedAt && dateKeyBkk(o.rawCreatedAt) === todayStr);
+  const dateSel = document.querySelectorAll('.sel')[2]?.value || 'Today';
+  const periodOrders = getFilteredOrders();
 
-  const totalRevenue = todayOrders.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
-  const avgOrder = todayOrders.length ? totalRevenue / todayOrders.length : 0;
-  const refunds = todayOrders.filter(o => o.status === 'refund');
+  const totalRevenue = periodOrders.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
+  const avgOrder = periodOrders.length ? totalRevenue / periodOrders.length : 0;
+  const refunds = periodOrders.filter(o => o.status === 'refund');
   const refundTotal = refunds.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
 
+  // ป้ายข้อความให้ตรงกับช่วงที่เลือก ไม่ใช่เขียนคำว่า "today" ตายตัว
+  const periodLabel = {
+    'Today': 'today', 'Yesterday': 'yesterday',
+    'This Week': 'this week', 'This Month': 'this month',
+  }[dateSel] || 'today';
+
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  setEl('kpiTodayOrders', todayOrders.length);
-  setEl('kpiTodayOrdersSub', todayOrders.length ? `${todayOrders.length} orders logged today` : 'No orders yet today');
+  setEl('kpiTodayOrders', periodOrders.length);
+  setEl('kpiTodayOrdersSub', periodOrders.length ? `${periodOrders.length} orders logged ${periodLabel}` : `No orders ${periodLabel}`);
   setEl('kpiTodayRevenue', '฿' + totalRevenue.toLocaleString());
-  setEl('kpiTodayRevenueSub', `${todayOrders.length} orders`);
+  setEl('kpiTodayRevenueSub', `${periodOrders.length} orders`);
   setEl('kpiAvgOrder', '฿' + avgOrder.toFixed(0));
   setEl('kpiRefunds', refunds.length);
-  setEl('kpiRefundsSub', refunds.length ? `฿${refundTotal.toLocaleString()} refunded` : 'No refunds today');
+  setEl('kpiRefundsSub', refunds.length ? `฿${refundTotal.toLocaleString()} refunded` : `No refunds ${periodLabel}`);
 }
 
 renderOrders(_allOrders.length ? _allOrders : ORDERS);
