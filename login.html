@@ -3,202 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BrewOS — Sign In</title>
+<title>Heng Heng Phanit — Sign In</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --green:#143D2B; --green2:#1E5A3F;
   --orange:#F26C21;
-  --bb:#174B3D; --hh:#143D2B;
-  --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
+  --bg:#F7E9D6; --card:#fffdf9; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
-  --brown:#8C5E3C; --sage:#A7C48D;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow:hidden; }
+html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:#ECE3D2; color:var(--text); }
+body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
 
-.split { display:flex; height:100vh; width:100vw; }
-
-/* ===== LEFT — BRAND PREVIEW ===== */
-.left {
-  flex:1; position:relative; overflow:hidden;
-  background:var(--bg);
-  display:flex; flex-direction:column;
-  padding:40px 48px;
+.frame {
+  display:flex; width:100%; max-width:1280px; height:min(760px, calc(100vh - 48px));
+  background:var(--bg); border-radius:28px; overflow:hidden;
+  box-shadow:0 30px 80px rgba(20,61,43,0.18);
 }
-.left.theme-bb { --accent:var(--bb); --accent2:#E67A3D; }
-.left.theme-hh { --accent:var(--hh); --accent2:var(--orange); }
 
-/* decorative blobs */
-.blob { position:absolute; border-radius:50%; opacity:0.5; filter:blur(0px); z-index:0; }
-.blob1 { width:280px; height:280px; background:#EAD9BB; top:-80px; right:-60px; border-radius:46% 54% 60% 40% / 50% 45% 55% 50%; }
-.blob2 { width:340px; height:340px; background:var(--accent); top:-40px; right:-120px; border-radius:38% 62% 55% 45% / 55% 40% 60% 45%; opacity:0.95; z-index:1; }
-.blob3 { width:260px; height:260px; background:var(--brown); bottom:-70px; right:60px; border-radius:55% 45% 40% 60% / 45% 55% 45% 55%; opacity:0.9; }
-.blob4 { width:220px; height:220px; background:var(--accent); bottom:-60px; left:-70px; border-radius:50% 50% 60% 40% / 55% 45% 55% 45%; opacity:0.95; }
-.leaf-deco { position:absolute; bottom:130px; left:60px; opacity:0.5; z-index:1; }
-
-.left-content { position:relative; z-index:2; display:flex; flex-direction:column; height:100%; }
-
-.logo-row { display:flex; align-items:center; gap:12px; }
-.logo-icon { width:46px; height:46px; border-radius:12px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; transition:background 0.3s; }
-.logo-text-main { font-family:'Poppins',sans-serif; font-weight:700; font-size:19px; color:var(--text); line-height:1.2; }
-.logo-text-sub { font-size:10.5px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:1px; }
-
-.brand-switch { display:flex; gap:6px; margin-top:32px; width:fit-content; background:rgba(255,255,255,0.5); padding:5px; border-radius:30px; }
-.brand-pill { display:flex; align-items:center; gap:7px; padding:9px 18px; border-radius:24px; font-size:13px; font-weight:500; cursor:pointer; border:none; background:transparent; color:var(--muted); transition:all 0.25s; font-family:'Anuphan',sans-serif; }
-.brand-pill.active { background:var(--accent); color:#fff; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,0.12); }
-
-.preview-center { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; }
-.preview-icon-box { width:96px; height:96px; border-radius:26px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:40px; box-shadow:0 12px 30px rgba(0,0,0,0.15); transition:background 0.3s; }
-.preview-name { font-family:'Poppins',sans-serif; font-weight:700; font-size:30px; color:var(--text); text-align:center; transition:opacity 0.2s; }
-.preview-tag { font-size:13.5px; color:var(--muted); text-align:center; margin-top:-8px; }
-
-.stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; max-width:420px; margin-top:8px; }
-.stat-card { background:rgba(255,255,255,0.65); border:1px solid rgba(255,255,255,0.8); border-radius:16px; padding:16px 18px; backdrop-filter:blur(6px); }
-.stat-top { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
-.stat-icon { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; color:#fff; }
-.stat-label { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:600; }
-.stat-value { font-size:23px; font-weight:700; color:var(--text); font-family:'Poppins',sans-serif; }
-.stat-delta { font-size:11px; color:var(--green2); margin-top:3px; font-weight:500; }
-
-.left-footer { position:relative; z-index:2; }
-.footer-tagline { font-size:15px; font-weight:700; color:#fff; }
-.footer-sub { font-size:12.5px; color:rgba(255,255,255,0.8); margin-top:2px; }
-.footer-wrap { background:var(--accent); margin:0 -48px -40px; padding:24px 48px 28px; border-radius:32px 32px 0 0; transition:background 0.3s; }
+/* ===== LEFT — PHOTO BACKGROUND ===== */
+.left {
+  flex:1.05; position:relative; overflow:hidden;
+  background-image:url('hh-login-bg.jpg');
+  background-size:cover;
+  background-position:center 30%;
+  background-color:#ECE3D2; /* fallback ถ้ารูปโหลดไม่ขึ้น */
+}
+.left::after {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(20,40,25,0.04) 0%, rgba(20,40,25,0.02) 50%, rgba(20,30,20,0.18) 100%);
+}
 
 /* ===== RIGHT — LOGIN FORM ===== */
 .right {
-  width:480px; flex-shrink:0; background:var(--bg);
+  width:460px; flex-shrink:0; background:var(--bg);
   display:flex; align-items:center; justify-content:center;
-  padding:40px; overflow-y:auto;
-  border-left:1px solid var(--border);
+  padding:44px 48px; position:relative; overflow:hidden;
 }
-.form-wrap { width:100%; max-width:380px; }
+.leaf-deco-corner {
+  position:absolute; top:0; right:0; width:240px; height:160px;
+  opacity:0.35; pointer-events:none;
+}
 
-.welcome-title { font-family:'Poppins',sans-serif; font-size:30px; font-weight:700; color:var(--text); margin-bottom:6px; }
-.welcome-sub { font-size:13.5px; color:var(--muted); margin-bottom:28px; }
+.form-wrap { width:100%; max-width:360px; position:relative; z-index:2; }
+
+.welcome-title { font-family:'Poppins',sans-serif; font-size:27px; font-weight:700; color:var(--text); display:flex; align-items:center; gap:10px; }
+.welcome-sub { font-size:13px; color:var(--muted); margin-bottom:26px; margin-top:4px; }
 
 .role-select { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:24px; }
-.role-btn { background:var(--card); border:1.5px solid var(--border); border-radius:14px; padding:14px 8px; cursor:pointer; text-align:center; transition:all 0.15s; font-family:'Anuphan',sans-serif; }
+.role-btn { background:var(--card); border:1.5px solid var(--border); border-radius:13px; padding:13px 6px; cursor:pointer; text-align:center; transition:all 0.15s; font-family:'Anuphan',sans-serif; }
 .role-btn:hover { border-color:#d5cdbb; }
-.role-btn.active { border-color:var(--green); background:#fff; box-shadow:0 2px 10px rgba(20,61,43,0.08); }
-.role-icon { font-size:19px; display:block; margin-bottom:6px; }
-.role-label { font-size:12px; font-weight:600; color:var(--text); }
+.role-btn.active { border-color:#C9A876; background:#F3E8D4; box-shadow:0 2px 8px rgba(180,140,70,0.12); }
+.role-icon { font-size:18px; display:block; margin-bottom:5px; }
+.role-label { font-size:11.5px; font-weight:600; color:var(--text); }
 
 .form-group { margin-bottom:18px; }
-.form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin-bottom:7px; display:block; }
-.input-wrap { position:relative; }
-.form-input { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:13px 16px; font-size:14px; color:var(--text); font-family:'Anuphan',sans-serif; outline:none; transition:border 0.15s; }
+.form-label { font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; margin-bottom:7px; display:block; }
+.input-wrap { position:relative; display:flex; align-items:center; }
+.input-icon { position:absolute; left:14px; opacity:0.45; font-size:14px; pointer-events:none; }
+.form-input { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:12px 16px 12px 40px; font-size:13.5px; color:var(--text); font-family:'Anuphan',sans-serif; outline:none; transition:border 0.15s; }
 .form-input:focus { border-color:var(--green); }
-.toggle-pw { position:absolute; right:14px; top:50%; transform:translateY(-50%); cursor:pointer; opacity:0.5; background:none; border:none; font-size:15px; }
+.toggle-pw { position:absolute; right:14px; cursor:pointer; opacity:0.5; background:none; border:none; font-size:14px; padding:4px; }
 .toggle-pw:hover { opacity:0.8; }
 
-.row-between { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; font-size:12.5px; }
-.remember { display:flex; align-items:center; gap:8px; color:var(--text); cursor:pointer; user-select:none; }
-.remember input { width:16px; height:16px; accent-color:var(--green); cursor:pointer; }
-.forgot-link { color:var(--green); font-weight:500; text-decoration:none; }
+.row-between { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; font-size:12px; }
+.remember { display:flex; align-items:center; gap:7px; color:var(--text); cursor:pointer; user-select:none; }
+.remember input { width:15px; height:15px; accent-color:var(--green); cursor:pointer; }
+.forgot-link { color:var(--orange); font-weight:500; text-decoration:none; }
 .forgot-link:hover { text-decoration:underline; }
 
-.btn-signin { width:100%; background:var(--green); color:#fff; border:none; border-radius:12px; padding:15px; font-size:14.5px; font-weight:700; cursor:pointer; font-family:'Anuphan',sans-serif; transition:background 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
-.btn-signin:hover { background:var(--green2); }
+.btn-signin { width:100%; background:#5C7A4A; color:#fff; border:none; border-radius:12px; padding:14px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Anuphan',sans-serif; transition:background 0.15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.btn-signin:hover { background:#4d6a3d; }
 .btn-signin:disabled { opacity:0.6; cursor:not-allowed; }
 
-.divider { display:flex; align-items:center; gap:12px; margin:22px 0; }
+.divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
 .divider-line { flex:1; height:1px; background:var(--border); }
-.divider-text { font-size:11px; color:var(--muted); font-weight:600; }
+.divider-text { font-size:10.5px; color:var(--muted); font-weight:600; }
 
-.demo-box { background:#F1EFE6; border:1px solid var(--border); border-radius:12px; padding:13px 16px; display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--text); cursor:pointer; transition:background 0.15s; }
-.demo-box:hover { background:#ece8da; }
-.demo-box b { font-weight:700; }
+.btn-google { width:100%; background:var(--card); border:1.5px solid var(--border); border-radius:12px; padding:12px; font-size:13.5px; font-weight:500; cursor:pointer; font-family:'Anuphan',sans-serif; color:var(--text); display:flex; align-items:center; justify-content:center; gap:10px; transition:background 0.15s; }
+.btn-google:hover { background:#faf6ed; }
 
-.help-text { text-align:center; font-size:12px; color:var(--muted); margin-top:22px; }
-.help-text a { color:var(--green); font-weight:600; text-decoration:none; }
+.footer-text { text-align:center; margin-top:24px; }
+.footer-brand { font-size:12px; color:var(--orange); font-weight:600; }
+.footer-copyright { font-size:10.5px; color:var(--muted); margin-top:4px; }
 
-.error-msg { background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:10px; padding:10px 14px; font-size:12.5px; margin-bottom:16px; display:none; }
+.error-msg { background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px; display:none; }
 .error-msg.show { display:block; }
 
-@media (max-width: 880px) {
+@media (max-width: 900px) {
+  .frame { flex-direction:column; height:auto; max-width:460px; }
   .left { display:none; }
-  .right { width:100%; border-left:none; }
+  .right { width:100%; padding:36px 28px; }
 }
 </style>
 </head>
 <body>
 
-<div class="split">
-  <!-- ===== LEFT: BRAND PREVIEW ===== -->
-  <div class="left theme-hh" id="leftPanel">
-    <div class="blob blob1"></div>
-    <div class="blob blob2" id="blob2"></div>
-    <div class="blob blob3"></div>
-
-    <div class="left-content">
-      <div class="logo-row">
-        <div class="logo-icon" id="logoIcon">☕</div>
-        <div>
-          <div class="logo-text-main">Brain Brew × Heng Heng</div>
-          <div class="logo-text-sub">Back Office</div>
-        </div>
-      </div>
-
-      <div class="brand-switch">
-        <button class="brand-pill" id="pillBB" onclick="switchBrand('bb')">☕ Brain Brew</button>
-        <button class="brand-pill active" id="pillHH" onclick="switchBrand('hh')">🌸 Heng Heng</button>
-      </div>
-
-      <div class="preview-center">
-        <div class="preview-icon-box" id="previewIcon">🌸</div>
-        <div class="preview-name" id="previewName">Heng Heng Phanit</div>
-        <div class="preview-tag" id="previewTag">Sandwiches • Salads • Good Vibes</div>
-
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--accent)">฿</div>
-              <div class="stat-label">Today's Revenue</div>
-            </div>
-            <div class="stat-value" id="statRevenue">฿18,420</div>
-            <div class="stat-delta">↑ 12% vs yesterday</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--brown)">🛍</div>
-              <div class="stat-label">Orders Today</div>
-            </div>
-            <div class="stat-value" id="statOrders">147</div>
-            <div class="stat-delta">↑ 8 from yesterday</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--orange)">👥</div>
-              <div class="stat-label">Active Members</div>
-            </div>
-            <div class="stat-value" id="statMembers">2,841</div>
-            <div class="stat-delta">↑ 23 new this week</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-top">
-              <div class="stat-icon" style="background:var(--sage)">📊</div>
-              <div class="stat-label">GP Margin</div>
-            </div>
-            <div class="stat-value" id="statGP">69.5%</div>
-            <div class="stat-delta">↑ 2.1% vs last month</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-wrap" id="footerWrap">
-      <div class="footer-tagline" id="footerTagline">Fresh. Clean. Fulfilled.</div>
-      <div class="footer-sub">BrewOS — running your store, simplified.</div>
-    </div>
-  </div>
+<div class="frame">
+  <!-- ===== LEFT: PHOTO ===== -->
+  <div class="left"></div>
 
   <!-- ===== RIGHT: LOGIN FORM ===== -->
   <div class="right">
+    <svg class="leaf-deco-corner" viewBox="0 0 240 160" fill="none">
+      <path d="M40 20 Q90 10 130 35 Q170 60 210 30" stroke="#A7C48D" stroke-width="1.5" opacity="0.6"/>
+      <ellipse cx="70" cy="25" rx="10" ry="5" fill="#A7C48D" opacity="0.5" transform="rotate(-30 70 25)"/>
+      <ellipse cx="105" cy="32" rx="10" ry="5" fill="#A7C48D" opacity="0.5" transform="rotate(10 105 32)"/>
+      <ellipse cx="145" cy="42" rx="10" ry="5" fill="#A7C48D" opacity="0.5" transform="rotate(-15 145 42)"/>
+      <ellipse cx="185" cy="35" rx="10" ry="5" fill="#A7C48D" opacity="0.5" transform="rotate(25 185 35)"/>
+    </svg>
+
     <div class="form-wrap">
-      <div class="welcome-title">Welcome back</div>
-      <div class="welcome-sub">Sign in to your BrewOS workspace</div>
+      <div class="welcome-title">Welcome back! 🌿</div>
+      <div class="welcome-sub">Sign in to access your BrewOS workspace</div>
 
       <div class="error-msg" id="errorMsg"></div>
 
@@ -212,19 +130,23 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <span class="role-label">Manager</span>
         </button>
         <button class="role-btn" id="roleCashier" onclick="selectRole('staff', this)">
-          <span class="role-icon">🧑‍🍳</span>
+          <span class="role-icon">🛍</span>
           <span class="role-label">Cashier</span>
         </button>
       </div>
 
       <div class="form-group">
         <label class="form-label">Email / Username</label>
-        <input type="text" class="form-input" id="username" placeholder="owner@brews.app" value="owner@brews.app">
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="text" class="form-input" id="username" placeholder="owner@brewos.app" value="owner@brewos.app">
+        </div>
       </div>
 
       <div class="form-group">
         <label class="form-label">Password</label>
         <div class="input-wrap">
+          <span class="input-icon">🔒</span>
           <input type="password" class="form-input" id="password" placeholder="••••••••" value="admin123">
           <button class="toggle-pw" type="button" onclick="togglePassword()" id="togglePwBtn">👁</button>
         </div>
@@ -232,7 +154,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
       <div class="row-between">
         <label class="remember">
-          <input type="checkbox" id="rememberMe" checked>
+          <input type="checkbox" id="rememberMe">
           Remember me
         </label>
         <a href="#" class="forgot-link">Forgot password?</a>
@@ -248,52 +170,22 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         <div class="divider-line"></div>
       </div>
 
-      <div class="demo-box" onclick="fillDemo()">
-        🔑 Demo: <b>owner@brews.app</b> / <b>admin123</b>
-      </div>
+      <button class="btn-google" onclick="alert('Google Sign-In ยังไม่ได้เชื่อมต่อ — ใช้ email/password ด้านบนก่อนได้ครับ')">
+        <svg width="16" height="16" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Sign in with Google
+      </button>
 
-      <div class="help-text">Need help? <a href="#">Contact your administrator</a></div>
+      <div class="footer-text">
+        <div class="footer-brand">🌿 Heng Heng Phanit Cafe</div>
+        <div class="footer-copyright">© 2026 All rights reserved.</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
-
 let currentRole = 'owner';
-let currentBrand = 'hh';
-
-const BRAND_DATA = {
-  bb: {
-    icon: '☕',
-    name: 'Brain Brew Coffee',
-    tag: 'Specialty Coffee • Neuroscience Inspired',
-    tagline: 'Focus. Fuel. Flow.',
-    accent: '#174B3D',
-  },
-  hh: {
-    icon: '🌸',
-    name: 'Heng Heng Phanit',
-    tag: 'Sandwiches • Salads • Good Vibes',
-    tagline: 'Fresh. Clean. Fulfilled.',
-    accent: '#143D2B',
-  }
-};
-
-function switchBrand(brand) {
-  currentBrand = brand;
-  const data = BRAND_DATA[brand];
-
-  document.getElementById('pillBB').classList.toggle('active', brand === 'bb');
-  document.getElementById('pillHH').classList.toggle('active', brand === 'hh');
-
-  document.getElementById('leftPanel').className = 'left theme-' + brand;
-  document.getElementById('logoIcon').textContent = data.icon;
-  document.getElementById('previewIcon').textContent = data.icon;
-  document.getElementById('previewName').textContent = data.name;
-  document.getElementById('previewTag').textContent = data.tag;
-  document.getElementById('footerTagline').textContent = data.tagline;
-}
 
 function selectRole(role, el) {
   currentRole = role;
@@ -313,12 +205,6 @@ function togglePassword() {
   }
 }
 
-function fillDemo() {
-  document.getElementById('username').value = 'owner@brews.app';
-  document.getElementById('password').value = 'admin123';
-  selectRole('owner', document.getElementById('roleOwner'));
-}
-
 function showError(msg) {
   const el = document.getElementById('errorMsg');
   el.textContent = msg;
@@ -336,16 +222,16 @@ async function doLogin() {
   const btn = document.getElementById('signInBtn');
 
   if (!username || !password) {
-    showError('Please enter both username and password.');
+    showError('กรุณากรอกอีเมล/ชื่อผู้ใช้และรหัสผ่าน');
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = 'Signing in...';
+  btn.textContent = 'กำลังเข้าสู่ระบบ...';
 
   try {
-    // Demo/offline fallback — ถ้า backend login endpoint ยังไม่พร้อม ให้เข้าได้ด้วย demo credential เสมอ
-    if (username === 'owner@brews.app' && password === 'admin123') {
+    // Demo/offline fallback — เข้าได้ด้วย demo credential เสมอแม้ backend ไม่พร้อม
+    if (username === 'owner@brewos.app' && password === 'admin123') {
       localStorage.setItem('brewos_role', currentRole);
       localStorage.setItem('brewos_user', username);
       const redirectMap = { owner: 'dashboard.html', manager: 'dashboard.html', staff: 'pos.html' };
@@ -353,7 +239,7 @@ async function doLogin() {
       return;
     }
 
-    const res = await fetch(`${GAS_URL}?action=login&email=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&brand=${currentBrand.toUpperCase()}`);
+    const res = await fetch(`${GAS_URL}?action=login&email=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&brand=HH`);
     const json = await res.json();
 
     if (json.success && json.data && json.data.user) {
@@ -362,12 +248,12 @@ async function doLogin() {
       const redirectMap = { owner: 'dashboard.html', manager: 'dashboard.html', staff: 'pos.html', cashier: 'pos.html' };
       window.location.href = redirectMap[json.data.user.role] || 'dashboard.html';
     } else {
-      showError(json.error || 'Invalid email or password.');
+      showError(json.error || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
       btn.disabled = false;
       btn.textContent = 'Sign In to Dashboard →';
     }
   } catch (e) {
-    showError('Could not connect to server. Try the demo login below.');
+    showError('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ — ลองใช้ demo login ด้านบน');
     btn.disabled = false;
     btn.textContent = 'Sign In to Dashboard →';
   }
