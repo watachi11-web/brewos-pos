@@ -343,6 +343,42 @@ function renderOrders(data) {
     </tr>`).join('');
 }
 
+function getDateRangeFilter(dateSel) {
+  // คืนค่า function ที่เช็คว่า order ตรงกับช่วงวันที่ที่เลือกไหม
+  const todayStr = dateKeyBkk(new Date());
+
+  // หมายเหตุ: mock/demo data (fallback เมื่อโหลดจาก Sheet ไม่ได้) ไม่มี rawCreatedAt
+  // จึงปล่อยผ่านการกรองวันที่เสมอ เพื่อไม่ให้ตารางว่างเปล่าแบบไม่มีคำอธิบาย
+  const passIfNoTimestamp = (o) => !o.rawCreatedAt;
+
+  if (dateSel === 'Yesterday') {
+    const y = new Date();
+    y.setDate(y.getDate() - 1);
+    const yStr = dateKeyBkk(y);
+    return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt) === yStr;
+  }
+  if (dateSel === 'This Week') {
+    // วันจันทร์ของสัปดาห์นี้ (Asia/Bangkok) ถึงวันนี้
+    const now = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+    const dow = now.getDay(); // 0=Sun
+    const diffToMonday = dow === 0 ? 6 : dow - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+    const mondayStr = dateKeyBkk(monday);
+    return (o) => {
+      if (passIfNoTimestamp(o)) return true;
+      const k = dateKeyBkk(o.rawCreatedAt);
+      return k >= mondayStr && k <= todayStr;
+    };
+  }
+  if (dateSel === 'This Month') {
+    const monthPrefix = todayStr.slice(0, 7); // YYYY-MM
+    return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt).startsWith(monthPrefix);
+  }
+  // default: 'Today'
+  return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt) === todayStr;
+}
+
 function filterOrders() {
   const q = document.getElementById('orderSearch').value.toLowerCase();
   searchQ = q;
@@ -352,6 +388,7 @@ function filterOrders() {
   const brandSel = document.querySelectorAll('.sel')[0]?.value || 'All Brands';
   // filter date
   const dateSel = document.querySelectorAll('.sel')[2]?.value || 'Today';
+  const matchDate = getDateRangeFilter(dateSel);
   
   let filtered = src.filter(o => {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter;
@@ -361,7 +398,7 @@ function filterOrders() {
     const matchBrand = brandSel === 'All Brands' || o.brand === brandSel
                     || (brandSel === 'Brain Brew' && o.brand === 'Brain Brew')
                     || (brandSel === 'Heng Heng' && o.brand === 'Heng Heng');
-    return matchStatus && matchQ && matchBrand;
+    return matchStatus && matchQ && matchBrand && matchDate(o);
   });
 
   // อัพเดท stats
@@ -440,8 +477,36 @@ function selectOrder(id) {
 
 function openRefundModal(){document.getElementById('refundModal').classList.add('open');}
 function closeRefundModal(){document.getElementById('refundModal').classList.remove('open');}
-function processRefund(){closeRefundModal();showToast('Refund processed successfully.');}
-function printReceipt(){showToast('Sending to printer...');}
+
+function processRefund(){
+  const orderId = document.getElementById('refundOrderId')?.value || activeOrderId;
+  if (!orderId) { closeRefundModal(); return; }
+
+  // อัพเดทสถานะใน local state ทันที (optimistic update)
+  const src = _allOrders.length ? _allOrders : ORDERS;
+  const order = src.find(x => x.id === orderId);
+  if (order) {
+    order.status = 'refund';
+  }
+
+  closeRefundModal();
+  filterOrders();
+  updateKPIs();
+
+  // เลือกออเดอร์เดิมซ้ำเพื่อ refresh badge สถานะใน detail panel
+  if (activeOrderId === orderId) selectOrder(orderId);
+
+  showToast('Refund processed — status updated to Refund.');
+
+  // หมายเหตุ: การเปลี่ยนสถานะนี้อัพเดทเฉพาะหน้าจอปัจจุบัน (local state)
+  // ยังไม่ได้บันทึกกลับ Google Sheet เพราะ Apps Script ยังไม่มี endpoint
+  // 'update_order_status' ที่เขียนกลับ payment_status ใน sheet 'orders'
+  // ถ้าต้องการให้ refund คงอยู่ถาวรหลัง refresh หน้า ต้องเพิ่ม endpoint นี้ฝั่ง Apps Script
+}
+
+function printReceipt(){
+  showToast('Print function is not yet connected to a physical printer — this is a placeholder.');
+}
 function showToast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:24px;right:24px;background:#143D2B;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;';document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
 
 let _allOrders = [];
