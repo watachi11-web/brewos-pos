@@ -30,3 +30,15 @@
  * หมายเหตุ: MOCK_DATA (demo mode) ไม่ต้องแก้ เพราะ API_BASE ตั้งเป็น URL จริงแล้ว
  * โค้ดจะข้าม mock ไปเรียก backend จริงเสมอ ไม่ใช้ MOCK_DATA อีกต่อไป
  */
+const CONFIG_API = {
+  // เอา URL จาก Google Apps Script มาวางตรงนี้
+  URL: 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec' 
+};
+
+const API = {
+  async inventory(brandId = '') {
+    const response = await fetch(`${CONFIG_API.URL}?action=getInventory&brand_id=${brandId}`, { mode: 'cors' });
+    return await response.json();
+  }
+  // ฟังก์ชันอื่นๆ ...
+};
