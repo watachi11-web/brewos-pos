@@ -31,17 +31,14 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; 
 .btn-ghost:hover { background:rgba(255,255,255,0.1); color:#1a2e1a; }
 .btn-primary { background:var(--brand-dark); color: #fff; }
 .btn-primary:hover { background:var(--brand-mid); }
+.btn:disabled { opacity:.5; pointer-events:none; }
 .content { flex:1; overflow-y:auto; padding:24px; }
 .content::-webkit-scrollbar { width:4px; }
 .content::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
-
-/* MONTH SELECTOR */
 .month-selector { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:3px 12px 3px 3px; border-radius:10px; }
 .month-nav { width:28px; height:28px; border-radius:7px; background:transparent; border:none; color:#4a6741; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
 .month-nav:hover { background:rgba(255,255,255,0.1); color:#1a2e1a; }
 .month-label { font-size:12px; font-weight:500; color:#1a2e1a; min-width:100px; text-align:center; }
-
-/* KPI ROW */
 .kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
 .kpi-card { background:#ffffff; border:1px solid #e0d8cc; border-radius:14px; padding:16px 18px; }
 .kpi-label { font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
@@ -51,23 +48,14 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; 
 .kpi-down { color:#EF4444; }
 .kpi-profit { border-color:rgba(82,183,136,0.2); background:rgba(82,183,136,0.05); }
 .kpi-profit .kpi-value { color:var(--brand-light); }
-
-/* GRID */
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px; }
-
-/* CARD */
 .card { background: #ffffff; border:1px solid rgba(255,255,255,0.06); border-radius:14px; overflow:hidden; }
 .card-header { padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; }
 .card-title { font-size:12px; font-weight:600; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; }
 .card-body { padding:16px 18px; }
-
-/* TABS */
 .tab-row { display:flex; gap:4px; margin-bottom:20px; background:rgba(255,255,255,0.04); padding:3px; border-radius:10px; width:fit-content; }
 .tab-btn { padding:7px 18px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; color:#4a6741; border:none; background:transparent; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
 .tab-btn.active { background:#ffffff; color:#1a2e1a; box-shadow:0 1px 4px rgba(0,0,0,0.4); }
-
-/* P&L TABLE */
 .pl-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; }
 .pl-row:last-child { border-bottom:none; }
 .pl-row.total { font-weight:700; font-size:14px; border-top:1px solid #e0d8cc; margin-top:4px; padding-top:12px; }
@@ -79,20 +67,13 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; 
 .pl-negative { color:#EF4444; }
 .pl-neutral  { color:#1a2e1a; }
 .pl-section-header { font-size:10px; color:rgba(0,0,0,0.35); text-transform:uppercase; letter-spacing:0.08em; padding:12px 0 4px; }
-
-/* EXPENSE TABLE */
 .exp-grid { grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; gap:12px; }
 .table-card { background:#1B4332; border:1px solid rgba(255,255,255,0.06); border-radius:14px; overflow:hidden; }
 .table-header { display:grid; padding:11px 16px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.05); font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
 .table-row { display:grid; padding:11px 16px; border-bottom:1px solid rgba(255,255,255,0.04); align-items:center; transition:background 0.1s; font-size:12px; }
 .table-row:last-child { border-bottom:none; }
 .table-row:hover { background:rgba(255,255,255,0.02); }
-.cat-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
-
-/* EXPENSE BADGES */
 .exp-badge { display:inline-flex; padding:2px 9px; border-radius:10px; font-size:10px; font-weight:600; }
-
-/* FILTER ROW */
 .filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; }
 .search-wrap { position:relative; }
 .search-icon-abs { position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.3; }
@@ -101,11 +82,7 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; 
 .search-input::placeholder { color:rgba(0,0,0,0.35); }
 .select-filter { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; font-size:12px; color:var(--green);font-weight:700; font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
 .select-filter option { background:#ffffff; }
-
-/* CHART */
 canvas { max-height:200px; }
-
-/* MODAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
 .modal { background:#ffffff; border-radius:20px; width:480px; max-height:85vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); }
@@ -121,11 +98,11 @@ canvas { max-height:200px; }
 .form-input::placeholder { color:rgba(0,0,0,0.35); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.loading-text { text-align:center; padding:40px; color:#4a6741; font-size:13px; }
 </style>
 </head>
 <body>
 <div class="app">
-  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-brand">Brain Brew × Heng Heng</div>
@@ -147,154 +124,90 @@ canvas { max-height:200px; }
       <a href="settings.html"  class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
     <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);">
-      <div style="font-size:11px;color:rgba(0,0,0,0.35)">Owner · All Brands</div>
+      <div style="font-size:11px;color:rgba(0,0,0,0.35)" id="staff-name-label">Owner · All Brands</div>
     </div>
   </div>
 
   <div class="main">
-    <!-- TOPBAR -->
     <div class="topbar">
       <div class="topbar-title">Finance & Expenses</div>
       <div class="topbar-actions">
         <div class="month-selector">
           <button class="month-nav" onclick="changeMonth(-1)">‹</button>
-          <span class="month-label" id="month-label">May 2026</span>
+          <span class="month-label" id="month-label">—</span>
           <button class="month-nav" onclick="changeMonth(1)">›</button>
         </div>
-        <select class="select-filter" id="brand-filter" onchange="render()">
-          <option value="ALL">All Brands</option>
-          <option value="BB">Brain Brew</option>
-          <option value="HH">Heng Heng</option>
-        </select>
-        <button class="btn btn-ghost">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 10v4h12v-4M8 2v8M5 8l3 3 3-3"/></svg>
-          Export
-        </button>
-        <button class="btn btn-primary" onclick="openModal('add-expense-modal')">+ Add Expense</button>
+        <button class="btn btn-primary" onclick="UI.openModal('add-expense-modal')">+ Add Expense</button>
       </div>
     </div>
 
     <div class="content">
-
-      <!-- TABS -->
       <div class="tab-row">
         <button class="tab-btn active" onclick="switchTab('overview', this)">P&L Overview</button>
         <button class="tab-btn" onclick="switchTab('expenses', this)">Expenses</button>
-        <button class="tab-btn" onclick="switchTab('revenue', this)">Revenue</button>
       </div>
 
-      <!-- ===== P&L OVERVIEW ===== -->
+      <!-- ===== P&L OVERVIEW — โหลดจริงจาก API.financeSummary({month}) ===== -->
       <div id="tab-overview">
-        <!-- KPI ROW -->
-        <div class="kpi-row">
-          <div class="kpi-card">
-            <div class="kpi-label">Revenue</div>
-            <div class="kpi-value" id="kpi-rev">฿186,400</div>
-            <div class="kpi-sub"><span class="kpi-up">▲ 12%</span> vs last month</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">COGS</div>
-            <div class="kpi-value">฿56,800</div>
-            <div class="kpi-sub">30.5% of revenue</div>
-          </div>
-          <div class="kpi-card kpi-profit">
-            <div class="kpi-label">Gross Profit</div>
-            <div class="kpi-value">฿129,600</div>
-            <div class="kpi-sub"><span class="kpi-up">GP 69.5%</span></div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Op. Expenses</div>
-            <div class="kpi-value">฿84,200</div>
-            <div class="kpi-sub">45.2% of revenue</div>
-          </div>
-          <div class="kpi-card kpi-profit">
-            <div class="kpi-label">Net Profit</div>
-            <div class="kpi-value">฿45,400</div>
-            <div class="kpi-sub"><span class="kpi-up">NP 24.4%</span></div>
-          </div>
-        </div>
-
-        <!-- CHARTS + P&L STATEMENT -->
-        <div class="two-col">
-          <!-- P&L Statement -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">P&L Statement — May 2026</div>
+        <div id="overview-loading" class="loading-text">กำลังโหลดข้อมูล...</div>
+        <div id="overview-content" style="display:none">
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-label">Revenue</div>
+              <div class="kpi-value" id="kpi-rev">—</div>
+              <div class="kpi-sub" id="kpi-rev-count">—</div>
             </div>
-            <div class="card-body">
-              <div class="pl-section-header">Revenue</div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew Coffee</span><span class="pl-value pl-positive">฿142,400</span></div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng Phanit</span><span class="pl-value pl-positive">฿44,000</span></div>
-              <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value pl-positive">฿186,400</span></div>
-
-              <div class="pl-section-header">Cost of Goods Sold</div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Coffee & Ingredients</span><span class="pl-value pl-negative">-฿38,200</span></div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Bakery Materials</span><span class="pl-value pl-negative">-฿18,600</span></div>
-              <div class="pl-row"><span class="pl-label">Total COGS</span><span class="pl-value pl-negative">-฿56,800</span></div>
-
-              <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Gross Profit</span><span class="pl-value pl-positive">฿129,600</span></div>
-
-              <div class="pl-section-header">Operating Expenses</div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Rent</span><span class="pl-value pl-negative">-฿35,000</span></div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Staff Salaries</span><span class="pl-value pl-negative">-฿28,000</span></div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Utilities</span><span class="pl-value pl-negative">-฿8,400</span></div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Marketing</span><span class="pl-value pl-negative">-฿4,800</span></div>
-              <div class="pl-row subtotal"><span class="pl-label indent">Other</span><span class="pl-value pl-negative">-฿8,000</span></div>
-              <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value pl-negative">-฿84,200</span></div>
-
-              <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Net Profit</span><span class="pl-value pl-positive" style="font-size:16px">฿45,400</span></div>
+            <div class="kpi-card">
+              <div class="kpi-label">COGS</div>
+              <div class="kpi-value" id="kpi-cogs">—</div>
+              <div class="kpi-sub" id="kpi-cogs-pct">—</div>
+            </div>
+            <div class="kpi-card kpi-profit">
+              <div class="kpi-label">Gross Profit</div>
+              <div class="kpi-value" id="kpi-gp">—</div>
+              <div class="kpi-sub" id="kpi-gp-pct">—</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Op. Expenses</div>
+              <div class="kpi-value" id="kpi-opex">—</div>
+              <div class="kpi-sub" id="kpi-opex-pct">—</div>
+            </div>
+            <div class="kpi-card kpi-profit">
+              <div class="kpi-label">Net Profit</div>
+              <div class="kpi-value" id="kpi-net">—</div>
+              <div class="kpi-sub" id="kpi-net-pct">—</div>
             </div>
           </div>
 
-          <!-- Charts -->
-          <div style="display:flex;flex-direction:column;gap:16px">
-            <!-- Revenue vs Expense chart -->
+          <div class="two-col">
             <div class="card">
-              <div class="card-header"><div class="card-title">Revenue vs Expenses</div></div>
-              <div class="card-body" style="padding:12px 18px">
-                <canvas id="rev-exp-chart"></canvas>
+              <div class="card-header"><div class="card-title" id="pl-statement-title">P&L Statement</div></div>
+              <div class="card-body" id="pl-statement-body">
+                <!-- Injected by JS -->
               </div>
             </div>
-            <!-- Expense breakdown donut -->
-            <div class="card">
-              <div class="card-header"><div class="card-title">Expense Breakdown</div></div>
-              <div class="card-body" style="display:flex;align-items:center;gap:16px;padding:12px 18px">
-                <div style="width:130px;height:130px;flex-shrink:0"><canvas id="exp-donut"></canvas></div>
-                <div style="font-size:11px;display:flex;flex-direction:column;gap:5px" id="donut-legend"></div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div class="card">
+                <div class="card-header"><div class="card-title">Brand Revenue Split</div></div>
+                <div class="card-body" style="padding:12px 18px">
+                  <canvas id="brand-chart"></canvas>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><div class="card-title">Expense Breakdown</div></div>
+                <div class="card-body" style="display:flex;align-items:center;gap:16px;padding:12px 18px">
+                  <div style="width:130px;height:130px;flex-shrink:0"><canvas id="exp-donut"></canvas></div>
+                  <div style="font-size:11px;display:flex;flex-direction:column;gap:5px" id="donut-legend"></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Brand comparison -->
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-header"><div class="card-title">Brand Performance Comparison</div></div>
-          <div class="card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-              ${['BB','HH'].map((b,i) => {
-                const rev = b==='BB' ? 142400 : 44000;
-                const cogs = b==='BB' ? 38200 : 18600;
-                const gp = rev - cogs;
-                const gpPct = ((gp/rev)*100).toFixed(1);
-                const name = b==='BB' ? 'Brain Brew Coffee' : 'Heng Heng Phanit';
-                const color = b==='BB' ? '#52B788' : '#FB923C';
-                return `
-                  <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:16px">
-                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                      <div style="width:8px;height:8px;border-radius:50%;background:${color}"></div>
-                      <div style="font-size:13px;font-weight:600;color:#1a2e1a">${name}</div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-                      <div><div style="font-size:10px;color:#4a6741">Revenue</div><div style="font-size:14px;font-weight:700;color:#1a2e1a">฿${rev.toLocaleString()}</div></div>
-                      <div><div style="font-size:10px;color:#4a6741">COGS</div><div style="font-size:14px;font-weight:700;color:#EF4444">฿${cogs.toLocaleString()}</div></div>
-                      <div><div style="font-size:10px;color:#4a6741">GP</div><div style="font-size:14px;font-weight:700;color:${color}">฿${gp.toLocaleString()}</div></div>
-                    </div>
-                    <div style="margin-top:10px">
-                      <div style="display:flex;justify-content:space-between;font-size:10px;color:#4a6741;margin-bottom:4px"><span>Gross Margin</span><span>${gpPct}%</span></div>
-                      <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px"><div style="width:${gpPct}%;height:100%;border-radius:2px;background:${color}"></div></div>
-                    </div>
-                  </div>`;
-              }).join('')}
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div class="card-title">Brand Performance Comparison</div></div>
+            <div class="card-body" id="brand-comparison-body">
+              <!-- Injected by JS -->
             </div>
           </div>
         </div>
@@ -307,19 +220,15 @@ canvas { max-height:200px; }
             <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
             <input class="search-input" type="text" placeholder="Search expenses…" oninput="filterExpenses(this.value)">
           </div>
-          <select class="select-filter" onchange="filterExpenses()">
+          <select class="select-filter" id="exp-cat-filter" onchange="filterExpenses()">
             <option value="">All Categories</option>
             <option value="cogs">COGS</option>
             <option value="rent">Rent</option>
             <option value="salary">Salary</option>
             <option value="utility">Utilities</option>
             <option value="marketing">Marketing</option>
+            <option value="equipment">Equipment</option>
             <option value="other">Other</option>
-          </select>
-          <select class="select-filter">
-            <option value="BB">Brain Brew</option>
-            <option value="HH">Heng Heng</option>
-            <option value="ALL">Both</option>
           </select>
           <span style="margin-left:auto;font-size:11px;color:#4a6741" id="exp-total-label">Total: ฿0</span>
         </div>
@@ -335,64 +244,20 @@ canvas { max-height:200px; }
           <div id="expense-body"></div>
         </div>
       </div>
-
-      <!-- ===== REVENUE TAB ===== -->
-      <div id="tab-revenue" style="display:none">
-        <div class="card" style="margin-bottom:16px">
-          <div class="card-header"><div class="card-title">Revenue by Day — May 2026</div></div>
-          <div class="card-body" style="padding:12px 18px;height:280px"><canvas id="daily-rev-chart"></canvas></div>
-        </div>
-        <div class="two-col">
-          <div class="card">
-            <div class="card-header"><div class="card-title">Top Revenue Categories (BB)</div></div>
-            <div class="card-body">
-              ${[['Signature Coffee','฿68,400','48%','#52B788'],['Cold Brew','฿28,500','20%','#22D3EE'],['Non-Coffee','฿24,200','17%','#818CF8'],['Matcha','฿14,800','10%','#34D399'],['Merchandise / Food','฿6,500','5%','#F97316']].map(([cat,amt,pct,col])=>`
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                  <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
-                  <div style="flex:1;font-size:12px;color:#1a2e1a">${cat}</div>
-                  <div style="font-size:12px;font-weight:600;color:#1a2e1a">${amt}</div>
-                  <div style="font-size:11px;color:#4a6741;width:30px;text-align:right">${pct}</div>
-                </div>
-                <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-bottom:10px">
-                  <div style="width:${pct};height:100%;border-radius:2px;background:${col}"></div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Top Revenue Categories (HH)</div></div>
-            <div class="card-body">
-              ${[['Banana Bread','฿18,200','41%','#FB923C'],['Almond Croissant','฿12,800','29%','#FCD34D'],['Seasonal Items','฿8,400','19%','#F97316'],['Beverages','฿4,600','10%','#52B788']].map(([cat,amt,pct,col])=>`
-                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-                  <div style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0"></div>
-                  <div style="flex:1;font-size:12px;color:#1a2e1a">${cat}</div>
-                  <div style="font-size:12px;font-weight:600;color:#1a2e1a">${amt}</div>
-                  <div style="font-size:11px;color:#4a6741;width:30px;text-align:right">${pct}</div>
-                </div>
-                <div style="height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-bottom:10px">
-                  <div style="width:${pct};height:100%;border-radius:2px;background:${col}"></div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </div>
 
-<!-- ADD EXPENSE MODAL -->
 <div class="modal-overlay" id="add-expense-modal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Add Expense</div>
-      <button class="modal-close" onclick="closeModal('add-expense-modal')">×</button>
+      <button class="modal-close" onclick="UI.closeModal('add-expense-modal')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Description</label>
-        <input class="form-input" type="text" id="exp-desc" placeholder="e.g. Monthly rent — May 2026">
+        <input class="form-input" type="text" id="exp-desc" placeholder="e.g. Monthly rent">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -423,197 +288,305 @@ canvas { max-height:200px; }
         </div>
         <div class="form-group">
           <label class="form-label">Date</label>
-          <input class="form-input" type="date" id="exp-date" value="2026-05-27">
+          <input class="form-input" type="date" id="exp-date">
         </div>
       </div>
       <div class="form-group">
-        <label class="form-label">Reference / Receipt No.</label>
-        <input class="form-input" type="text" id="exp-ref" placeholder="Optional">
+        <label class="form-label">Payment Method</label>
+        <select class="form-input" id="exp-payment">
+          <option value="cash">Cash</option>
+          <option value="transfer">Transfer</option>
+          <option value="card">Card</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note (optional)</label>
+        <input class="form-input" type="text" id="exp-note" placeholder="Optional">
       </div>
       <div class="form-footer">
-        <button class="btn btn-ghost" onclick="closeModal('add-expense-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+        <button class="btn btn-ghost" onclick="UI.closeModal('add-expense-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-expense-btn" onclick="saveExpense()">Save Expense</button>
       </div>
     </div>
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-let currentMonth = new Date('2026-05-01');
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+// ============================================================
+// #FIX — เดิม P&L Overview ทั้งหน้าเป็นตัวเลข hardcoded ('฿186,400' ฯลฯ) ไม่เชื่อมกับ
+// backend เลย ตอนนี้ดึงจริงจาก API.financeSummary({month}) ซึ่งคำนวณจาก orders/
+// order_lines/expenses ตรงๆ ใน รหัส.gs (getFinanceSummary) — เปลี่ยนเดือนแล้ว
+// เห็นข้อมูลเดือนนั้นจริง ไม่ใช่ค่าคงที่เดือนพฤษภาคม 2026 ตลอดไป
+// ============================================================
+let currentMonth = new Date();
+let EXPENSES = [];
+let CURRENT_SUMMARY = null;
 
-let EXPENSES = [
-  { id:'EXP-001', desc:'Monthly Rent — Brain Brew',     cat:'rent',      brand:'BB',     amount:25000, date:'2026-05-01', ref:'LEASE-2026-05' },
-  { id:'EXP-002', desc:'Monthly Rent — Heng Heng',      cat:'rent',      brand:'HH',     amount:10000, date:'2026-05-01', ref:'LEASE-HH-05' },
-  { id:'EXP-003', desc:'Staff Salaries — May',           cat:'salary',    brand:'SHARED', amount:28000, date:'2026-05-25', ref:'PAY-MAY-2026' },
-  { id:'EXP-004', desc:'Coffee Beans — PO-2026-019',    cat:'cogs',      brand:'BB',     amount:8500,  date:'2026-05-20', ref:'PO-2026-019' },
-  { id:'EXP-005', desc:'Dairy / Milk Supply',            cat:'cogs',      brand:'SHARED', amount:6200,  date:'2026-05-18', ref:'INV-DAIRY-22' },
-  { id:'EXP-006', desc:'Electricity — May',              cat:'utility',   brand:'BB',     amount:4800,  date:'2026-05-10', ref:'ELEC-MAY' },
-  { id:'EXP-007', desc:'Water — May',                    cat:'utility',   brand:'SHARED', amount:1200,  date:'2026-05-10', ref:'WATER-MAY' },
-  { id:'EXP-008', desc:'Internet / Phone',               cat:'utility',   brand:'SHARED', amount:2400,  date:'2026-05-05', ref:'' },
-  { id:'EXP-009', desc:'Instagram Ads — BB May',        cat:'marketing', brand:'BB',     amount:3000,  date:'2026-05-15', ref:'META-MAY' },
-  { id:'EXP-010', desc:'Packaging & Cups — BB',         cat:'cogs',      brand:'BB',     amount:4800,  date:'2026-05-12', ref:'PO-PKG-045' },
-  { id:'EXP-011', desc:'Bakery Ingredients — HH',       cat:'cogs',      brand:'HH',     amount:7400,  date:'2026-05-08', ref:'PO-HH-018' },
-  { id:'EXP-012', desc:'Equipment Maintenance',          cat:'equipment', brand:'BB',     amount:2200,  date:'2026-05-14', ref:'MAINT-005' },
-  { id:'EXP-013', desc:'Line Marketing — HH',           cat:'marketing', brand:'HH',     amount:1800,  date:'2026-05-16', ref:'LINE-HH-05' },
-  { id:'EXP-014', desc:'Miscellaneous',                  cat:'other',     brand:'SHARED', amount:2400,  date:'2026-05-20', ref:'' },
-];
+document.getElementById('staff-name-label').textContent = Identity.getName() + ' · All Brands';
 
 const CAT_COLORS = { cogs:'#52B788', rent:'#F97316', salary:'#818CF8', utility:'#22D3EE', marketing:'#FCD34D', equipment:'#F87171', other:'#94A3B8' };
 const CAT_LABELS = { cogs:'COGS', rent:'Rent', salary:'Salary', utility:'Utilities', marketing:'Marketing', equipment:'Equipment', other:'Other' };
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function changeMonth(delta) {
+function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
+function updateMonthLabel() { document.getElementById('month-label').textContent = MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear(); }
+
+async function changeMonth(delta) {
   currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + delta, 1);
-  document.getElementById('month-label').textContent = MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+  updateMonthLabel();
+  await loadOverview();
+  if (document.getElementById('tab-expenses').style.display !== 'none') await loadExpenses();
 }
 
 function switchTab(tab, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-overview').style.display  = tab==='overview'  ? 'block' : 'none';
-  document.getElementById('tab-expenses').style.display  = tab==='expenses'  ? 'block' : 'none';
-  document.getElementById('tab-revenue').style.display   = tab==='revenue'   ? 'block' : 'none';
-  if (tab === 'expenses') renderExpenses();
-  if (tab === 'revenue')  initDailyChart();
+  document.getElementById('tab-overview').style.display = tab==='overview' ? 'block' : 'none';
+  document.getElementById('tab-expenses').style.display = tab==='expenses' ? 'block' : 'none';
+  if (tab === 'expenses') loadExpenses();
+}
+
+function fmtB(n) { return '฿' + Math.round(n || 0).toLocaleString(); }
+function pctOf(a, b) { return b > 0 ? (Math.round(a/b*1000)/10) + '%' : '—'; }
+
+// ============================================================
+// LOAD OVERVIEW (P&L) — real data
+// ============================================================
+async function loadOverview() {
+  document.getElementById('overview-loading').style.display = 'block';
+  document.getElementById('overview-content').style.display = 'none';
+
+  try {
+    const month = monthKey(currentMonth);
+    const summary = await API.financeSummary({ month });
+    CURRENT_SUMMARY = summary;
+    renderOverview(summary);
+    document.getElementById('overview-loading').style.display = 'none';
+    document.getElementById('overview-content').style.display = 'block';
+  } catch (e) {
+    console.error('❌ loadOverview failed:', e);
+    document.getElementById('overview-loading').textContent = 'โหลดข้อมูลไม่สำเร็จ: ' + e.message;
+    UI.toast('โหลด P&L ไม่สำเร็จ: ' + e.message, 'error');
+  }
+}
+
+function renderOverview(s) {
+  const rev = s.revenue?.total || 0;
+  const cogs = s.cogs || 0;
+  const gp = s.gross_profit || 0;
+  const opex = s.total_expenses || 0;
+  const net = s.net_profit || 0;
+
+  document.getElementById('kpi-rev').textContent = fmtB(rev);
+  document.getElementById('kpi-rev-count').textContent = (s.order_count || 0) + ' orders';
+  document.getElementById('kpi-cogs').textContent = fmtB(cogs);
+  document.getElementById('kpi-cogs-pct').textContent = pctOf(cogs, rev) + ' of revenue';
+  document.getElementById('kpi-gp').textContent = fmtB(gp);
+  document.getElementById('kpi-gp-pct').textContent = 'GP ' + (s.gross_margin_pct ?? 0) + '%';
+  document.getElementById('kpi-opex').textContent = fmtB(opex);
+  document.getElementById('kpi-opex-pct').textContent = pctOf(opex, rev) + ' of revenue';
+  document.getElementById('kpi-net').textContent = fmtB(net);
+  document.getElementById('kpi-net-pct').textContent = 'NP ' + (s.net_margin_pct ?? 0) + '%';
+
+  document.getElementById('pl-statement-title').textContent = 'P&L Statement — ' + MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+
+  const expByCat = s.expenses_by_category || {};
+  let plHtml = `
+    <div class="pl-section-header">Revenue</div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew Coffee</span><span class="pl-value pl-positive">${fmtB(s.revenue?.bb)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng Phanit</span><span class="pl-value pl-positive">${fmtB(s.revenue?.hh)}</span></div>
+    <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value pl-positive">${fmtB(rev)}</span></div>
+
+    <div class="pl-section-header">Cost of Goods Sold</div>
+    <div class="pl-row"><span class="pl-label">Total COGS</span><span class="pl-value pl-negative">-${fmtB(cogs)}</span></div>
+
+    <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Gross Profit</span><span class="pl-value pl-positive">${fmtB(gp)}</span></div>
+
+    <div class="pl-section-header">Operating Expenses</div>
+    ${Object.keys(expByCat).length ? Object.entries(expByCat).map(([cat, amt]) =>
+      `<div class="pl-row subtotal"><span class="pl-label indent">${CAT_LABELS[cat] || cat}</span><span class="pl-value pl-negative">-${fmtB(amt)}</span></div>`
+    ).join('') : '<div class="pl-row subtotal"><span class="pl-label indent">No expenses recorded this month</span></div>'}
+    <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value pl-negative">-${fmtB(opex)}</span></div>
+
+    <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Net Profit</span><span class="pl-value pl-positive" style="font-size:16px">${fmtB(net)}</span></div>
+  `;
+  document.getElementById('pl-statement-body').innerHTML = plHtml;
+
+  renderBrandChart(s.revenue?.bb || 0, s.revenue?.hh || 0);
+  renderExpenseDonut(expByCat);
+  renderBrandComparison(s);
+}
+
+function renderBrandChart(bb, hh) {
+  const ctx = document.getElementById('brand-chart')?.getContext('2d');
+  if (!ctx) return;
+  if (window._brandChart) window._brandChart.destroy();
+  window._brandChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Brain Brew', 'Heng Heng'],
+      datasets: [{ label: 'Revenue', data: [bb, hh], backgroundColor: ['rgba(82,183,136,0.7)', 'rgba(251,146,60,0.7)'], borderRadius: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: 'rgba(0,0,0,0.5)', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: 'rgba(0,0,0,0.4)', font: { size: 10 }, callback: v => '฿' + (v/1000) + 'k' }, grid: { color: 'rgba(0,0,0,0.04)' } }
+      }
+    }
+  });
+}
+
+function renderExpenseDonut(expByCat) {
+  const ctx = document.getElementById('exp-donut')?.getContext('2d');
+  const legend = document.getElementById('donut-legend');
+  if (!ctx) return;
+  const cats = Object.keys(expByCat);
+  if (!cats.length) {
+    if (window._donutChart) window._donutChart.destroy();
+    legend.innerHTML = '<div style="color:#4a6741">No expenses this month</div>';
+    return;
+  }
+  const vals = cats.map(c => expByCat[c]);
+  const colors = cats.map(c => CAT_COLORS[c] || '#94A3B8');
+  if (window._donutChart) window._donutChart.destroy();
+  window._donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: cats.map(c => CAT_LABELS[c] || c), datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
+  });
+  legend.innerHTML = cats.map((c, i) => `
+    <div style="display:flex;align-items:center;gap:5px">
+      <div style="width:7px;height:7px;border-radius:50%;background:${colors[i]}"></div>
+      <span style="color:#4a6741">${CAT_LABELS[c] || c}</span>
+      <span style="margin-left:auto;color:#1a2e1a;font-weight:500">${fmtB(vals[i])}</span>
+    </div>`).join('');
+}
+
+function renderBrandComparison(s) {
+  const bbRev = s.revenue?.bb || 0;
+  const hhRev = s.revenue?.hh || 0;
+  // #NOTE — getFinanceSummary() ของ รหัส.gs ยังไม่แยก COGS ต่อแบรนด์ (คำนวณ COGS รวมทั้งบิลเท่านั้น)
+  // จึงยังไม่มี gross profit ต่อแบรนด์ที่แม่นยำ แสดงเฉพาะ revenue split ไปก่อน
+  const body = document.getElementById('brand-comparison-body');
+  body.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      ${[['BB', bbRev, 'Brain Brew Coffee', '#52B788'], ['HH', hhRev, 'Heng Heng Phanit', '#FB923C']].map(([code, rev, name, color]) => `
+        <div style="background:rgba(0,0,0,0.02);border-radius:12px;padding:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${color}"></div>
+            <div style="font-size:13px;font-weight:600;color:#1a2e1a">${name}</div>
+          </div>
+          <div><div style="font-size:10px;color:#4a6741">Revenue</div><div style="font-size:18px;font-weight:700;color:#1a2e1a">${fmtB(rev)}</div></div>
+          <div style="margin-top:10px;font-size:10px;color:#4a6741">Revenue share: ${pctOf(rev, bbRev+hhRev)}</div>
+        </div>`).join('')}
+    </div>
+    <div style="font-size:10px;color:#4a6741;margin-top:12px">
+      หมายเหตุ: ยังไม่มีการแยกต้นทุน (COGS) ต่อแบรนด์จาก backend — กำไรขั้นต้นแยกแบรนด์ต้องเพิ่ม logic ใน getFinanceSummary() ก่อน
+    </div>
+  `;
+}
+
+// ============================================================
+// EXPENSES TAB — โหลดจริงจาก API.expenses()
+// ============================================================
+async function loadExpenses() {
+  const body = document.getElementById('expense-body');
+  body.innerHTML = '<div class="loading-text">กำลังโหลด...</div>';
+  try {
+    const month = monthKey(currentMonth);
+    const data = await API.expenses({ date_from: month + '-01', date_to: month + '-31' });
+    EXPENSES = (data || []).map(e => ({
+      id: e.expense_id, desc: e.description, cat: e.category, brand: e.brand_id,
+      amount: e.amount, date: e.date,
+    }));
+    renderExpenses();
+  } catch (e) {
+    console.error('❌ loadExpenses failed:', e);
+    body.innerHTML = '<div class="loading-text">โหลดไม่สำเร็จ: ' + e.message + '</div>';
+    UI.toast('โหลดรายจ่ายไม่สำเร็จ: ' + e.message, 'error');
+  }
 }
 
 function renderExpenses(filter = '') {
   const body = document.getElementById('expense-body');
-  let exps = [...EXPENSES].sort((a,b) => b.date.localeCompare(a.date));
+  const catFilter = document.getElementById('exp-cat-filter')?.value || '';
+  let exps = [...EXPENSES].sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  if (catFilter) exps = exps.filter(e => e.cat === catFilter);
   if (filter) {
     const q = filter.toLowerCase();
-    exps = exps.filter(e => e.desc.toLowerCase().includes(q) || CAT_LABELS[e.cat].toLowerCase().includes(q));
+    exps = exps.filter(e => (e.desc||'').toLowerCase().includes(q) || (CAT_LABELS[e.cat]||'').toLowerCase().includes(q));
   }
-  const total = exps.reduce((s,e) => s+e.amount, 0);
-  document.getElementById('exp-total-label').textContent = `Total: ฿${total.toLocaleString()}`;
+  const total = exps.reduce((s,e) => s+Number(e.amount||0), 0);
+  document.getElementById('exp-total-label').textContent = `Total: ${fmtB(total)}`;
+
+  if (!exps.length) {
+    body.innerHTML = '<div class="loading-text">No expenses found for this month</div>';
+    return;
+  }
 
   body.innerHTML = exps.map(e => `
     <div class="table-row exp-grid">
-      <div>
-        <div style="font-size:12px;font-weight:500;color:#1a2e1a">${e.desc}</div>
-        ${e.ref ? `<div style="font-size:10px;color:#4a6741">${e.ref}</div>` : ''}
-      </div>
-      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]}20;color:${CAT_COLORS[e.cat]}"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;margin-right:4px"></span>${CAT_LABELS[e.cat]}</span></div>
+      <div><div style="font-size:12px;font-weight:500;color:#1a2e1a">${e.desc || '—'}</div></div>
+      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${CAT_LABELS[e.cat] || e.cat}</span></div>
       <div style="font-size:11px;color:#4a6741">${e.brand}</div>
-      <div style="font-size:13px;font-weight:600;color:#EF4444">-฿${e.amount.toLocaleString()}</div>
+      <div style="font-size:13px;font-weight:600;color:#EF4444">-${fmtB(e.amount)}</div>
       <div style="font-size:11px;color:#4a6741">${e.date}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function filterExpenses(val) { renderExpenses(val || ''); }
 
+// #FIX — เดิม saveExpense() เรียก API.createExpense() แล้ว แต่ push local array ต่อ
+// ไม่ว่า API จะสำเร็จหรือ fail (optimistic UI ที่ไม่ตรวจผลจริง) — ตอนนี้รอผลจริงก่อน
+// และแก้ field ให้ตรงกับ createExpense() ใน รหัส.gs (date/category/description/amount/
+// brand_id/payment_method/note — เดิมส่ง 'ref' ที่ backend ไม่มีคอลัมน์รองรับเลย)
 async function saveExpense() {
   const desc = document.getElementById('exp-desc').value.trim();
-  if (!desc) { alert('Enter a description.'); return; }
-  const exp = {
-    id: 'EXP-' + String(EXPENSES.length + 1).padStart(3,'0'),
-    desc, cat: document.getElementById('exp-cat').value,
-    brand: document.getElementById('exp-brand').value,
-    amount: parseFloat(document.getElementById('exp-amount').value) || 0,
-    date: document.getElementById('exp-date').value,
-    ref: document.getElementById('exp-ref').value,
-  };
-  try { await API.createExpense({ description: exp.desc, category: exp.cat, brand_id: exp.brand, amount: exp.amount, date: exp.date, ref: exp.ref }); } catch(e) {}
-  EXPENSES.push(exp);
-  closeModal('add-expense-modal');
-  renderExpenses();
-}
+  if (!desc) { UI.toast('Enter a description.', 'error'); return; }
 
-async function loadFinanceData() {
+  const btn = document.getElementById('save-expense-btn');
+  UI.loading(btn, true);
   try {
-    const data = await API.expenses();
-    if (data && data.length) {
-      EXPENSES = data.map((e, i) => ({
-        id: e.id || 'EXP-' + (i+1),
-        desc: e.description || e.desc || '—',
-        cat: e.category || 'other',
-        brand: e.brand_id || 'SHARED',
-        amount: Number(e.amount || 0),
-        date: e.date || '2026-05-01',
-        ref: e.ref || '',
-      }));
-    }
-  } catch(e) { /* keep static EXPENSES */ }
+    const payload = {
+      date: document.getElementById('exp-date').value || monthKey(currentMonth) + '-01',
+      category: document.getElementById('exp-cat').value,
+      description: desc,
+      amount: parseFloat(document.getElementById('exp-amount').value) || 0,
+      brand_id: document.getElementById('exp-brand').value,
+      payment_method: document.getElementById('exp-payment').value,
+      note: document.getElementById('exp-note').value || '',
+    };
+    const res = await API.createExpense(payload);
+    UI.toast('บันทึกรายจ่ายแล้ว: ' + res.expense_id);
+    UI.closeModal('add-expense-modal');
+    document.getElementById('exp-desc').value = '';
+    document.getElementById('exp-amount').value = '';
+    document.getElementById('exp-note').value = '';
+    await loadExpenses();
+    await loadOverview(); // รายจ่ายใหม่กระทบ P&L ด้วย ต้อง refresh
+  } catch (e) {
+    console.error('❌ saveExpense failed:', e);
+    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+  }
 }
 
-// Init
+// ============================================================
+// INIT
+// ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadFinanceData();
-  setTimeout(initCharts, 100);
-});
+  document.getElementById('exp-date').value = new Date().toISOString().slice(0,10);
+  updateMonthLabel();
+  await loadOverview();
 
-function openModal(id) { document.getElementById(id)?.classList.add('show'); }
-function closeModal(id) { document.getElementById(id)?.classList.remove('show'); }
-
-document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.modal-overlay').forEach(el =>
     el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); })
   );
 });
-
-// CHARTS
-function initCharts() {
-  // Revenue vs Expenses bar
-  const ctx1 = document.getElementById('rev-exp-chart')?.getContext('2d');
-  if (ctx1) {
-    new Chart(ctx1, {
-      type: 'bar',
-      data: {
-        labels: ['Jan','Feb','Mar','Apr','May'],
-        datasets: [
-          { label:'Revenue', data:[142000,155000,168000,174000,186400], backgroundColor:'rgba(82,183,136,0.7)', borderRadius:4 },
-          { label:'Expenses',data:[118000,122000,128000,135000,141000], backgroundColor:'rgba(249,115,22,0.5)', borderRadius:4 },
-        ]
-      },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'rgba(255,255,255,0.5)', font:{size:10} } } }, scales:{ x:{ ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} }, y:{ ticks:{color:'rgba(255,255,255,0.3)',font:{size:10},callback:v=>'฿'+(v/1000)+'k'}, grid:{color:'rgba(255,255,255,0.04)'} } } }
-    });
-  }
-
-  // Expense donut
-  const ctx2 = document.getElementById('exp-donut')?.getContext('2d');
-  if (ctx2) {
-    const cats = ['Rent','Salary','COGS','Utilities','Marketing','Other'];
-    const vals = [35000,28000,26900,8400,4800,8000];
-    const colors = ['#F97316','#818CF8','#52B788','#22D3EE','#FCD34D','#94A3B8'];
-    new Chart(ctx2, {
-      type: 'doughnut',
-      data: { labels: cats, datasets: [{ data: vals, backgroundColor: colors, borderWidth:0, hoverOffset:4 }] },
-      options: { responsive:true, maintainAspectRatio:false, cutout:'68%', plugins:{ legend:{ display:false } } }
-    });
-    const legend = document.getElementById('donut-legend');
-    if (legend) {
-      legend.innerHTML = cats.map((c,i) => `
-        <div style="display:flex;align-items:center;gap:5px">
-          <div style="width:7px;height:7px;border-radius:50%;background:${colors[i]}"></div>
-          <span style="color:#4a6741">${c}</span>
-          <span style="margin-left:auto;color:#1a2e1a;font-weight:500">฿${vals[i].toLocaleString()}</span>
-        </div>
-      `).join('');
-    }
-  }
-}
-
-function initDailyChart() {
-  const ctx = document.getElementById('daily-rev-chart')?.getContext('2d');
-  if (!ctx) return;
-  const days = Array.from({length:27},(_,i)=>String(i+1));
-  const bbData  = days.map(()=>Math.floor(4000+Math.random()*3000));
-  const hhData  = days.map(()=>Math.floor(1000+Math.random()*1500));
-  if (window._dailyChart) window._dailyChart.destroy();
-  window._dailyChart = new Chart(ctx, {
-    type:'line',
-    data:{
-      labels: days,
-      datasets:[
-        { label:'Brain Brew', data:bbData, borderColor:'#52B788', backgroundColor:'rgba(82,183,136,0.08)', tension:0.4, fill:true, borderWidth:2, pointRadius:0 },
-        { label:'Heng Heng',  data:hhData, borderColor:'#FB923C', backgroundColor:'rgba(251,146,60,0.08)',  tension:0.4, fill:true, borderWidth:2, pointRadius:0 },
-      ]
-    },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'rgba(255,255,255,0.5)',font:{size:10} } } }, scales:{ x:{ ticks:{color:'rgba(255,255,255,0.4)',font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} }, y:{ ticks:{color:'rgba(255,255,255,0.3)',font:{size:10},callback:v=>'฿'+(v/1000).toFixed(0)+'k'}, grid:{color:'rgba(255,255,255,0.04)'} } } }
-  });
-}
 </script>
-<script src="api.js"></script>
 </body>
 </html>
