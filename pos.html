@@ -161,6 +161,7 @@ body{background:var(--bg);font-family:'Sarabun',sans-serif;color:var(--text);dis
 .btn-pay{width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;font-family:'Sarabun',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
 .btn-pay:hover{background:var(--green-m);transform:translateY(-1px);}
 .btn-pay:active{transform:scale(.98);}
+.btn-pay:disabled{opacity:.5;pointer-events:none;}
 .btn-pay svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;}
 
 /* MODALS */
@@ -228,14 +229,9 @@ textarea.modal-inp{resize:none;}
     <span id="tbDate" style="font-weight:400;color:var(--text-m);font-size:11px"></span>
   </div>
   <div class="tb-user">
-    <div class="tb-av" id="userAv">A</div>
+    <div class="tb-av" id="userAv">S</div>
     <div><div class="tb-user-name" id="userName">แคชเชียร์</div><div class="tb-user-role" id="userRole">POS</div></div>
-    <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
   </div>
-  <button class="btn-logout" onclick="doLogout()">
-    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-    ออกจากระบบ
-  </button>
 </div>
 <div class="loading-bar" id="loadingBar"></div>
 
@@ -374,7 +370,7 @@ textarea.modal-inp{resize:none;}
       </div>
     </div>
     <div class="rp-foot">
-      <button class="btn-pay" onclick="doCheckout()">
+      <button class="btn-pay" id="btnPay" onclick="doCheckout()">
         <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
         ชำระเงิน (Enter)
       </button>
@@ -454,10 +450,17 @@ textarea.modal-inp{resize:none;}
 
 <script src="api.js"></script>
 <script>
-// ── STATE ──
+// ═══════════════════════════════════════════════════════════
+// #NOAUTH — ตัด Auth/login gate ทิ้งทั้งหมด (Auth object ไม่มีอยู่จริงแล้วใน api.js —
+// เดิมเรียก Auth.getUser()/Auth.clearSession() แล้ว ReferenceError ทำให้ทั้งหน้าใช้งานไม่ได้)
+// ใช้ Identity แบบเดียวกับหน้าอื่นๆ แทน — แสดงผลชื่อ staff เฉยๆ ไม่ gate การเข้าถึง
+// ═══════════════════════════════════════════════════════════
 const cart={};
 let payMethod='cash', discType='pct', discValue=0, discReasonTxt='',
     orderNote='', selectedMember=null, MENUS=[], CATS=[], lastData=null, currentCat='all';
+
+document.getElementById('userName').textContent = Identity.getName();
+document.getElementById('userAv').textContent = Identity.getName()[0].toUpperCase();
 
 // ── CLOCK ──
 (function tick(){
@@ -469,69 +472,37 @@ let payMethod='cash', discType='pct', discValue=0, discReasonTxt='',
   setTimeout(tick,1000);
 })();
 
-// ── AUTH ──
-const user = Auth.getUser();
-if (!user) { window.location.href='login.html'; }
-else {
-  document.getElementById('userName').textContent = user.full_name || user.name || 'แคชเชียร์';
-  document.getElementById('userRole').textContent = user.role || 'cashier';
-  document.getElementById('userAv').textContent = (user.full_name||user.name||'A')[0].toUpperCase();
-}
-
-function doLogout() {
-  Auth.clearSession();
-  window.location.href = 'login.html';
-}
-
-// ── LOAD MENUS ──
-function parsePrice(val) {
-  if (val === null || val === undefined || val === '') return 0;
-  if (typeof val === 'number') return val;
-  const cleaned = String(val).replace(/[฿,\s]/g, '');
-  const n = parseFloat(cleaned);
-  return isNaN(n) ? 0 : n;
-}
-
+// ── LOAD MENUS — #FIX ใช้ API.menuData() จาก api.js แทน hardcode fetch URL ──
 async function loadMenus() {
   document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">⏳ กำลังโหลดเมนู...</div>';
-  // ซ่อน cat bar จนกว่าจะโหลดเสร็จ ป้องกันกดปุ่มก่อนข้อมูลมาถึง (race condition)
   const catBarEl = document.getElementById('catBar');
-  if (catBarEl) catBarEl.style.opacity = '0.4';
-  if (catBarEl) catBarEl.style.pointerEvents = 'none';
+  if (catBarEl) { catBarEl.style.opacity = '0.4'; catBarEl.style.pointerEvents = 'none'; }
   try {
-    // ดึงเมนูจาก getMenuData() โดยตรง — ไม่ต้อง login
-    const res = await fetch('https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec?action=get_menu_data');
-    const json = await res.json();
-    if (!json.success || !json.data) throw new Error('No data');
-    const raw = json.data;
+    const raw = await API.menuData();
+    if (!raw) throw new Error('No data');
 
-    // map categories
     CATS = [
       { id:'all', name:'ทั้งหมด', emoji:'🍽', brand:'ALL' },
-      ...(raw.categories || []).map(c => ({
-        id: c.category_id, name: c.name, emoji: c.emoji || '☕', brand: c.brand_id
-      }))
+      ...(raw.categories || []).map(c => ({ id: c.category_id, name: c.name, emoji: c.emoji || '☕', brand: c.brand_id }))
     ];
 
-    // map products
     MENUS = (raw.products || []).map(p => ({
       id: p.product_id, cat: p.category_id,
       e: p.emoji || '🍽',
-      // ใช้ name ก่อน ถ้าว่างใช้ name_th แทน เพื่อไม่ให้ชื่อหาย
       name: (p.name && p.name.trim()) ? p.name : (p.name_th || 'ไม่มีชื่อ'),
       nameTh: (p.name && p.name.trim()) ? (p.name_th || '') : '',
-      price: parsePrice(p.base_price), cost: parsePrice(p.cost_price),
+      price: Number(p.base_price || 0), cost: Number(p.cost_price || 0),
       best: p.is_featured === true,
       imgUrl: p.image_url || '', brand: p.brand_id,
     }));
 
     buildCatBar();
-    currentCat = 'all';  // บังคับ reset เป็น 'ทั้งหมด' เสมอหลังโหลดเสร็จ
+    currentCat = 'all';
     renderMenus(MENUS);
-    if (catBarEl) { catBarEl.style.opacity = '1'; catBarEl.style.pointerEvents = 'auto'; }
   } catch(e) {
     console.error('loadMenus error:', e.message);
     document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">โหลดเมนูไม่ได้ — ' + e.message + '</div>';
+  } finally {
     if (catBarEl) { catBarEl.style.opacity = '1'; catBarEl.style.pointerEvents = 'auto'; }
   }
 }
@@ -551,7 +522,6 @@ function buildCatBar() {
     const btn = document.createElement('button');
     btn.className = 'cat-btn';
     btn.textContent = (c.emoji||'') + ' ' + c.name;
-    btn.setAttribute('data-cat-id', c.id);
     btn.onclick = () => filterCat(c.id, btn);
     bar.appendChild(btn);
   });
@@ -587,7 +557,6 @@ function filterCat(cat, btn) {
 function filterSearch(q) { applyFilter(q.toLowerCase()); }
 function applyFilter(q) {
   let items = currentCat === 'all' ? MENUS : MENUS.filter(m => m.cat === currentCat);
-  console.log('🔍 applyFilter:', { currentCat, totalMenus: MENUS.length, filteredCount: items.length, sample: items[0] });
   if (q) items = items.filter(m => m.name.toLowerCase().includes(q) || (m.nameTh||'').toLowerCase().includes(q) || String(m.price).includes(q));
   renderMenus(items);
 }
@@ -608,8 +577,9 @@ function chgQty(id, d) {
 }
 function clearCart() {
   Object.keys(cart).forEach(k => delete cart[k]);
-  discValue = 0; orderNote = ''; selectedMember = null;
+  discValue = 0; discReasonTxt=''; orderNote = ''; selectedMember = null;
   document.getElementById('custText').textContent = 'ลูกค้าทั่วไป';
+  document.getElementById('custNameInput').value = '';
   document.getElementById('noteRow').classList.remove('show');
   document.getElementById('discRow').classList.remove('show');
   document.getElementById('recvInput').value = '';
@@ -667,17 +637,25 @@ function openNoteModal() { om('noteModal'); document.getElementById('noteInput')
 function applyNote() { orderNote = document.getElementById('noteInput').value.trim(); cm('noteModal'); renderCart(); if(orderNote) toast2('📝 บันทึกหมายเหตุแล้ว'); }
 
 // ── MEMBER ──
+// #FIX — เดิมเรียก API.customers({search:q}) แต่ในระบบจริงไม่มี sheet 'customers' เลย
+// (มีแต่ sheet 'members' ที่เป็น loyalty program ใช้จริงใน crm.html) เปลี่ยนมาใช้
+// API.members() แทน เพื่อให้ค้นหาสมาชิกเจอจริง และดึงทั้งหมดมา filter ฝั่ง client
+// (เพราะ getMembers() ไม่มี search param ให้ backend กรองเช่นกัน)
+let _membersCache = null;
 function openMemberModal() { om('memberModal'); document.getElementById('mSearch').value = ''; document.getElementById('mResults').innerHTML = ''; }
-function searchMember(q) {
+async function searchMember(q) {
   if (!q.trim()) { document.getElementById('mResults').innerHTML = ''; return; }
-  API.customers({ search: q }).then(list => {
-    const hits = (list||[]).filter(c => (c.full_name||'').includes(q) || (c.phone||'').includes(q));
+  try {
+    if (!_membersCache) _membersCache = await API.members();
+    const hits = (_membersCache||[]).filter(m => (m.name||'').includes(q) || (m.phone||'').includes(q));
     document.getElementById('mResults').innerHTML = hits.length
-      ? hits.slice(0,5).map(c => `<div style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);" onclick='pickMember(${JSON.stringify(c)})'>${c.full_name}<div style="font-size:10px;color:var(--text-l)">📞 ${c.phone||'-'} · แต้ม ${c.points||0}</div></div>`).join('')
-      : '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ไม่พบลูกค้า</div>';
-  }).catch(() => {});
+      ? hits.slice(0,5).map(m => `<div style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);" onclick='pickMember(${JSON.stringify(m)})'>${m.name}<div style="font-size:10px;color:var(--text-l)">📞 ${m.phone||'-'} · แต้ม ${m.points||0}</div></div>`).join('')
+      : '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ไม่พบสมาชิก</div>';
+  } catch(e) {
+    document.getElementById('mResults').innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ค้นหาไม่สำเร็จ: ' + e.message + '</div>';
+  }
 }
-function pickMember(m) { selectedMember = m; document.getElementById('custText').textContent = '👤 ' + m.full_name; cm('memberModal'); toast2('👤 เลือก ' + m.full_name); }
+function pickMember(m) { selectedMember = m; document.getElementById('custText').textContent = '👤 ' + m.name; document.getElementById('custNameInput').value = m.name; cm('memberModal'); toast2('👤 เลือก ' + m.name); }
 function selectMember(m) { selectedMember = m; if(!m) document.getElementById('custText').textContent = 'ลูกค้าทั่วไป'; cm('memberModal'); }
 
 // ── OTHER ──
@@ -691,50 +669,80 @@ function calcChange() {
   const grand = getGrand(), recv = parseFloat(document.getElementById('recvInput').value)||0, ch = Math.max(0, recv-grand);
   document.getElementById('changeMain').textContent = Math.floor(ch);
 }
+
+// ── CHECKOUT ──
+// #FIX ทั้งหมดในฟังก์ชันนี้:
+//  1) เดิมเรียก API.submitOrderDirect() ที่ไม่มีอยู่จริงใน api.js เวอร์ชันใหม่ → เปลี่ยนเป็น
+//     API.submitOrder() พร้อม field name แบบ snake_case ที่ submitOrderDirect() ของ รหัส.gs อ่านจริง
+//  2) เดิมไม่เคยส่ง discount payload เลย → ส่งครบ {type,value,amount,reason} แล้ว
+//  3) เดิมส่ง payment_method ไม่ตรง field ไหนเลย (backend hardcode 'cash' อยู่ดี ตอนนี้แก้ backend
+//     ให้รับค่าจริงแล้วในขั้นตอนก่อนหน้า) → ส่ง payment_method ไปด้วย
+//  4) เดิม optimistic UI: backend fail ก็ยังโชว์ใบเสร็จว่าสำเร็จ → ตอนนี้แสดง error ชัดเจนแทน
+//     และไม่ล้างตะกร้าถ้าไม่สำเร็จ กันพนักงานเข้าใจผิดว่าออเดอร์ถูกบันทึกแล้ว
+//  5) ตัด brandId hardcode ทิ้ง (รหัส.gs ตรวจแบรนด์จาก products sheet เองต่อ item อยู่แล้ว)
 async function doCheckout() {
   const items = Object.values(cart);
   if (!items.length) { toast2('⚠️ กรุณาเลือกเมนูก่อน'); return; }
   const grand = getGrand(), recv = parseFloat(document.getElementById('recvInput').value)||0;
   if (payMethod === 'cash' && recv < grand) { toast2('⚠️ รับเงินไม่ครบ (฿' + grand + ')'); return; }
+
+  const btnPay = document.getElementById('btnPay');
+  if (btnPay.disabled) return;
+  btnPay.disabled = true;
+  showLoad();
+
   const bkk = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
   const p = n => String(n).padStart(2,'0');
   const ds = bkk.getFullYear()+'-'+p(bkk.getMonth()+1)+'-'+p(bkk.getDate());
   const ts = p(bkk.getHours())+':'+p(bkk.getMinutes());
   const rcpId = 'RCP-'+ds.replace(/-/g,'')+'-'+p(bkk.getHours())+p(bkk.getMinutes())+p(bkk.getSeconds());
   const payLabels = {cash:'เงินสด', qr:'QR Code', card:'บัตรเครดิต', transfer:'โอนเงิน'};
-  const data = { items, sub: getSub(), disc: getDisc(), grand, recv, change: recv-grand, payMethod, payLabel: payLabels[payMethod], note: orderNote, member: selectedMember, dateStr: ds, timeStr: ts, rcpId };
-  lastData = data;
-  try {
-    showLoad();
-    // ดึงชื่อลูกค้าจากช่อง input หรือสมาชิก
-    const custNameInput = document.getElementById('custNameInput');
-    const custName = (custNameInput && custNameInput.value.trim())
-      ? custNameInput.value.trim()
-      : (selectedMember ? selectedMember.full_name : 'Walk-in');
 
-    await API.submitOrderDirect({
-      customerName: custName,
+  const custNameInput = document.getElementById('custNameInput');
+  const custName = (custNameInput && custNameInput.value.trim())
+    ? custNameInput.value.trim()
+    : (selectedMember ? selectedMember.name : 'Walk-in');
+
+  const sub = getSub(), disc = getDisc();
+  const discountPayload = { type: discType, value: discValue, amount: disc, reason: discReasonTxt };
+
+  const data = { items, sub, disc, grand, recv, change: recv-grand, payMethod, payLabel: payLabels[payMethod], note: orderNote, member: selectedMember, dateStr: ds, timeStr: ts, rcpId };
+
+  try {
+    const result = await API.submitOrder({
+      customer_name: custName,
       room: '',
-      pickupTime: '',
+      pickup_time: '',
       note: orderNote,
-      brandId: 'HH',
-      cartItems: items.map(i => ({
-        name: i.menu.name, cat: i.menu.cat || '',
-        qty: i.qty, price: i.menu.price, cost: i.menu.cost || 0
+      items: items.map(i => ({
+        id: i.menu.id, name: i.menu.name, cat: i.menu.cat || '',
+        qty: i.qty, price: i.menu.price, cost: i.menu.cost || 0, brand: i.menu.brand,
       })),
       grand: grand,
-      rcpId: rcpId,
+      receipt_id: rcpId,
+      discount: discountPayload,
+      payment_method: payMethod,
     });
+
+    if (!result || !result.success) {
+      throw new Error((result && result.error) || 'บันทึกออเดอร์ไม่สำเร็จ');
+    }
+
+    lastData = data;
     hideLoad();
     showSuccess(data);
     toast2('✅ บันทึกออเดอร์สำเร็จ!');
   } catch(e) {
+    console.error('❌ doCheckout failed:', e);
     hideLoad();
-    // บันทึกไม่ได้ก็ยังแสดง receipt
-    showSuccess(data);
-    toast2('⚠️ แสดงใบเสร็จแล้ว (บันทึก offline)');
+    toast2('❌ บันทึกออเดอร์ไม่สำเร็จ: ' + e.message);
+    // #FIX — ไม่โชว์ใบเสร็จ/ล้างตะกร้าถ้า backend fail จริง (เดิม optimistic UI ทำให้พนักงาน
+    // เข้าใจผิดว่าออเดอร์บันทึกสำเร็จ ทั้งที่ Sheet ไม่มีข้อมูลออเดอร์นั้นเลย)
+  } finally {
+    btnPay.disabled = false;
   }
 }
+
 function showSuccess(d) {
   let html = d.items.map(i => `<div class="rcpt-row"><span>${i.menu.name} ×${i.qty}</span><span>฿${i.menu.price*i.qty}</span></div>`).join('');
   html += '<div class="rcpt-div"></div>';
