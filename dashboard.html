@@ -26,7 +26,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Anuphan','Poppins',sans-serif; background: #F0EDE6; color: #1a1a1a; }
 
-  /* === SIDEBAR === */
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
     width: var(--sidebar-w);
@@ -35,41 +34,18 @@
     z-index: 100;
     overflow: hidden;
   }
-  .sidebar-logo {
-    padding: 24px 20px 16px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-  }
-  .sidebar-logo .brand-name {
-    font-family: 'Poppins',sans-serif;
-    font-size: 15px; color: #fff; font-weight: 600;
-    line-height: 1.2;
-  }
+  .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .sidebar-logo .brand-name { font-family: 'Poppins',sans-serif; font-size: 15px; color: #fff; font-weight: 600; line-height: 1.2; }
   .sidebar-logo .sub { font-size: 11px; color: #4a6741; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
 
-  .brand-switcher {
-    margin: 12px 16px;
-    background: rgba(255,255,255,0.04);
-    border-radius: 10px;
-    padding: 4px;
-    display: flex; gap: 2px;
-  }
-  .brand-btn {
-    flex: 1; padding: 6px 8px; border-radius: 7px; border: none;
-    font-family: 'Anuphan','Poppins',sans-serif; font-size: 11px; font-weight: 500;
-    cursor: pointer; transition: all 0.2s; color: #4a6741; background: transparent;
-    letter-spacing: 0.02em;
-  }
+  .brand-switcher { margin: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; display: flex; gap: 2px; }
+  .brand-btn { flex: 1; padding: 6px 8px; border-radius: 7px; border: none; font-family: 'Anuphan','Poppins',sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: #4a6741; background: transparent; letter-spacing: 0.02em; }
   .brand-btn.active { color: #fff; }
   .brand-btn.bb.active { background: var(--bb-dark); }
   .brand-btn.hh.active { background: var(--hh-dark); }
 
   .nav-section { padding: 8px 12px 4px; font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; }
-  .nav-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 16px; margin: 1px 8px; border-radius: 8px;
-    font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer;
-    transition: all 0.2s; text-decoration: none;
-  }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; margin: 1px 8px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.2s; text-decoration: none; }
   .nav-item:hover { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.8); }
   .nav-item.active { background: rgba(255,255,255,0.08); color: #fff; }
   .nav-item .icon { width: 16px; height: 16px; opacity: 0.7; flex-shrink: 0; }
@@ -82,18 +58,9 @@
   .user-name { font-size: 12px; color: rgba(255,255,255,0.7); font-weight: 500; }
   .user-role { font-size: 10px; color: #4a6741; }
 
-  /* === MAIN CONTENT === */
   .main { margin-left: var(--sidebar-w); min-height: 100vh; }
 
-  .topbar {
-    background: rgba(240,237,230,0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(0,0,0,0.06);
-    padding: 0 32px;
-    height: 56px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 50;
-  }
+  .topbar { background: rgba(240,237,230,0.8); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.06); padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
   .page-title { font-size: 16px; font-weight: 600; color: #111; }
   .topbar-right { display: flex; align-items: center; gap: 12px; }
   .date-badge { font-size: 12px; color: #666; background: rgba(0,0,0,0.05); padding: 5px 12px; border-radius: 20px; }
@@ -102,13 +69,8 @@
 
   .content { padding: 28px 32px; }
 
-  /* === KPI CARDS === */
   .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-  .kpi-card {
-    background: #fff; border-radius: 16px; padding: 20px 22px;
-    border: 1px solid rgba(0,0,0,0.05);
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
+  .kpi-card { background: #fff; border-radius: 16px; padding: 20px 22px; border: 1px solid rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
   .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.07); }
   .kpi-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 500; }
   .kpi-value { font-size: 28px; font-weight: 600; color: #111; margin: 6px 0 4px; line-height: 1; }
@@ -117,22 +79,14 @@
   .kpi-change.down { color: #dc2626; }
   .kpi-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
 
-  /* === CHARTS ROW === */
   .charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
   .card { background: #fff; border-radius: 16px; padding: 22px 24px; border: 1px solid rgba(0,0,0,0.05); }
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
   .card-title { font-size: 14px; font-weight: 600; color: #111; }
   .card-subtitle { font-size: 12px; color: #999; }
 
-  /* === PERIOD TABS === */
-  .period-tabs { display: flex; gap: 2px; background: #F5F3EF; padding: 3px; border-radius: 8px; }
-  .period-tab { padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; color: #888; border: none; background: transparent; transition: all 0.15s; }
-  .period-tab.active { background: #fff; color: #111; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-
-  /* === BOTTOM ROW === */
   .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
-  /* === BEST SELLERS === */
   .seller-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F5F5F5; }
   .seller-item:last-child { border-bottom: none; }
   .seller-rank { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
@@ -142,13 +96,11 @@
   .seller-bar { height: 100%; border-radius: 2px; }
   .seller-revenue { font-size: 12px; font-weight: 600; color: #111; min-width: 56px; text-align: right; }
 
-  /* === STOCK ALERTS === */
   .stock-alert { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #FFF7F0; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #F26C21; }
   .stock-name { font-size: 12px; font-weight: 500; color: #111; }
   .stock-level { font-size: 11px; color: #F26C21; font-weight: 600; }
   .stock-par { font-size: 10px; color: #aaa; }
 
-  /* === ORDERS FEED === */
   .order-item { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #F8F8F8; }
   .order-item:last-child { border-bottom: none; }
   .order-type-badge { font-size: 9px; font-weight: 700; padding: 3px 7px; border-radius: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -160,26 +112,19 @@
   .order-amount { font-size: 13px; font-weight: 600; color: #111; margin-left: auto; }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; }
 
-  /* === BRAND COMPARISON === */
   .brand-compare-item { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .brand-tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; min-width: 32px; text-align: center; }
   .brand-bar-wrap { flex: 1; height: 8px; background: #F0EDE6; border-radius: 4px; overflow: hidden; }
   .brand-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
 
-  /* === LOADING === */
   .skeleton { background: linear-gradient(90deg, #F0EDE6 25%, #E8E4DC 50%, #F0EDE6 75%); background-size: 200%; animation: shimmer 1.5s infinite; border-radius: 8px; }
   @keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
 
-  /* POS BUTTON */
-  .pos-btn {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--bb-dark); color: #fff; border: none;
-    padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.2s; font-family: 'Anuphan','Poppins',sans-serif;
-  }
+  .pos-btn { display: flex; align-items: center; gap: 8px; background: var(--bb-dark); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Anuphan','Poppins',sans-serif; }
   .pos-btn:hover { background: var(--bb-mid); transform: translateY(-1px); }
 
-  /* RESPONSIVE */
+  .empty-note { font-size: 11px; color: #aaa; text-align: center; padding: 16px; }
+
   @media (max-width: 1200px) {
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .charts-row { grid-template-columns: 1fr; }
@@ -222,23 +167,13 @@
     <a class="nav-item" href="orders.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12M2 8h12M2 13h7"/></svg>
       Orders
-      <span class="nav-badge" id="pending-badge">3</span>
     </a>
 
     <div class="nav-section">Operations</div>
-    <a class="nav-item" href="kitchen.html">
-      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v4M5 2v3M11 2v3M3 6h10l-1 8H4L3 6z"/></svg>
-      Kitchen
-    </a>
-    <a class="nav-item" href="orders.html">
-      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3h12M2 8h12M2 13h7"/></svg>
-      Orders
-      <span class="nav-badge" id="pending-badge">3</span>
-    </a>
     <a class="nav-item" href="inventory.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l6-3 6 3M2 5v6l6 3 6-3V5M8 2v13"/></svg>
       Inventory
-      <span class="nav-badge" id="low-stock-badge">5</span>
+      <span class="nav-badge" id="low-stock-badge">—</span>
     </a>
     <a class="nav-item" href="recipe.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2"/></svg>
@@ -280,12 +215,11 @@
 
   <div class="sidebar-footer">
     <div class="user-chip">
-      <div class="avatar" id="avatar-initials">OW</div>
+      <div class="avatar" id="avatar-initials">S</div>
       <div>
-        <div class="user-name" id="user-name">Owner</div>
-        <div class="user-role" id="user-role">Super Admin</div>
+        <div class="user-name" id="user-name">Staff</div>
+        <div class="user-role" id="user-role">Owner</div>
       </div>
-      <svg style="margin-left:auto;width:14px;height:14px;color:#4a6741" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 8l-4-3v6l4-3z"/></svg>
     </div>
   </div>
 </aside>
@@ -293,7 +227,6 @@
 <!-- ====== MAIN ====== -->
 <main class="main">
 
-  <!-- Topbar -->
   <div class="topbar">
     <div class="page-title">Dashboard</div>
     <div class="topbar-right">
@@ -309,56 +242,41 @@
     </div>
   </div>
 
-  <!-- Content -->
   <div class="content">
 
-    <!-- KPI Grid -->
     <div class="kpi-grid" id="kpi-grid">
       <!-- Injected by JS -->
     </div>
 
-    <!-- Charts Row -->
     <div class="charts-row">
-      <!-- Revenue Chart -->
       <div class="card">
         <div class="card-header">
           <div>
             <div class="card-title">Revenue Overview</div>
-            <div class="card-subtitle">Daily sales performance</div>
-          </div>
-          <div class="period-tabs">
-            <button class="period-tab active" onclick="switchPeriod('7d', this)">7D</button>
-            <button class="period-tab" onclick="switchPeriod('30d', this)">30D</button>
-            <button class="period-tab" onclick="switchPeriod('3m', this)">3M</button>
+            <div class="card-subtitle">Last 7 days (real data)</div>
           </div>
         </div>
         <canvas id="revenue-chart" height="220"></canvas>
       </div>
 
-      <!-- Brand Comparison -->
       <div class="card">
         <div class="card-header">
           <div>
             <div class="card-title">Brand Comparison</div>
-            <div class="card-subtitle" id="brand-compare-period">This month</div>
+            <div class="card-subtitle">Today</div>
           </div>
         </div>
         <div id="brand-compare">
           <div class="brand-compare-item">
             <div class="brand-tag" style="background:#143D2B;color:#fff">BB</div>
-            <div class="brand-bar-wrap">
-              <div class="brand-bar" style="width:68%;background:#1E5A3F" id="bb-bar"></div>
-            </div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#1E5A3F" id="bb-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="bb-revenue">฿—</div>
           </div>
           <div class="brand-compare-item">
             <div class="brand-tag" style="background:#78350F;color:#fff">HH</div>
-            <div class="brand-bar-wrap">
-              <div class="brand-bar" style="width:32%;background:#B45309" id="hh-bar"></div>
-            </div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#B45309" id="hh-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="hh-revenue">฿—</div>
           </div>
-
           <div style="margin-top:20px;border-top:1px solid #F0EDE6;padding-top:16px">
             <canvas id="donut-chart" height="170"></canvas>
           </div>
@@ -366,24 +284,18 @@
       </div>
     </div>
 
-    <!-- Bottom Row -->
     <div class="bottom-row">
 
-      <!-- Best Sellers -->
       <div class="card">
         <div class="card-header">
           <div>
             <div class="card-title">Best Sellers</div>
             <div class="card-subtitle">Last 30 days</div>
           </div>
-          <span style="font-size:11px;color:#F26C21;cursor:pointer">View all →</span>
         </div>
-        <div id="best-sellers">
-          <!-- Injected -->
-        </div>
+        <div id="best-sellers"></div>
       </div>
 
-      <!-- Low Stock Alerts -->
       <div class="card" id="stock-alerts-card">
         <div class="card-header">
           <div>
@@ -392,23 +304,17 @@
           </div>
           <span style="font-size:11px;color:#F26C21;cursor:pointer" onclick="location.href='inventory.html'">Manage →</span>
         </div>
-        <div id="stock-alerts">
-          <!-- Injected -->
-        </div>
+        <div id="stock-alerts"></div>
       </div>
 
-      <!-- Recent Orders -->
       <div class="card">
         <div class="card-header">
           <div>
             <div class="card-title">Recent Orders</div>
-            <div class="card-subtitle">Live feed</div>
+            <div class="card-subtitle">Today</div>
           </div>
-          <span style="font-size:11px;color:#F26C21;cursor:pointer" onclick="location.href='orders.html'">All orders →</span>
         </div>
-        <div id="recent-orders">
-          <!-- Injected -->
-        </div>
+        <div id="recent-orders"></div>
       </div>
 
     </div>
@@ -417,44 +323,60 @@
 
 <script src="api.js"></script>
 <script>
-let ACTIVE_BRAND = Auth.getBrand() || 'BB';
+// ═══════════════════════════════════════════════════════════
+// #NOAUTH — ตัด Auth.getBrand()/Auth.getUser() ที่ไม่มีอยู่จริงแล้วออกทั้งหมด
+// (เดิมทำให้หน้าทั้งหน้า ReferenceError ตั้งแต่บรรทัดแรก) ใช้ Identity แทน
+// #FIX — เดิมคำนวณ KPI/best-sellers/low-stock เองใหม่ทั้งหมดจาก raw orders โดยไม่ใช้
+// getDashboardSummary() ที่ รหัส.gs มีให้แล้ว (คำนวณกำไรจริงจากต้นทุน, category/customer
+// breakdown ครบ) ตอนนี้เปลี่ยนมาใช้ API.dashboardSummary() ตรงๆ แทนการ duplicate logic
+// ═══════════════════════════════════════════════════════════
+let ACTIVE_BRAND = Identity.getBrand() || 'ALL';
+
+document.getElementById('user-name').textContent = Identity.getName();
+document.getElementById('avatar-initials').textContent = Identity.getName().slice(0,2).toUpperCase();
+
+function fmtK(n) { return '฿' + (Number(n||0)/1000).toFixed(0) + 'K'; }
+function fmtB(n) { return '฿' + Number(n||0).toLocaleString(); }
 
 // ============================================================
-// RENDER FUNCTIONS
+// RENDER FUNCTIONS — ใช้ shape จริงจาก getDashboardSummary() ใน รหัส.gs:
+// { today:{revenue,orders,profit}, brand_bb:{revenue,profit}, brand_hh:{revenue,profit},
+//   revenue_trend:[...], revenue_labels:[...], best_sellers:[{name,cat,revenue,gp}],
+//   category_breakdown:[...], top_customers:[...] }
 // ============================================================
-function renderKPIs(data) {
+function renderKPIs(data, prevDayRevenue) {
+  const todayRev = data.today?.revenue || 0;
+  const todayProfit = data.today?.profit || 0;
+  // #FIX — เทียบกับยอดเมื่อวานจริงจาก revenue_trend (index สุดท้าย = วันนี้, รองสุดท้าย = เมื่อวาน)
+  // แทนการเดา +12% คงที่แบบเดิม
+  const diff = prevDayRevenue > 0 ? todayRev - prevDayRevenue : null;
+  const diffPct = prevDayRevenue > 0 ? Math.round((diff / prevDayRevenue) * 1000) / 10 : null;
+
   const kpis = [
     {
       label: "Today's Revenue",
-      value: `฿${Number(data.today_revenue||0).toLocaleString()}`,
-      change: `+฿${(Number(data.today_revenue||0) * 0.12).toFixed(0)} vs yesterday`,
-      dir: 'up',
-      icon: '💰',
-      color: '#DCFCE7',
+      value: fmtB(todayRev),
+      change: diff === null ? 'No data for yesterday' : `${diff >= 0 ? '+' : ''}${fmtB(diff)} (${diffPct}%) vs yesterday`,
+      dir: (diff === null || diff >= 0) ? 'up' : 'down',
+      icon: '💰', color: '#DCFCE7',
     },
     {
       label: 'Orders Today',
-      value: data.today_orders,
-      change: '+8 vs yesterday',
-      dir: 'up',
-      icon: '📋',
-      color: '#DBEAFE',
+      value: data.today?.orders || 0,
+      change: `Profit: ${fmtB(todayProfit)}`,
+      dir: 'up', icon: '📋', color: '#DBEAFE',
     },
     {
-      label: 'Monthly Revenue',
-      value: `฿${(data.monthly_comparison.this_month / 1000).toFixed(0)}K`,
-      change: `${data.monthly_comparison.change_pct > 0 ? '+' : ''}${data.monthly_comparison.change_pct}% vs last month`,
-      dir: data.monthly_comparison.change_pct >= 0 ? 'up' : 'down',
-      icon: '📈',
-      color: '#FEF3C7',
+      label: 'Brain Brew Today',
+      value: fmtB(data.brand_bb?.revenue || 0),
+      change: `Profit: ${fmtB(data.brand_bb?.profit || 0)}`,
+      dir: 'up', icon: '☕', color: '#FEF3C7',
     },
     {
-      label: 'Low Stock Items',
-      value: data.low_stock_count,
-      change: 'Needs attention',
-      dir: 'down',
-      icon: '⚠️',
-      color: '#FEE2E2',
+      label: 'Heng Heng Today',
+      value: fmtB(data.brand_hh?.revenue || 0),
+      change: `Profit: ${fmtB(data.brand_hh?.profit || 0)}`,
+      dir: 'up', icon: '🌸', color: '#FFE4E6',
     },
   ];
 
@@ -463,81 +385,89 @@ function renderKPIs(data) {
       <div class="kpi-icon" style="background:${k.color}">${k.icon}</div>
       <div class="kpi-label">${k.label}</div>
       <div class="kpi-value">${k.value}</div>
-      <div class="kpi-change ${k.dir}">
-        ${k.dir === 'up' ? '↑' : '↓'} ${k.change}
-      </div>
+      <div class="kpi-change ${k.dir}">${k.dir === 'up' ? '↑' : '↓'} ${k.change}</div>
     </div>
   `).join('');
 }
 
 function renderBestSellers(sellers) {
-  if (!sellers || !sellers.length) {
-    document.getElementById('best-sellers').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">ยังไม่มีข้อมูล</div>';
-    return;
-  }
-  const max = Math.max(...sellers.map(s => s.qty));
-  const colors = ['#143D2B','#1E5A3F','#52B788','#74C69D','#95D5B2'];
-  const ranks  = ['🥇','🥈','🥉','4','5'];
+  const el = document.getElementById('best-sellers');
+  if (!sellers || !sellers.length) { el.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูล 30 วันล่าสุด</div>'; return; }
 
-  document.getElementById('best-sellers').innerHTML = sellers.map((s, i) => `
+  const max = Math.max(...sellers.map(s => s.revenue));
+  const colors = ['#143D2B','#1E5A3F','#52B788','#74C69D','#95D5B2','#B7E4C7','#D8F3DC'];
+  const ranks  = ['🥇','🥈','🥉','4','5','6','7'];
+
+  el.innerHTML = sellers.map((s, i) => `
     <div class="seller-item">
       <div class="seller-rank" style="background:${colors[i]}22;color:${colors[i]}">${ranks[i]}</div>
       <div style="flex:1;min-width:0">
         <div class="seller-name">${s.name}</div>
-        <div class="seller-qty">${s.qty} sold</div>
+        <div class="seller-qty">${s.cat || ''} · GP ${s.gp ?? '—'}%</div>
         <div class="seller-bar-wrap" style="margin-top:4px">
-          <div class="seller-bar" style="width:${(s.qty/max*100).toFixed(0)}%;background:${colors[i]}"></div>
+          <div class="seller-bar" style="width:${max>0?(s.revenue/max*100).toFixed(0):0}%;background:${colors[i]}"></div>
         </div>
       </div>
-      <div class="seller-revenue">฿${(Number(s.rev||0)/1000).toFixed(1)}K</div>
+      <div class="seller-revenue">${fmtK(s.revenue)}</div>
     </div>
   `).join('');
 }
 
-function renderLowStock(items) {
-  if (!items || !items.length) {
-    const el = document.getElementById('low-stock');
-    if (el) el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">✅ สินค้าทุกรายการเพียงพอ</div>';
-    return;
-  }
-  document.getElementById('low-stock-subtitle').textContent = `${items.length} items need reorder`;
-  document.getElementById('low-stock-badge').textContent = items.length;
-  document.getElementById('stock-alerts').innerHTML = items.map(item => `
-    <div class="stock-alert">
-      <div style="flex:1">
-        <div class="stock-name">${item.ingredient_name}</div>
-        <div class="stock-par">Par: ${item.par_level} ${item.unit_type}</div>
+// #FIX — เดิมอ่าน field ผิดทั้งหมด (ingredient_name/par_level/unit_type/available_qty ไม่มีจริง
+// ใน getIngredients() — ของจริงคือ name/min_stock/unit/current_stock) ทำให้ไม่เคยแสดงผลถูกต้อง
+// ตอนนี้ดึงจาก API.ingredients() ตรงๆ แล้ว filter is_low ฝั่ง client (backend ยังไม่มี route
+// get_low_stock แยกต่างหาก)
+async function loadAndRenderLowStock() {
+  try {
+    const ingredients = await API.ingredients();
+    const lowItems = (ingredients || []).filter(i => i.is_low);
+    document.getElementById('low-stock-subtitle').textContent = `${lowItems.length} items need reorder`;
+    document.getElementById('low-stock-badge').textContent = lowItems.length;
+
+    const el = document.getElementById('stock-alerts');
+    if (!lowItems.length) { el.innerHTML = '<div class="empty-note">✅ สินค้าทุกรายการเพียงพอ</div>'; return; }
+
+    el.innerHTML = lowItems.slice(0, 8).map(item => `
+      <div class="stock-alert">
+        <div style="flex:1">
+          <div class="stock-name">${item.name}</div>
+          <div class="stock-par">Min: ${item.min_stock} ${item.unit}</div>
+        </div>
+        <div class="stock-level">${item.current_stock} ${item.unit}</div>
       </div>
-      <div class="stock-level">${item.available_qty} ${item.unit_type}</div>
-    </div>
-  `).join('');
+    `).join('');
+  } catch (e) {
+    console.error('❌ loadAndRenderLowStock failed:', e);
+    document.getElementById('stock-alerts').innerHTML = '<div class="empty-note">โหลดไม่สำเร็จ: ' + e.message + '</div>';
+  }
 }
 
 function renderRecentOrders(orders) {
+  const el = document.getElementById('recent-orders');
+  if (!orders || !orders.length) { el.innerHTML = '<div class="empty-note">ยังไม่มีออเดอร์วันนี้</div>'; return; }
+
   const typeMap = {
     dine_in:  ['badge-dine', 'Dine In'],
     takeaway: ['badge-take', 'Takeaway'],
     delivery: ['badge-del',  'Delivery'],
   };
-  if (!orders || !orders.length) {
-    document.getElementById('recent-orders').innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">ยังไม่มีออเดอร์วันนี้</div>';
-    return;
-  }
-  document.getElementById('recent-orders').innerHTML = orders.map(o => {
-    const [cls, label] = typeMap[o.order_type] || ['badge-take', o.order_type||'takeaway'];
+
+  el.innerHTML = orders.map(o => {
+    const [cls, label] = typeMap[o.order_type] || ['badge-take', o.order_type || 'takeaway'];
+    const timeStr = String(o.created_at||'').slice(11,16) || '--:--';
     return `
     <div class="order-item">
-      <div class="status-dot" style="background:#22c55e"></div>
+      <div class="status-dot" style="background:${o.order_status==='cancelled' ? '#dc2626' : '#22c55e'}"></div>
       <div style="flex:1;min-width:0">
-        <div class="order-name">${o.customer_name||'Walk-in'}</div>
+        <div class="order-name">${o.customer_name || 'Walk-in'}</div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
           <span class="order-type-badge ${cls}">${label}</span>
-          <span class="order-time">${o.created_at||''}</span>
+          <span class="order-time">${timeStr}</span>
         </div>
       </div>
-      <div class="order-amount">฿${Number(o.total_amount||0).toLocaleString()}</div>
-    </div>
-  `}).join('');
+      <div class="order-amount">${fmtB(o.total_amount)}</div>
+    </div>`;
+  }).join('');
 }
 
 // ============================================================
@@ -546,45 +476,29 @@ function renderRecentOrders(orders) {
 let revenueChart = null;
 let donutChart   = null;
 
-function renderRevenueChart(days) {
+function renderRevenueChart(labels, values) {
   const ctx = document.getElementById('revenue-chart').getContext('2d');
   if (revenueChart) revenueChart.destroy();
-
   revenueChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: days.map(d => d.date),  // ใช้ label โดยตรง
+      labels,
       datasets: [{
         label: 'Revenue',
-        data: days.map(d => d.revenue),
-        backgroundColor: days.map((_, i) =>
-          i === days.length - 1 ? '#143D2B' : '#143D2B22'
-        ),
-        borderRadius: 6,
-        borderSkipped: false,
+        data: values,
+        backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#143D2B22'),
+        borderRadius: 6, borderSkipped: false,
       }]
     },
     options: {
       responsive: true,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `฿${ctx.raw.toLocaleString()}`,
-          },
-          backgroundColor: '#111',
-          titleColor: '#fff',
-          bodyColor: '#aaa',
-          padding: 10,
-          cornerRadius: 8,
-        },
+        tooltip: { callbacks: { label: ctx => `฿${ctx.raw.toLocaleString()}` }, backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', padding: 10, cornerRadius: 8 },
       },
       scales: {
         x: { grid: { display: false }, border: { display: false }, ticks: { color: '#999', font: { size: 11 } } },
-        y: {
-          grid: { color: '#F0EDE6' }, border: { display: false },
-          ticks: { color: '#999', font: { size: 11 }, callback: v => `฿${(v/1000).toFixed(0)}K` },
-        },
+        y: { grid: { color: '#F0EDE6' }, border: { display: false }, ticks: { color: '#999', font: { size: 11 }, callback: v => `฿${(v/1000).toFixed(0)}K` } },
       },
     },
   });
@@ -593,57 +507,34 @@ function renderRevenueChart(days) {
 function renderDonutChart(bb, hh) {
   const ctx = document.getElementById('donut-chart').getContext('2d');
   if (donutChart) donutChart.destroy();
-
   donutChart = new Chart(ctx, {
     type: 'doughnut',
-    data: {
-      labels: ['Brain Brew', 'Heng Heng'],
-      datasets: [{
-        data: [bb, hh],
-        backgroundColor: ['#143D2B', '#78350F'],
-        borderWidth: 0,
-        hoverOffset: 4,
-      }]
-    },
+    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#143D2B', '#78350F'], borderWidth: 0, hoverOffset: 4 }] },
     options: {
-      responsive: true,
-      cutout: '72%',
+      responsive: true, cutout: '72%',
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { font: { size: 11, family: 'Anuphan' }, color: '#666', boxWidth: 10, padding: 14 }
-        },
-        tooltip: {
-          callbacks: { label: ctx => `฿${ctx.raw.toLocaleString()}` },
-          backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', cornerRadius: 8,
-        },
+        legend: { position: 'bottom', labels: { font: { size: 11, family: 'Anuphan' }, color: '#666', boxWidth: 10, padding: 14 } },
+        tooltip: { callbacks: { label: ctx => `฿${ctx.raw.toLocaleString()}` }, backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', cornerRadius: 8 },
       },
     },
   });
 
-  // Update brand bars
-  const total = bb + hh;
-  document.getElementById('bb-revenue').textContent = `฿${(bb/1000).toFixed(0)}K`;
-  document.getElementById('hh-revenue').textContent = `฿${(hh/1000).toFixed(0)}K`;
+  const total = bb + hh || 1;
+  document.getElementById('bb-revenue').textContent = fmtK(bb);
+  document.getElementById('hh-revenue').textContent = fmtK(hh);
   document.getElementById('bb-bar').style.width = `${(bb/total*100).toFixed(0)}%`;
   document.getElementById('hh-bar').style.width = `${(hh/total*100).toFixed(0)}%`;
 }
 
 // ============================================================
-// BRAND SWITCHER
+// BRAND SWITCHER — #NOTE: getDashboardSummary() ของ รหัส.gs ยังไม่รับ brand_id
+// เป็น filter parameter (คืนข้อมูลทุกแบรนด์เสมอ) ปุ่มสลับแบรนด์นี้จึงเป็นแค่ UI state
+// ที่ยังไม่มีผลกรองข้อมูลจริง — ถ้าต้องการฟีเจอร์นี้จริง ต้องเพิ่ม logic ฝั่ง backend ก่อน
 // ============================================================
 function switchBrand(brand, btn) {
   ACTIVE_BRAND = brand;
-  sessionStorage.setItem('brewos_brand', brand);
+  Identity.setBrand(brand);
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const root = document.documentElement;
-  root.style.setProperty('--active-dark', brand === 'BB' ? '#143D2B' : '#78350F');
-  loadDashboard();
-}
-
-function switchPeriod(period, btn) {
-  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
 
@@ -652,135 +543,42 @@ function scrollToAlerts() {
 }
 
 // ============================================================
-// INIT
+// INIT / LOAD
 // ============================================================
-function dateKeyBkk(dateStrOrObj) {
-  // รองรับทั้ง ISO string "2026-06-17T13:05:39" และ JS Date string "Wed Jun 17 2026 13:05:39 GMT+0700..."
-  const d = new Date(dateStrOrObj);
-  if (isNaN(d.getTime())) return '';
-  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
-  const y = bkk.getFullYear();
-  const mo = String(bkk.getMonth()+1).padStart(2,'0');
-  const dd = String(bkk.getDate()).padStart(2,'0');
-  return `${y}-${mo}-${dd}`;
-}
-
 async function loadDashboard() {
   try {
-    // ดึง orders จาก Sheet จริง แล้วคำนวณ KPI เอง
-    const res = await fetch('https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec?action=get_orders_sheet');
-    const json = await res.json();
-    const orders = (json.success && json.data) ? json.data : [];
+    const [summary, orders] = await Promise.all([
+      API.dashboardSummary(),
+      API.ordersToday(),
+    ]);
 
-    // คำนวณวันนี้
-    // ใช้ YYYY-MM-DD เปรียบเทียบ — เชื่อถือได้กว่า locale string
-    const bkk = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
-    const todayStr = `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
-    const todayOrders = orders.filter(o => {
-      if (!o.created_at) return false;
-      return dateKeyBkk(o.created_at) === todayStr;
-    });
-    const todayRevenue = todayOrders.reduce((s,o) => s + Number(o.total_amount||0), 0);
+    // ยอดเมื่อวาน = index รองสุดท้ายของ revenue_trend (7 วันล่าสุด รวมวันนี้)
+    const trend = summary.revenue_trend || [];
+    const prevDayRevenue = trend.length >= 2 ? trend[trend.length - 2] : 0;
 
-    // คำนวณ 7 วัน
-    const days7 = [];
-    for (let i=6; i>=0; i--) {
-      const d = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
-      d.setDate(d.getDate() - i);
-      const y = d.getFullYear();
-      const mo = String(d.getMonth()+1).padStart(2,'0');
-      const dd = String(d.getDate()).padStart(2,'0');
-      const dayPrefix = `${y}-${mo}-${dd}`;
-      const label = `${dd}/${mo}`;
-      const dayOrders = orders.filter(o => {
-        if (!o.created_at) return false;
-        return dateKeyBkk(o.created_at) === dayPrefix;
-      });
-      days7.push({
-        date: label,
-        revenue: dayOrders.reduce((s,o) => s+Number(o.total_amount||0),0),
-        orders: dayOrders.length,
-      });
-    }
+    renderKPIs(summary, prevDayRevenue);
+    renderRevenueChart(summary.revenue_labels || [], trend);
+    renderBestSellers(summary.best_sellers || []);
+    renderDonutChart(summary.brand_bb?.revenue || 0, summary.brand_hh?.revenue || 0);
 
-    // เมนูขายดี
-    const itemCount = {};
-    orders.forEach(o => {
-      (o.items||[]).forEach(item => {
-        const k = item.name||'Unknown';
-        if (!itemCount[k]) itemCount[k] = {name:k, qty:0, rev:0};
-        itemCount[k].qty += Number(item.qty||1);
-        itemCount[k].rev += Number(item.total||0) || Number(item.price||0)*Number(item.qty||1);
-      });
-    });
-    const bestSellers = Object.values(itemCount).sort((a,b)=>b.qty-a.qty).slice(0,5);
+    // Recent orders — เอาแค่วันนี้ เรียงล่าสุดก่อน (ordersToday คืนย้อนกลับมาแล้วจาก backend)
+    const today = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+    const todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    const todayOrders = (orders || []).filter(o => String(o.created_at||'').indexOf(todayKey) === 0).slice(0, 6);
+    renderRecentOrders(todayOrders);
 
-    // Revenue by brand
-    const bbRev = orders.filter(o=>o.brand_id==='BB').reduce((s,o)=>s+Number(o.total_amount||0),0);
-    const hhRev = orders.filter(o=>o.brand_id==='HH').reduce((s,o)=>s+Number(o.total_amount||0),0);
-    const totalRev = orders.reduce((s,o)=>s+Number(o.total_amount||0),0);
-
-    // เดือนนี้
-    const thisMonth = String(bkk.getMonth()+1).padStart(2,'0');
-    const thisYear  = String(bkk.getFullYear());
-    const monthPrefix = `${thisYear}-${thisMonth}`;
-    const monthOrders = orders.filter(o => {
-      if (!o.created_at) return false;
-      return dateKeyBkk(o.created_at).startsWith(monthPrefix);
-    });
-    const monthRevenue = monthOrders.reduce((s,o) => s + Number(o.total_amount||0), 0);
-
-    const d = {
-      today_revenue: todayRevenue,
-      today_orders: todayOrders.length,
-      low_stock_count: 0,
-      monthly_comparison: { this_month: monthRevenue, last_month: monthRevenue*0.9, change_pct: 10 },
-      last_7_days: days7,
-      best_sellers: bestSellers,
-      low_stock: [],
-      recent_orders: orders.slice(0,5).map(o=>({
-        order_id: o.order_id,
-        customer_name: o.customer_name||'Walk-in',
-        brand_id: o.brand_id||'BB',
-        total_amount: o.total_amount||0,
-        payment_status: o.payment_status||'paid',
-        order_type: o.order_type||'takeaway',
-        created_at: o.created_at ? (() => {
-          const dt = new Date(o.created_at);
-          if (isNaN(dt.getTime())) return '--:--';
-          return dt.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
-        })() : '--:--',
-      })),
-    };
-
-    renderKPIs(d);
-    renderRevenueChart(d.last_7_days);
-    renderBestSellers(d.best_sellers);
-    renderLowStock(d.low_stock);
-    renderRecentOrders(d.recent_orders);
-    renderDonutChart(bbRev, hhRev);
-
-  } catch(e) {
+  } catch (e) {
     console.error('Dashboard load error:', e);
-    // แสดง error บนหน้า
-    document.querySelectorAll('.kpi-value').forEach(el => el.textContent = '—');
-    document.querySelectorAll('.kpi-change').forEach(el => el.textContent = 'โหลดไม่ได้');
-    const bs = document.getElementById('best-sellers');
-    if (bs) bs.innerHTML = '<div style="padding:20px;color:red;font-size:12px;">Error: ' + e.message + '</div>';
+    document.getElementById('kpi-grid').innerHTML = '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
   }
+
+  await loadAndRenderLowStock();
 }
 
 function initUI() {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
-  const user = Auth.getUser();
-  if (user) {
-    document.getElementById('user-name').textContent = user.name || 'Admin';
-    document.getElementById('user-role').textContent = user.role || 'Owner';
-    document.getElementById('avatar-initials').textContent =
-      (user.name || 'A').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
