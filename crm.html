@@ -41,6 +41,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .btn-primary { background:var(--green); color:#fff; }
 .btn-primary:hover { background:var(--green2); }
 .btn-sm { padding:6px 12px; font-size:11.5px; }
+.btn:disabled { opacity:.5; pointer-events:none; }
 
 .content { flex:1; overflow-y:auto; padding:20px 28px 28px; }
 
@@ -77,7 +78,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 .empty-state { padding:60px 24px; text-align:center; color:var(--muted); }
 
-/* MODAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
 .modal { background:var(--card); border-radius:18px; width:460px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
@@ -92,7 +92,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
 
-/* DETAIL PANEL */
 .detail-panel { position:fixed; right:0; top:0; bottom:0; width:360px; background:var(--card); border-left:1px solid var(--border); transform:translateX(100%); transition:transform 0.25s; z-index:150; display:flex; flex-direction:column; }
 .detail-panel.open { transform:translateX(0); }
 .detail-header { padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
@@ -126,7 +125,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <div class="nav-label" style="margin-top:14px">Settings</div>
       <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
@@ -135,13 +134,12 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         <div class="topbar-title">CRM / Members</div>
         <div class="topbar-actions">
           <button class="btn btn-ghost" onclick="loadMembers()">⟳ Refresh</button>
-          <button class="btn btn-primary" onclick="openModal('add-modal')">+ Add Member</button>
+          <button class="btn btn-primary" onclick="UI.openModal('add-modal')">+ Add Member</button>
         </div>
       </div>
     </div>
 
     <div class="content">
-      <!-- KPIs -->
       <div class="kpi-row">
         <div class="kpi-card">
           <div class="kpi-label">Total Members</div>
@@ -165,7 +163,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         </div>
       </div>
 
-      <!-- Filters -->
       <div class="filter-row">
         <div class="search-wrap">
           <svg class="search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#6b7d68" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
@@ -180,7 +177,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         <span style="margin-left:auto;font-size:11.5px;color:var(--muted)" id="member-count">0 members</span>
       </div>
 
-      <!-- Table -->
       <div class="table-card">
         <div class="table-header">
           <div>Member</div>
@@ -198,7 +194,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   </div>
 </div>
 
-<!-- DETAIL PANEL -->
 <div class="detail-panel" id="detail-panel">
   <div class="detail-header">
     <div style="font-size:14px;font-weight:600" id="detail-name">Member Detail</div>
@@ -207,12 +202,11 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <div class="detail-body" id="detail-body"></div>
 </div>
 
-<!-- ADD MEMBER MODAL -->
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Add New Member</div>
-      <button class="modal-close" onclick="closeModal('add-modal')">×</button>
+      <button class="modal-close" onclick="UI.closeModal('add-modal')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
@@ -234,21 +228,28 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         <input class="form-input" type="text" id="add-notes" placeholder="e.g. ลูกค้าขาประจำ">
       </div>
       <div class="form-footer">
-        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveMember()">Add Member</button>
+        <button class="btn btn-ghost" onclick="UI.closeModal('add-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-member-btn" onclick="saveMember()">Add Member</button>
       </div>
     </div>
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+// ═══════════════════════════════════════════════════════════
+// #FIX — เดิมไฟล์นี้ไม่ import api.js เลย ใช้ GAS_URL hardcode ซ้ำเอง (บังเอิญ action/field
+// name ตรงกับ รหัส.gs อยู่แล้วเลยใช้งานได้ แต่ถ้า deploy URL ใหม่ต้องมาแก้ที่นี่แยกต่างหาก)
+// เปลี่ยนมาใช้ API.members()/API.createMember()/API.addMemberPoints() จาก api.js แทน
+// และเปลี่ยน alert() เป็น UI.toast() ให้ UX สม่ำเสมอกับหน้าอื่นในระบบ
+// ═══════════════════════════════════════════════════════════
 let MEMBERS = [];
 let filterText = '';
 let filterTier = '';
 
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
+
 const TIER_COLORS = { Gold:'#D97706', Silver:'#6B7280', Bronze:'#92400E' };
-const TIER_BG    = { Gold:'#f8e7c0', Silver:'#e5e7eb', Bronze:'#fde68a' };
 
 function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
 
@@ -261,11 +262,10 @@ function avatarColor(name) {
 
 async function loadMembers() {
   try {
-    const res = await fetch(`${GAS_URL}?action=get_members`);
-    const json = await res.json();
-    MEMBERS = (json.success && json.data) ? json.data : [];
+    MEMBERS = await API.members();
   } catch(e) {
     console.error('loadMembers:', e);
+    UI.toast('โหลดสมาชิกไม่สำเร็จ: ' + e.message, 'error');
     MEMBERS = [];
   }
   renderKPIs();
@@ -278,13 +278,13 @@ function renderKPIs() {
   document.getElementById('kpi-total').textContent = MEMBERS.length;
   document.getElementById('kpi-gold').textContent = MEMBERS.filter(m=>m.tier==='Gold').length;
   document.getElementById('kpi-silver').textContent = MEMBERS.filter(m=>m.tier==='Silver').length;
-  document.getElementById('kpi-points').textContent = MEMBERS.reduce((s,m)=>s+m.points,0).toLocaleString();
+  document.getElementById('kpi-points').textContent = MEMBERS.reduce((s,m)=>s+Number(m.points||0),0).toLocaleString();
 }
 
 function getFiltered() {
   return MEMBERS.filter(m => {
     if (filterTier && m.tier !== filterTier) return false;
-    if (filterText && !m.name.toLowerCase().includes(filterText) && !m.phone.includes(filterText)) return false;
+    if (filterText && !(m.name||'').toLowerCase().includes(filterText) && !(m.phone||'').includes(filterText)) return false;
     return true;
   });
 }
@@ -302,13 +302,12 @@ function renderMembers() {
     return;
   }
 
-  // Max points for bar scaling
-  const maxPts = Math.max(...MEMBERS.map(m=>m.points), 1);
+  const maxPts = Math.max(...MEMBERS.map(m=>Number(m.points||0)), 1);
 
   body.innerHTML = items.map(m => {
-    const initials = m.name.split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
-    const color = avatarColor(m.name);
-    const pct = Math.min(100, (m.points/maxPts)*100);
+    const initials = (m.name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
+    const color = avatarColor(m.name||'?');
+    const pct = Math.min(100, (Number(m.points||0)/maxPts)*100);
 
     return `
       <div class="table-row">
@@ -321,7 +320,7 @@ function renderMembers() {
         </div>
         <div><span class="tier-badge tier-${m.tier}">${m.tier==='Gold'?'🥇':m.tier==='Silver'?'🥈':'🥉'} ${m.tier}</span></div>
         <div>
-          <div style="font-size:13px;font-weight:600">${m.points.toLocaleString()} pts</div>
+          <div style="font-size:13px;font-weight:600">${Number(m.points||0).toLocaleString()} pts</div>
           <div class="points-bar-wrap"><div class="points-bar" style="width:${pct}%"></div></div>
         </div>
         <div style="font-size:13px;font-weight:500">${fmt(m.total_spent)}</div>
@@ -334,7 +333,6 @@ function renderMembers() {
   }).join('');
 }
 
-// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
 function openDetail(memberId) {
   const m = MEMBERS.find(x => x.member_id === memberId);
   if (!m) return;
@@ -347,7 +345,7 @@ function openDetail(memberId) {
 
   document.getElementById('detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-      <div class="member-avatar" style="background:${avatarColor(m.name)};width:50px;height:50px;font-size:18px">${m.name.slice(0,2).toUpperCase()}</div>
+      <div class="member-avatar" style="background:${avatarColor(m.name)};width:50px;height:50px;font-size:18px">${(m.name||'?').slice(0,2).toUpperCase()}</div>
       <div>
         <div style="font-size:16px;font-weight:700">${m.name}</div>
         <div style="margin-top:4px"><span class="tier-badge tier-${m.tier}">${m.tier==='Gold'?'🥇':m.tier==='Silver'?'🥈':'🥉'} ${m.tier}</span></div>
@@ -357,7 +355,7 @@ function openDetail(memberId) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div class="detail-stat">
         <div class="detail-stat-label">Points</div>
-        <div class="detail-stat-value">${m.points.toLocaleString()}</div>
+        <div class="detail-stat-value">${Number(m.points||0).toLocaleString()}</div>
       </div>
       <div class="detail-stat">
         <div class="detail-stat-label">Total Spent</div>
@@ -386,7 +384,7 @@ function openDetail(memberId) {
     <div class="points-input-row">
       <input class="points-input" type="number" id="pts-input" placeholder="Points to add" min="1">
       <input class="points-input" type="number" id="pts-amount" placeholder="Purchase amount (฿)">
-      <button class="btn btn-primary btn-sm" onclick="givePoints('${m.member_id}')">Add</button>
+      <button class="btn btn-primary btn-sm" id="give-points-btn" onclick="givePoints('${m.member_id}')">Add</button>
     </div>
   `;
 }
@@ -398,61 +396,50 @@ function closeDetail() {
 async function givePoints(memberId) {
   const pts = parseInt(document.getElementById('pts-input').value);
   const amount = parseFloat(document.getElementById('pts-amount').value) || 0;
-  if (!pts || pts < 1) { alert('Please enter a valid point amount.'); return; }
+  if (!pts || pts < 1) { UI.toast('Please enter a valid point amount.', 'error'); return; }
 
+  const btn = document.getElementById('give-points-btn');
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'add_member_points', member_id: memberId, points: pts, amount })
-    });
-    const json = await res.json();
-    if (json.success) {
-      await loadMembers();
-      openDetail(memberId);
-    } else {
-      alert('Failed: ' + (json.error || 'unknown'));
-    }
+    await API.addMemberPoints({ member_id: memberId, points: pts, amount });
+    UI.toast('เพิ่มแต้มสำเร็จ');
+    await loadMembers();
+    openDetail(memberId);
   } catch(e) {
-    alert('Error: ' + e.message);
+    UI.toast('Failed: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
   }
 }
-
-// ── MODALS ────────────────────────────────────────────────────────────────────
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
 async function saveMember() {
   const name = document.getElementById('add-name').value.trim();
-  if (!name) { alert('Please enter a name.'); return; }
+  if (!name) { UI.toast('Please enter a name.', 'error'); return; }
 
+  const btn = document.getElementById('save-member-btn');
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        action: 'create_member',
-        name,
-        phone: document.getElementById('add-phone').value.trim(),
-        email: document.getElementById('add-email').value.trim(),
-        notes: document.getElementById('add-notes').value.trim(),
-      })
+    await API.createMember({
+      name,
+      phone: document.getElementById('add-phone').value.trim(),
+      email: document.getElementById('add-email').value.trim(),
+      notes: document.getElementById('add-notes').value.trim(),
     });
-    const json = await res.json();
-    if (json.success) {
-      closeModal('add-modal');
-      ['add-name','add-phone','add-email','add-notes'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      await loadMembers();
-    } else {
-      alert('Failed: ' + (json.error || 'unknown'));
-    }
+    UI.toast('เพิ่มสมาชิกใหม่แล้ว');
+    UI.closeModal('add-modal');
+    ['add-name','add-phone','add-email','add-notes'].forEach(id => { document.getElementById(id).value = ''; });
+    await loadMembers();
   } catch(e) {
-    alert('Error: ' + e.message);
+    UI.toast('Failed: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
   }
 }
 
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+  });
 });
 </script>
 </body>
