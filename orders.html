@@ -6,45 +6,44 @@
 <title>BrewOS — Orders</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#1E5A3F;--green2:#40916C;--orange:#D97706;--bg:#faf9f7;--card:#fff;--border:#e8e3db;--text:#1c1917;--muted:#78716c;--sidebar:220px;}
+:root{--green:#1E5A3F;--green2:#40916C;--orange:#D97706;--danger:#DC2626;--bg:#faf9f7;--card:#fff;--border:#e8e3db;--text:#1c1917;--muted:#78716c;--sidebar:220px;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Anuphan','Poppins',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
 .sidebar{width:var(--sidebar);background:#fff;border-right:1.5px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;}
-.sidebar-logo{padding:24px 20px;border-bottom:1px solid rgba(255,255,255,0.1);}
-.logo-mark{font-family:'Poppins',sans-serif;font-size:20px;color:#fff;font-weight:700;}
-.logo-sub{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
-.brand-chip{margin:12px 20px 0;background:rgba(255,255,255,0.1);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--green);font-weight:700;}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);}
+.logo-mark{font-family:'Poppins',sans-serif;font-size:20px;color:var(--green);font-weight:700;}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.brand-chip{margin:12px 20px 0;background:rgba(30,90,63,0.08);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--green);font-weight:700;}
 nav{flex:1;padding:16px 12px;overflow-y:auto;}
-.nav-section{font-size:10px;color:#4a6741;letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;margin-top:8px;}
-.nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--green);font-weight:700;font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:1px;cursor:pointer;}
+.nav-section{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;padding:8px 8px 4px;margin-top:8px;}
+.nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;color:var(--green);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:1px;cursor:pointer;}
 .nav-link:hover{background:var(--bg);color:var(--green);}
 .nav-link.active{background:rgba(45,106,79,.08);color:var(--green);font-weight:600;}
 .nav-link .icon{width:16px;text-align:center;}
-.sidebar-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.1);}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);}
 .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
 .topbar-left h2{font-family:'Poppins',sans-serif;font-size:20px;font-weight:600;}
 .topbar-left p{font-size:12px;color:var(--muted);}
 .btn{padding:8px 16px;border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;}
-.btn-primary{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(249,115,22,0.3);}
-.btn-primary:hover{background:#ea580c;}
+.btn-primary{background:var(--orange);color:#fff;box-shadow:0 2px 8px rgba(217,119,6,0.3);}
+.btn-primary:hover{background:#b45309;}
 .btn-outline{background:#fff;color:var(--text);border:1px solid var(--border);}
 .btn-outline:hover{background:var(--bg);}
+.btn-danger{background:#fee2e2;color:var(--danger);border:1px solid #fecaca;}
+.btn-danger:hover{background:#fecaca;}
 .btn-sm{padding:6px 12px;font-size:12px;}
+.btn:disabled{opacity:.5;pointer-events:none;}
 .content{padding:24px 28px;flex:1;}
 
-/* layout */
 .orders-layout{display:grid;grid-template-columns:1fr 360px;gap:20px;min-height:calc(100vh - 108px);}
 
-/* kpi */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
 .kpi-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
 .kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
 .kpi-value{font-family:'Poppins',sans-serif;font-size:24px;font-weight:600;}
-.kpi-delta{font-size:11px;margin-top:3px;}
-.kpi-delta.up{color:#22c55e;}.kpi-delta.down{color:#ef4444;}.kpi-delta.neutral{color:var(--muted);}
+.kpi-delta{font-size:11px;margin-top:3px;color:var(--muted);}
 
-/* toolbar */
 .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
 .search-box{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;outline:none;width:240px;}
 .search-box:focus{border-color:var(--green);}
@@ -52,7 +51,6 @@ nav{flex:1;padding:16px 12px;overflow-y:auto;}
 .filter-chip.active{background:var(--green);color:#fff;border-color:var(--green);}
 select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:12px;outline:none;color:var(--text);cursor:pointer;}
 
-/* order list */
 .orders-panel{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
 .orders-panel table{width:100%;border-collapse:collapse;}
 .orders-panel th{padding:10px 14px;font-size:11px;color:var(--muted);font-weight:600;text-align:left;text-transform:uppercase;letter-spacing:0.6px;background:var(--bg);border-bottom:1px solid var(--border);position:sticky;top:0;}
@@ -60,19 +58,16 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .orders-panel tr:last-child td{border-bottom:none;}
 .orders-panel tr:hover td{background:#fafaf8;}
 .orders-panel tr.selected td{background:#f0fdf4;}
+.orders-panel tr.cancelled td{opacity:.5;}
 .td-bold{font-weight:600;}
 .order-id{font-family:'Anuphan','Poppins',sans-serif;font-weight:700;color:var(--green);font-size:12px;}
 .table-scroll{overflow-y:auto;flex:1;}
 
-/* status badges */
 .badge{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
-.badge-paid{background:#dcfce7;color:#16a34a;}
-.badge-pending{background:#fef3c7;color:#d97706;}
-.badge-refund{background:#fee2e2;color:#dc2626;}
-.badge-void{background:#f3f4f6;color:#6b7280;}
+.badge-completed{background:#dcfce7;color:#16a34a;}
+.badge-cancelled{background:#fee2e2;color:#dc2626;}
 .order-type-chip{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:var(--bg);color:var(--muted);}
 
-/* order detail */
 .detail-panel{background:#fff;border:1px solid var(--border);border-radius:14px;overflow-y:auto;position:sticky;top:24px;max-height:calc(100vh - 108px);}
 .detail-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .detail-order-id{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;}
@@ -84,7 +79,6 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .items-section{padding:0 20px 16px;}
 .items-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;margin:14px 0 10px;}
 .order-item-row{display:flex;align-items:center;gap:10px;padding:9px 10px;background:var(--bg);border-radius:8px;margin-bottom:6px;}
-.item-emoji{font-size:18px;}
 .item-name{flex:1;font-size:13px;font-weight:500;}
 .item-qty{font-size:12px;color:var(--muted);background:#fff;border:1px solid var(--border);border-radius:4px;padding:2px 7px;}
 .item-price{font-size:13px;font-weight:700;color:var(--green);}
@@ -92,8 +86,8 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .total-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;}
 .total-row.grand{font-size:15px;font-weight:700;border-top:2px solid var(--border);padding-top:10px;margin-top:4px;}
 .detail-actions{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:8px;}
+.detail-empty{padding:60px 24px;text-align:center;color:var(--muted);font-size:13px;}
 
-/* modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 .modal-overlay.open{display:flex;}
 .modal{background:#fff;border-radius:20px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
@@ -104,21 +98,15 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .modal-footer{padding:0 24px 24px;display:flex;gap:10px;justify-content:flex-end;}
 .form-group{margin-bottom:14px;}
 .form-label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;}
-.form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;outline:none;transition:all 0.2s;}
+.form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;outline:none;transition:all 0.2s;resize:none;}
 .form-control:focus{border-color:var(--green);}
-
-/* receipt */
-.receipt{font-family:'Courier New',monospace;font-size:12px;line-height:1.8;background:#fff;border:1px dashed var(--border);border-radius:8px;padding:20px;}
-.receipt-center{text-align:center;}
-.receipt-line{border-top:1px dashed var(--border);margin:10px 0;}
-.receipt-row{display:flex;justify-content:space-between;}
 </style>
 </head>
 <body>
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-      <img src="logo-hh-icon.png" style="width:24px;height:24px;object-fit:contain;flex-shrink:0">
+      <img src="logo-hh-icon.png" style="width:24px;height:24px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
       <span class="logo-mark">BrewOS</span>
     </div>
     <div class="logo-sub">Back Office</div>
@@ -140,13 +128,12 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
     <a class="nav-link" href="reports.html"><span class="icon">📈</span> Reports</a>
     <div class="nav-section">Admin</div>
     <a class="nav-link" href="staff.html"><span class="icon">🧑‍🍳</span> Staff</a>
-    <a class="nav-link" href="brand_editor.html"><span class="icon">🎨</span> Brand &amp; Menu</a>
     <a class="nav-link" href="settings.html"><span class="icon">⚙️</span> Settings</a>
   </nav>
   <div class="sidebar-footer">
     <div style="display:flex;align-items:center;gap:10px;">
-      <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;">A</div>
-      <div><div style="font-size:12px;color:#4a6741;font-weight:500;">Admin</div><div style="font-size:10px;color:#4a6741;">Owner</div></div>
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;" id="staff-avatar">A</div>
+      <div><div style="font-size:12px;color:var(--text);font-weight:500;" id="staff-name">Admin</div><div style="font-size:10px;color:var(--muted);">Owner</div></div>
     </div>
   </div>
 </aside>
@@ -158,51 +145,45 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
       <p id="ordersStats">กำลังโหลด...</p>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
-      <button class="btn btn-outline btn-sm" onclick="loadOrders()" id="btnRefresh">🔄 Refresh</button>
-      <button class="btn btn-outline btn-sm">⬇ Export CSV</button>
-      <button class="btn btn-primary btn-sm" onclick="openRefundModal()">↩ Process Refund</button>
+      <button class="btn btn-outline btn-sm" onclick="loadOrders()">🔄 Refresh</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
   </div>
 
   <div class="content">
-    <!-- KPI -->
     <div class="kpi-row">
       <div class="kpi-card">
-        <div class="kpi-label">Today's Orders</div>
+        <div class="kpi-label">Orders in view</div>
         <div class="kpi-value" id="kpiTodayOrders">—</div>
-        <div class="kpi-delta neutral" id="kpiTodayOrdersSub">&nbsp;</div>
+        <div class="kpi-delta" id="kpiTodayOrdersSub">&nbsp;</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Revenue</div>
         <div class="kpi-value" id="kpiTodayRevenue">—</div>
-        <div class="kpi-delta neutral" id="kpiTodayRevenueSub">&nbsp;</div>
+        <div class="kpi-delta" id="kpiTodayRevenueSub">&nbsp;</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Avg. Order Value</div>
         <div class="kpi-value" id="kpiAvgOrder">—</div>
-        <div class="kpi-delta neutral">&nbsp;</div>
+        <div class="kpi-delta">&nbsp;</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Refunds Today</div>
-        <div class="kpi-value" id="kpiRefunds">—</div>
-        <div class="kpi-delta neutral" id="kpiRefundsSub">&nbsp;</div>
+        <div class="kpi-label">Cancelled</div>
+        <div class="kpi-value" id="kpiCancelled">—</div>
+        <div class="kpi-delta" id="kpiCancelledSub">&nbsp;</div>
       </div>
     </div>
 
-    <!-- Toolbar -->
     <div class="toolbar">
-      <input class="search-box" placeholder="Search order ID, customer, item..." id="orderSearch" oninput="filterOrders(); updateKPIs();">
+      <input class="search-box" placeholder="Search order ID, customer..." id="orderSearch" oninput="filterOrders()">
       <button class="filter-chip active" onclick="setStatus('all',this)">All</button>
-      <button class="filter-chip" onclick="setStatus('paid',this)">Paid</button>
-      <button class="filter-chip" onclick="setStatus('pending',this)">Pending</button>
-      <button class="filter-chip" onclick="setStatus('refund',this)">Refund</button>
-      <select class="sel" onchange="filterOrders(); updateKPIs();"><option>All Brands</option><option>Brain Brew</option><option>Heng Heng</option></select>
-      <select class="sel" onchange="filterOrders(); updateKPIs();"><option>All Types</option><option>Dine In</option><option>Takeaway</option><option>Delivery</option></select>
-      <select class="sel" onchange="filterOrders(); updateKPIs();"><option>Today</option><option>Yesterday</option><option>This Week</option><option>This Month</option></select>
+      <button class="filter-chip" onclick="setStatus('completed',this)">Completed</button>
+      <button class="filter-chip" onclick="setStatus('cancelled',this)">Cancelled</button>
+      <select class="sel" id="brandSel" onchange="filterOrders()"><option>All Brands</option><option>Brain Brew</option><option>Heng Heng</option></select>
+      <select class="sel" id="dateSel" onchange="filterOrders()"><option>Today</option><option>Yesterday</option><option>This Week</option><option>This Month</option><option>All Time</option></select>
     </div>
 
     <div class="orders-layout">
-      <!-- Orders table -->
       <div class="orders-panel">
         <div class="table-scroll">
           <table>
@@ -217,7 +198,6 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
                 <th>Total</th>
                 <th>Payment</th>
                 <th>Status</th>
-                <th>Staff</th>
               </tr>
             </thead>
             <tbody id="orderBody"></tbody>
@@ -225,342 +205,78 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
         </div>
       </div>
 
-      <!-- Order detail -->
       <div class="detail-panel" id="detailPanel">
-        <div class="detail-header">
-          <div>
-            <div class="detail-order-id" id="detOrderId">#BB-270001</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="detOrderTime">Today 08:14 · Brain Brew</div>
+        <div class="detail-empty" id="detailEmpty">Select an order to view details</div>
+        <div id="detailContent" style="display:none">
+          <div class="detail-header">
+            <div>
+              <div class="detail-order-id" id="detOrderId">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="detOrderTime">—</div>
+            </div>
+            <span class="badge badge-completed" id="detBadge">Completed</span>
           </div>
-          <span class="badge badge-paid" id="detBadge">Paid</span>
-        </div>
-        <div class="detail-meta">
-          <div class="meta-row"><span class="meta-label">Customer</span><span class="meta-value" id="detCustomer">Kru Sunisa (Gold 👑)</span></div>
-          <div class="meta-row"><span class="meta-label">Order Type</span><span class="meta-value" id="detType">Dine In · Table 4</span></div>
-          <div class="meta-row"><span class="meta-label">Cashier</span><span class="meta-value" id="detStaff">Nong Saowalak</span></div>
-          <div class="meta-row"><span class="meta-label">Payment</span><span class="meta-value" id="detPay">QR PromptPay</span></div>
-        </div>
-
-        <div class="items-section">
-          <div class="items-title">Order Items</div>
-          <div id="detItems">
-            <div class="order-item-row"><div class="item-emoji">☕</div><div class="item-name">Neuron Latte<br><small style="color:var(--muted);">L · Oat Milk · Less Sugar</small></div><div class="item-qty">×2</div><div class="item-price">฿180</div></div>
-            <div class="order-item-row"><div class="item-emoji">🥐</div><div class="item-name">Butter Croissant</div><div class="item-qty">×1</div><div class="item-price">฿65</div></div>
+          <div class="detail-meta">
+            <div class="meta-row"><span class="meta-label">Customer</span><span class="meta-value" id="detCustomer">—</span></div>
+            <div class="meta-row"><span class="meta-label">Order Type</span><span class="meta-value" id="detType">—</span></div>
+            <div class="meta-row"><span class="meta-label">Payment</span><span class="meta-value" id="detPay">—</span></div>
           </div>
-        </div>
 
-        <div class="totals-section">
-          <div class="total-row"><span>Subtotal</span><span id="detSub">฿245</span></div>
-          <div class="total-row"><span>Service Charge (10%)</span><span id="detService">฿24.50</span></div>
-          <div class="total-row"><span>VAT (7%)</span><span id="detVat">฿17.15</span></div>
-          <div class="total-row"><span>Loyalty Discount</span><span id="detDisc" style="color:#22c55e;">-฿0</span></div>
-          <div class="total-row grand"><span>Total Paid</span><span id="detTotal">฿286.65</span></div>
-        </div>
+          <div class="items-section">
+            <div class="items-title">Order Items</div>
+            <div id="detItems"></div>
+          </div>
 
-        <div class="detail-actions">
-          <button class="btn btn-outline btn-sm" onclick="printReceipt()">🖨 Print Receipt</button>
-          <button class="btn btn-outline btn-sm" onclick="openRefundModal()">↩ Refund</button>
-          <button class="btn btn-outline btn-sm">📤 Share</button>
+          <div class="totals-section">
+            <div class="total-row grand"><span>Total</span><span id="detTotal">฿0</span></div>
+          </div>
+
+          <div id="detNoteBox" style="display:none;padding:0 20px 16px"></div>
+
+          <div class="detail-actions">
+            <button class="btn btn-outline btn-sm" onclick="printReceipt()">🖨 Print Receipt</button>
+            <button class="btn btn-danger btn-sm" id="detCancelBtn" onclick="openCancelModal()">✕ Cancel Order</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Refund Modal -->
-<div class="modal-overlay" id="refundModal">
+<!-- Cancel Modal — #FIX: เดิมเป็น "Refund" ที่ local-only ไม่บันทึกกลับ Sheet เลย
+     เปลี่ยนมาใช้ cancelOrder() ที่มีอยู่แล้วใน รหัส.gs (คืนสต๊อกเต็มจำนวน + กันคืนซ้ำ +
+     รองรับออเดอร์ผสมแบรนด์) แทน เพื่อให้การยกเลิกออเดอร์คงอยู่ถาวรจริงหลัง refresh -->
+<div class="modal-overlay" id="cancelModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Process Refund</div>
-      <button class="modal-close" onclick="closeRefundModal()">×</button>
+      <div class="modal-title">⚠️ Cancel Order</div>
+      <button class="modal-close" onclick="closeCancelModal()">×</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Order ID</label>
-        <input class="form-control" id="refundOrderId" placeholder="BB-270001">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Refund Amount (฿)</label>
-        <input class="form-control" type="number" placeholder="0.00">
-      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px" id="cancelOrderInfo"></div>
       <div class="form-group">
         <label class="form-label">Reason</label>
-        <select class="form-control">
-          <option>Wrong item served</option><option>Quality issue</option><option>Customer complaint</option>
-          <option>Duplicate payment</option><option>Order cancellation</option><option>Other</option>
-        </select>
+        <textarea class="form-control" id="cancelReason" rows="3" placeholder="e.g. Customer cancelled, wrong order..."></textarea>
       </div>
-      <div class="form-group">
-        <label class="form-label">Refund Method</label>
-        <select class="form-control"><option>Original payment method</option><option>Cash</option><option>Store credit</option></select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Notes</label>
-        <textarea class="form-control" rows="2" placeholder="Details..."></textarea>
-      </div>
+      <div style="font-size:11px;color:var(--muted)">คืนสต๊อกวัตถุดิบให้อัตโนมัติตามสูตรของออเดอร์นี้ทันที</div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeRefundModal()">Cancel</button>
-      <button class="btn btn-primary" style="background:#ef4444;" onclick="processRefund()">Process Refund</button>
+      <button class="btn btn-outline" onclick="closeCancelModal()">Back</button>
+      <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">Cancel Order</button>
     </div>
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-const ORDERS = [
-  {id:'BB-270001',time:'08:14',customer:'Kru Sunisa',brand:'Brain Brew',type:'Dine In',items_count:3,items:[],total:'฿287',pay:'QR',status:'paid',staff:'Nong'},
-  {id:'BB-270002',time:'08:22',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items_count:2,items:[],total:'฿190',pay:'Cash',status:'paid',staff:'Pan'},
-  {id:'BB-270003',time:'08:35',customer:'Khun Prae',brand:'Brain Brew',type:'Dine In',items_count:4,items:[],total:'฿420',pay:'Card',status:'paid',staff:'Nong'},
-  {id:'HH-270001',time:'08:40',customer:'Walk-in',brand:'Heng Heng',type:'Takeaway',items_count:2,items:[],total:'฿145',pay:'QR',status:'paid',staff:'Pan'},
-  {id:'BB-270004',time:'08:55',customer:'Khun Wut',brand:'Brain Brew',type:'Delivery',items_count:3,items:[],total:'฿320',pay:'Transfer',status:'pending',staff:'Bank'},
-  {id:'HH-270002',time:'09:10',customer:'Kru Om',brand:'Heng Heng',type:'Dine In',items_count:5,items:[],total:'฿580',pay:'QR',status:'paid',staff:'Nam'},
-  {id:'BB-270005',time:'09:28',customer:'Khun Fah',brand:'Brain Brew',type:'Takeaway',items_count:1,items:[],total:'฿95',pay:'Cash',status:'paid',staff:'Pan'},
-  {id:'BB-270006',time:'09:44',customer:'Walk-in',brand:'Brain Brew',type:'Dine In',items_count:2,items:[],total:'฿220',pay:'QR',status:'refund',staff:'Nong'},
-  {id:'HH-270003',time:'10:05',customer:'Khun Joy',brand:'Heng Heng',type:'Pre-order',items_count:6,items:[],total:'฿720',pay:'Transfer',status:'paid',staff:'Bank'},
-  {id:'BB-270007',time:'10:20',customer:'Khun Bot',brand:'Brain Brew',type:'Dine In',items_count:2,items:[],total:'฿180',pay:'QR',status:'paid',staff:'Pan'},
-  {id:'BB-270008',time:'10:38',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items_count:1,items:[],total:'฿85',pay:'Cash',status:'paid',staff:'Nong'},
-  {id:'HH-270004',time:'10:52',customer:'Khun Mild',brand:'Heng Heng',type:'Dine In',items_count:3,items:[],total:'฿380',pay:'Card',status:'refund',staff:'Nam'},
-  {id:'BB-270009',time:'11:10',customer:'Khun Aim',brand:'Brain Brew',type:'Dine In',items_count:4,items:[],total:'฿460',pay:'QR',status:'paid',staff:'Bank'},
-  {id:'BB-270010',time:'11:25',customer:'Walk-in',brand:'Brain Brew',type:'Takeaway',items_count:2,items:[],total:'฿200',pay:'Cash',status:'paid',staff:'Pan'},
-];
+// #NOAUTH — ไม่มี Auth gate อยู่แล้วในไฟล์นี้ (ดีอยู่แล้ว) เพิ่ม Identity แสดงชื่อ staff
+document.getElementById('staff-name').textContent = Identity.getName();
+document.getElementById('staff-avatar').textContent = Identity.getName()[0].toUpperCase();
 
-let activeOrderId = 'BB-270001';
+let ALL_ORDERS = [];
+let activeOrderId = null;
 let statusFilter = 'all';
-let searchQ = '';
 
-function renderOrders(data) {
-  const body = document.getElementById('orderBody');
-  const sMap = {paid:'badge-paid',pending:'badge-pending',refund:'badge-refund',void:'badge-void'};
-  body.innerHTML = data.map(o=>`
-    <tr class="${o.id===activeOrderId?'selected':''}" onclick="selectOrder('${o.id}')">
-      <td class="order-id">${o.id}</td>
-      <td>${o.time}</td>
-      <td>${o.customer}</td>
-      <td style="font-size:11px;">${o.brand==='Brain Brew'?'☕ BB':'🌸 HH'}</td>
-      <td><span class="order-type-chip">${o.type}</span></td>
-      <td>${o.items_count||1} items</td>
-      <td class="td-bold">${o.total}</td>
-      <td style="font-size:12px;color:var(--muted);">${o.pay}</td>
-      <td><span class="badge ${sMap[o.status]}">${o.status}</span></td>
-      <td style="font-size:12px;color:var(--muted);">${o.staff}</td>
-    </tr>`).join('');
-}
-
-function getDateRangeFilter(dateSel) {
-  // คืนค่า function ที่เช็คว่า order ตรงกับช่วงวันที่ที่เลือกไหม
-  const todayStr = dateKeyBkk(new Date());
-
-  // หมายเหตุ: mock/demo data (fallback เมื่อโหลดจาก Sheet ไม่ได้) ไม่มี rawCreatedAt
-  // จึงปล่อยผ่านการกรองวันที่เสมอ เพื่อไม่ให้ตารางว่างเปล่าแบบไม่มีคำอธิบาย
-  const passIfNoTimestamp = (o) => !o.rawCreatedAt;
-
-  if (dateSel === 'Yesterday') {
-    const y = new Date();
-    y.setDate(y.getDate() - 1);
-    const yStr = dateKeyBkk(y);
-    return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt) === yStr;
-  }
-  if (dateSel === 'This Week') {
-    // วันจันทร์ของสัปดาห์นี้ (Asia/Bangkok) ถึงวันนี้
-    const now = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
-    const dow = now.getDay(); // 0=Sun
-    const diffToMonday = dow === 0 ? 6 : dow - 1;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - diffToMonday);
-    const mondayStr = dateKeyBkk(monday);
-    return (o) => {
-      if (passIfNoTimestamp(o)) return true;
-      const k = dateKeyBkk(o.rawCreatedAt);
-      return k >= mondayStr && k <= todayStr;
-    };
-  }
-  if (dateSel === 'This Month') {
-    const monthPrefix = todayStr.slice(0, 7); // YYYY-MM
-    return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt).startsWith(monthPrefix);
-  }
-  // default: 'Today'
-  return (o) => passIfNoTimestamp(o) || dateKeyBkk(o.rawCreatedAt) === todayStr;
-}
-
-function getFilteredOrders() {
-  const q = document.getElementById('orderSearch').value.toLowerCase();
-  const src = _allOrders.length ? _allOrders : ORDERS;
-
-  const brandSel = document.querySelectorAll('.sel')[0]?.value || 'All Brands';
-  const dateSel = document.querySelectorAll('.sel')[2]?.value || 'Today';
-  const matchDate = getDateRangeFilter(dateSel);
-
-  return src.filter(o => {
-    const matchStatus = statusFilter === 'all' || o.status === statusFilter;
-    const matchQ = !q || (o.id||'').toLowerCase().includes(q)
-                      || (o.customer||'').toLowerCase().includes(q)
-                      || (o.type||'').toLowerCase().includes(q);
-    const matchBrand = brandSel === 'All Brands' || o.brand === brandSel;
-    return matchStatus && matchQ && matchBrand && matchDate(o);
-  });
-}
-
-function filterOrders() {
-  const q = document.getElementById('orderSearch').value.toLowerCase();
-  searchQ = q;
-
-  const filtered = getFilteredOrders();
-
-  // อัพเดท stats
-  const statsEl = document.getElementById('ordersStats');
-  if (statsEl) {
-    const total = filtered.reduce((s, o) => s + Number(String(o.total||'0').replace('฿','').replace(/,/g,'') || 0), 0);
-    statsEl.textContent = `${filtered.length} orders · ฿${total.toLocaleString()} รวม`;
-  }
-  
-  renderOrders(filtered);
-}
-
-function setStatus(s, el) {
-  statusFilter = s;
-  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-  filterOrders();
-  updateKPIs();
-}
-
-function selectOrder(id) {
-  activeOrderId = id;
-  const src = _allOrders.length ? _allOrders : ORDERS;
-  const o = src.find(x=>x.id===id);
-  if (!o) return;
-  filterOrders();
-
-  // Header
-  document.getElementById('detOrderId').textContent = '#' + o.id;
-  document.getElementById('detOrderTime').textContent = (o.time||'—') + ' · ' + (o.brand||'');
-  
-  // Badge status
-  const sMap = {paid:'badge-paid',pending:'badge-pending',refund:'badge-refund',completed:'badge-paid',void:'badge-void'};
-  const badge = document.getElementById('detBadge');
-  badge.className = 'badge ' + (sMap[o.status] || 'badge-paid');
-  badge.textContent = o.status ? o.status.charAt(0).toUpperCase()+o.status.slice(1) : 'Paid';
-
-  // Meta
-  document.getElementById('detCustomer').textContent = o.customer || 'Walk-in';
-  document.getElementById('detType').textContent = (o.type || 'takeaway') + (o.table ? ' · ห้อง '+o.table : '');
-  document.getElementById('detStaff').textContent = o.staff || '—';
-  const payMap = {cash:'เงินสด',qr:'QR PromptPay',card:'บัตรเครดิต',transfer:'โอนเงิน'};
-  document.getElementById('detPay').textContent = payMap[o.pay] || o.pay || '—';
-
-  // Items
-  const detItems = document.getElementById('detItems');
-  if (detItems) {
-    if (o.items && Array.isArray(o.items) && o.items.length > 0) {
-      detItems.innerHTML = o.items.map(item => `
-        <div class="order-item-row">
-          <div class="item-emoji">🍽</div>
-          <div class="item-name">${item.name||'—'}</div>
-          <div class="item-qty">×${item.qty||1}</div>
-          <div class="item-price">฿${((item.price||0)*(item.qty||1)).toLocaleString()}</div>
-        </div>`).join('');
-    } else {
-      detItems.innerHTML = '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">ไม่มีข้อมูลรายการ</div>';
-    }
-  }
-
-  // Totals
-  const totalAmt = Number(String(o.total||'0').replace('฿','').replace(/,/g,'')) || 0;
-  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
-  setEl('detSub', '฿' + totalAmt.toLocaleString());
-  setEl('detService', '฿0');
-  setEl('detVat', '฿0');
-  setEl('detDiscount', '-฿0');
-  setEl('detTotal', '฿' + totalAmt.toLocaleString());
-
-  // Note
-  const noteEl = document.getElementById('detNote');
-  if (noteEl) noteEl.textContent = o.note || '—';
-
-  if (document.getElementById('refundOrderId')) 
-    document.getElementById('refundOrderId').value = o.id;
-}
-
-function openRefundModal(){document.getElementById('refundModal').classList.add('open');}
-function closeRefundModal(){document.getElementById('refundModal').classList.remove('open');}
-
-function processRefund(){
-  const orderId = document.getElementById('refundOrderId')?.value || activeOrderId;
-  if (!orderId) { closeRefundModal(); return; }
-
-  // อัพเดทสถานะใน local state ทันที (optimistic update)
-  const src = _allOrders.length ? _allOrders : ORDERS;
-  const order = src.find(x => x.id === orderId);
-  if (order) {
-    order.status = 'refund';
-  }
-
-  closeRefundModal();
-  filterOrders();
-  updateKPIs();
-
-  // เลือกออเดอร์เดิมซ้ำเพื่อ refresh badge สถานะใน detail panel
-  if (activeOrderId === orderId) selectOrder(orderId);
-
-  showToast('Refund processed — status updated to Refund.');
-
-  // หมายเหตุ: การเปลี่ยนสถานะนี้อัพเดทเฉพาะหน้าจอปัจจุบัน (local state)
-  // ยังไม่ได้บันทึกกลับ Google Sheet เพราะ Apps Script ยังไม่มี endpoint
-  // 'update_order_status' ที่เขียนกลับ payment_status ใน sheet 'orders'
-  // ถ้าต้องการให้ refund คงอยู่ถาวรหลัง refresh หน้า ต้องเพิ่ม endpoint นี้ฝั่ง Apps Script
-}
-
-function printReceipt(){
-  showToast('Print function is not yet connected to a physical printer — this is a placeholder.');
-}
-function showToast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:24px;right:24px;background:#143D2B;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;';document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
-
-let _allOrders = [];
-
-async function loadOrders() {
-  // แสดง loading
-  const tbody = document.getElementById('ordersBody');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">⏳ กำลังโหลด...</td></tr>';
-  try {
-    // ดึงจาก Apps Script โดยตรง — ไม่ต้อง login
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
-    const res = await fetch(API_URL + '?action=get_orders_sheet', {
-      method: 'GET',
-      mode: 'cors',
-    });
-    const json = await res.json();
-    console.log('Orders response:', json.success, 'count:', json.data?.length);
-    if (json.success && json.data && json.data.length > 0) {
-      _allOrders = json.data.map(o => ({
-        id: o.order_id || o.id || '—',
-        time: o.created_at ? new Date(o.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit', timeZone:'Asia/Bangkok'}) : '—',
-        rawCreatedAt: o.created_at || '',
-        customer: o.customer_name || 'Walk-in',
-        brand: (o.brand_id === 'HH') ? 'Heng Heng' : 'Brain Brew',
-        type: o.order_type || 'takeaway',
-        items_count: o.items_count || 1,
-        items: Array.isArray(o.items) ? o.items : [],
-        total: '฿' + Number(o.total_amount || o.grand_total || 0).toLocaleString(),
-        pay: o.payment_method || 'cash',
-        status: o.payment_status || o.order_status || 'paid',
-        staff: o.staff_name || '—',
-        note: o.notes || '',
-        table: o.table_number || '',
-      }));
-    } else {
-      throw new Error('no data');
-    }
-  } catch(e) {
-    console.error('loadOrders error:', e.message);
-    // fallback mock data
-    _allOrders = ORDERS.map(o => ({...o, brand: o.brand}));
-    if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:orange">⚠️ โหลดข้อมูลจาก Sheet ไม่ได้: ' + e.message + '<br>แสดงข้อมูลตัวอย่างแทน</td></tr>';
-    setTimeout(() => filterOrders(), 100);
-    return;
-  }
-  filterOrders();
-  updateKPIs();
-}
+function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString(); }
 
 function dateKeyBkk(val) {
   const d = new Date(val);
@@ -569,33 +285,208 @@ function dateKeyBkk(val) {
   return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
 }
 
-function updateKPIs() {
-  const dateSel = document.querySelectorAll('.sel')[2]?.value || 'Today';
-  const periodOrders = getFilteredOrders();
-
-  const totalRevenue = periodOrders.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
-  const avgOrder = periodOrders.length ? totalRevenue / periodOrders.length : 0;
-  const refunds = periodOrders.filter(o => o.status === 'refund');
-  const refundTotal = refunds.reduce((s,o) => s + (Number(String(o.total||'0').replace(/[฿,]/g,'')) || 0), 0);
-
-  // ป้ายข้อความให้ตรงกับช่วงที่เลือก ไม่ใช่เขียนคำว่า "today" ตายตัว
-  const periodLabel = {
-    'Today': 'today', 'Yesterday': 'yesterday',
-    'This Week': 'this week', 'This Month': 'this month',
-  }[dateSel] || 'today';
-
-  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  setEl('kpiTodayOrders', periodOrders.length);
-  setEl('kpiTodayOrdersSub', periodOrders.length ? `${periodOrders.length} orders logged ${periodLabel}` : `No orders ${periodLabel}`);
-  setEl('kpiTodayRevenue', '฿' + totalRevenue.toLocaleString());
-  setEl('kpiTodayRevenueSub', `${periodOrders.length} orders`);
-  setEl('kpiAvgOrder', '฿' + avgOrder.toFixed(0));
-  setEl('kpiRefunds', refunds.length);
-  setEl('kpiRefundsSub', refunds.length ? `฿${refundTotal.toLocaleString()} refunded` : `No refunds ${periodLabel}`);
+async function loadOrders() {
+  const tbody = document.getElementById('orderBody');
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">⏳ กำลังโหลด...</td></tr>';
+  try {
+    const data = await API.ordersToday();
+    ALL_ORDERS = (data || []).map(o => ({
+      id: o.order_id,
+      rawCreatedAt: o.created_at || '',
+      time: o.created_at ? new Date(o.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit', timeZone:'Asia/Bangkok'}) : '—',
+      customer: o.customer_name || 'Walk-in',
+      brand: o.brand_id === 'HH' ? 'Heng Heng' : 'Brain Brew',
+      brand_id: o.brand_id,
+      type: o.order_type || 'takeaway',
+      table: o.table_number || '',
+      items: Array.isArray(o.items) ? o.items : [],
+      items_count: o.items_count || 1,
+      total: Number(o.total_amount || 0),
+      pay: o.payment_method || 'cash',
+      status: o.order_status === 'cancelled' ? 'cancelled' : 'completed',
+      note: o.notes || '',
+    }));
+  } catch(e) {
+    console.error('loadOrders error:', e.message);
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger)">⚠️ โหลดข้อมูลไม่ได้: ' + e.message + '</td></tr>';
+    return;
+  }
+  filterOrders();
 }
 
-renderOrders(_allOrders.length ? _allOrders : ORDERS);
+function getDateRangeFilter() {
+  const dateSel = document.getElementById('dateSel').value;
+  const todayStr = dateKeyBkk(new Date());
+  if (dateSel === 'All Time') return () => true;
+  if (dateSel === 'Yesterday') {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const yStr = dateKeyBkk(y);
+    return (o) => dateKeyBkk(o.rawCreatedAt) === yStr;
+  }
+  if (dateSel === 'This Week') {
+    const now = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+    const dow = now.getDay();
+    const diffToMonday = dow === 0 ? 6 : dow - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMonday);
+    const mondayStr = dateKeyBkk(monday);
+    return (o) => { const k = dateKeyBkk(o.rawCreatedAt); return k >= mondayStr && k <= todayStr; };
+  }
+  if (dateSel === 'This Month') {
+    const monthPrefix = todayStr.slice(0, 7);
+    return (o) => dateKeyBkk(o.rawCreatedAt).startsWith(monthPrefix);
+  }
+  return (o) => dateKeyBkk(o.rawCreatedAt) === todayStr;
+}
+
+function getFilteredOrders() {
+  const q = document.getElementById('orderSearch').value.toLowerCase();
+  const brandSel = document.getElementById('brandSel').value;
+  const matchDate = getDateRangeFilter();
+
+  return ALL_ORDERS.filter(o => {
+    const matchStatus = statusFilter === 'all' || o.status === statusFilter;
+    const matchQ = !q || o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q);
+    const matchBrand = brandSel === 'All Brands' || o.brand === brandSel;
+    return matchStatus && matchQ && matchBrand && matchDate(o);
+  });
+}
+
+function renderOrders(data) {
+  const body = document.getElementById('orderBody');
+  if (!data.length) {
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">No orders found</td></tr>';
+    return;
+  }
+  body.innerHTML = data.map(o => `
+    <tr class="${o.id===activeOrderId?'selected':''} ${o.status==='cancelled'?'cancelled':''}" onclick="selectOrder('${o.id}')">
+      <td class="order-id">${o.id}</td>
+      <td>${o.time}</td>
+      <td>${o.customer}</td>
+      <td style="font-size:11px;">${o.brand_id==='HH'?'🌸 HH':'☕ BB'}</td>
+      <td><span class="order-type-chip">${o.type}</span></td>
+      <td>${o.items_count} items</td>
+      <td class="td-bold">${fmt(o.total)}</td>
+      <td style="font-size:12px;color:var(--muted);">${o.pay}</td>
+      <td><span class="badge badge-${o.status}">${o.status}</span></td>
+    </tr>`).join('');
+}
+
+function filterOrders() {
+  const filtered = getFilteredOrders();
+  updateKPIs(filtered);
+  renderOrders(filtered);
+}
+
+function setStatus(s, el) {
+  statusFilter = s;
+  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  filterOrders();
+}
+
+function selectOrder(id) {
+  activeOrderId = id;
+  const o = ALL_ORDERS.find(x => x.id === id);
+  if (!o) return;
+  filterOrders();
+
+  document.getElementById('detailEmpty').style.display = 'none';
+  document.getElementById('detailContent').style.display = 'block';
+
+  document.getElementById('detOrderId').textContent = '#' + o.id;
+  document.getElementById('detOrderTime').textContent = (o.time||'—') + ' · ' + o.brand;
+
+  const badge = document.getElementById('detBadge');
+  badge.className = 'badge badge-' + o.status;
+  badge.textContent = o.status.charAt(0).toUpperCase() + o.status.slice(1);
+
+  document.getElementById('detCustomer').textContent = o.customer;
+  document.getElementById('detType').textContent = o.type + (o.table ? ' · ห้อง ' + o.table : '');
+  const payMap = {cash:'เงินสด',qr:'QR PromptPay',card:'บัตรเครดิต',transfer:'โอนเงิน'};
+  document.getElementById('detPay').textContent = payMap[o.pay] || o.pay;
+
+  const detItems = document.getElementById('detItems');
+  detItems.innerHTML = o.items.length
+    ? o.items.map(item => `
+        <div class="order-item-row">
+          <div class="item-name">${item.name||'—'}</div>
+          <div class="item-qty">×${item.qty||1}</div>
+          <div class="item-price">${fmt(item.total || (item.price||0)*(item.qty||1))}</div>
+        </div>`).join('')
+    : '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">ไม่มีข้อมูลรายการ</div>';
+
+  document.getElementById('detTotal').textContent = fmt(o.total);
+
+  const noteBox = document.getElementById('detNoteBox');
+  if (o.note) { noteBox.style.display = 'block'; noteBox.innerHTML = `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted)">📝 ${o.note}</div>`; }
+  else noteBox.style.display = 'none';
+
+  document.getElementById('detCancelBtn').style.display = o.status === 'cancelled' ? 'none' : 'inline-flex';
+}
+
+function updateKPIs(filtered) {
+  const completed = filtered.filter(o => o.status !== 'cancelled');
+  const cancelled = filtered.filter(o => o.status === 'cancelled');
+  const totalRevenue = completed.reduce((s,o) => s + o.total, 0);
+  const avg = completed.length ? totalRevenue / completed.length : 0;
+
+  document.getElementById('kpiTodayOrders').textContent = filtered.length;
+  document.getElementById('kpiTodayOrdersSub').textContent = `${completed.length} completed`;
+  document.getElementById('kpiTodayRevenue').textContent = fmt(totalRevenue);
+  document.getElementById('kpiTodayRevenueSub').textContent = `${completed.length} orders`;
+  document.getElementById('kpiAvgOrder').textContent = fmt(avg);
+  document.getElementById('kpiCancelled').textContent = cancelled.length;
+  document.getElementById('kpiCancelledSub').textContent = cancelled.length ? `${fmt(cancelled.reduce((s,o)=>s+o.total,0))} value` : 'None';
+
+  document.getElementById('ordersStats').textContent = `${filtered.length} orders · ${fmt(totalRevenue)} รวม`;
+}
+
+// ── CANCEL — ใช้ cancelOrder() จริงจาก รหัส.gs (คืนสต๊อกเต็ม, กันคืนซ้ำ) ──
+function openCancelModal() {
+  const o = ALL_ORDERS.find(x => x.id === activeOrderId);
+  if (!o) return;
+  document.getElementById('cancelOrderInfo').textContent = `Order ${o.id} — ${o.customer} — ${fmt(o.total)}`;
+  document.getElementById('cancelReason').value = '';
+  document.getElementById('cancelModal').classList.add('open');
+}
+function closeCancelModal() { document.getElementById('cancelModal').classList.remove('open'); }
+
+async function confirmCancelOrder() {
+  if (!activeOrderId) return;
+  const reason = document.getElementById('cancelReason').value.trim();
+  const btn = document.getElementById('confirmCancelBtn');
+  UI.loading(btn, true);
+  try {
+    const result = await API.cancelOrder(activeOrderId, reason);
+    if (!result || !result.success) throw new Error((result && result.error) || 'ยกเลิกไม่สำเร็จ');
+    showToast('✅ ยกเลิกออเดอร์สำเร็จ — คืนสต๊อกแล้ว');
+    closeCancelModal();
+    await loadOrders();
+    selectOrder(activeOrderId);
+  } catch(e) {
+    console.error('confirmCancelOrder failed:', e);
+    showToast('❌ ยกเลิกไม่สำเร็จ: ' + e.message);
+  } finally {
+    UI.loading(btn, false);
+  }
+}
+
+function printReceipt(){ showToast('Print function is not yet connected to a physical printer.'); }
+function exportCSV() {
+  const items = getFilteredOrders();
+  const rows = [['Order ID','Time','Customer','Brand','Type','Total','Payment','Status']];
+  items.forEach(o => rows.push([o.id,o.time,o.customer,o.brand,o.type,o.total,o.pay,o.status]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `orders_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+function showToast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:24px;right:24px;background:#143D2B;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;';document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
+
 document.addEventListener('DOMContentLoaded', loadOrders);
+document.getElementById('cancelModal').addEventListener('click', e => { if (e.target.id === 'cancelModal') closeCancelModal(); });
 </script>
 </body>
 </html>
