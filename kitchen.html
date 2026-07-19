@@ -31,7 +31,9 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .kds-refresh { padding:6px 14px; border-radius:8px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:rgba(255,255,255,0.7); font-size:12px; cursor:pointer; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; }
 .kds-refresh:hover { background:rgba(255,255,255,0.15); color:#fff; }
 
-.kds-body { flex:1; display:flex; overflow:hidden; height:calc(100vh - 57px); }
+.kds-notice { background:rgba(249,115,22,0.12); border-bottom:1px solid rgba(249,115,22,0.25); padding:6px 20px; font-size:11px; color:#FDB98B; flex-shrink:0; }
+
+.kds-body { flex:1; display:flex; overflow:hidden; height:calc(100vh - 57px - 26px); }
 
 .kds-col { flex:1; display:flex; flex-direction:column; overflow:hidden; border-right:1px solid rgba(255,255,255,0.06); }
 .kds-col:last-child { border-right:none; }
@@ -47,7 +49,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .order-card:hover { background:rgba(255,255,255,0.09); }
 .order-card-header { padding:10px 14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid rgba(255,255,255,0.06); }
 .order-id { font-size:12px; font-weight:700; color:#fff; flex:1; }
-.order-time { font-size:10px; color:rgba(255,255,255,0.4); }
 .order-table { font-size:10px; color:rgba(255,255,255,0.5); }
 .brand-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
 .order-items { padding:10px 14px; display:flex; flex-direction:column; gap:6px; }
@@ -70,13 +71,12 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
 .empty-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; opacity:0.25; font-size:13px; }
-.loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; font-size:15px; }
 </style>
 </head>
 <body>
 
 <div class="kds-header">
-  <div class="kds-logo"><img src="logo-hh-icon.png" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px"> Kitchen Display</div>
+  <div class="kds-logo"><img src="logo-hh-icon.png" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display='none'"> Kitchen Display</div>
   <div class="kds-brand-tabs">
     <button class="kds-tab active" onclick="switchBrand('ALL',this)">All</button>
     <button class="kds-tab" onclick="switchBrand('BB',this)">Brain Brew</button>
@@ -91,6 +91,12 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <button class="kds-refresh" onclick="loadOrders()">⟳ Refresh</button>
   <a href="dashboard.html" style="margin-left:8px"><button class="kds-refresh">← Back</button></a>
 </div>
+
+<!-- #NOTE — kitchen status (pending/making/ready) เก็บใน memory ของเบราว์เซอร์เท่านั้น
+     เพราะ รหัส.gs ยังไม่มี kitchen queue/order-item-status workflow จริง (orders sheet
+     มีแค่ completed/cancelled) refresh หน้าหรือเปิดคนละเครื่องจะไม่ sync กัน —
+     ยอมรับ limitation นี้ตามที่ตกลงไว้ เนื่องจากใช้งานคนเดียว/เครื่องเดียว -->
+<div class="kds-notice">⚠️ สถานะ Pending/Making/Ready อยู่ในเบราว์เซอร์นี้เท่านั้น (ไม่ sync ข้ามเครื่อง, หายเมื่อ refresh)</div>
 
 <div class="kds-body">
   <div class="kds-col">
@@ -119,11 +125,10 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
-
-// Kitchen state: stored in memory (not persisted — refreshing resets to "pending")
-// In-progress / ready orders are tracked locally per session
+// #FIX — เดิม hardcode GAS_URL/fetch เอง เปลี่ยนมาใช้ API.ordersToday() จาก api.js
+// kitchenState ยังคงเก็บใน memory เหมือนเดิม (ตามที่ตกลงว่ายอมรับ limitation นี้)
 const kitchenState = {}; // orderId → 'pending' | 'making' | 'done'
 let ACTIVE_BRAND = 'ALL';
 let ALL_ORDERS = [];
@@ -140,50 +145,23 @@ function timeDiffMinutes(createdAt) {
   if (isNaN(d.getTime())) return 0;
   return Math.floor((Date.now() - d.getTime()) / 60000);
 }
+function timeLabel(mins) { return mins < 60 ? `${mins}m` : `${Math.floor(mins/60)}h ${mins%60}m`; }
+function timerClass(mins) { return mins < 10 ? 'timer-ok' : mins < 20 ? 'timer-warn' : 'timer-urgent'; }
 
-function timeLabel(mins) {
-  if (mins < 60) return `${mins}m`;
-  return `${Math.floor(mins/60)}h ${mins%60}m`;
-}
-
-function timerClass(mins) {
-  if (mins < 10) return 'timer-ok';
-  if (mins < 20) return 'timer-warn';
-  return 'timer-urgent';
-}
-
-// ============================================================
-// LOAD
-// ============================================================
 async function loadOrders() {
   try {
-    const res = await fetch(`${GAS_URL}?action=get_orders_sheet`);
-    const json = await res.json();
-    if (json.success && json.data) {
-      const todayStr = dateKeyBkk(new Date());
-      ALL_ORDERS = json.data.filter(o => {
-        if (!o.created_at) return false;
-        return dateKeyBkk(o.created_at) === todayStr;
-      });
-      // Init state for new orders not yet in kitchenState
-      ALL_ORDERS.forEach(o => {
-        if (!kitchenState[o.order_id]) kitchenState[o.order_id] = 'pending';
-      });
-    }
+    const orders = await API.ordersToday();
+    const todayStr = dateKeyBkk(new Date());
+    ALL_ORDERS = (orders || []).filter(o => o.created_at && dateKeyBkk(o.created_at) === todayStr && o.order_status !== 'cancelled');
+    ALL_ORDERS.forEach(o => { if (!kitchenState[o.order_id]) kitchenState[o.order_id] = 'pending'; });
   } catch(e) {
     console.error('loadOrders:', e);
   }
   renderAll();
 }
 
-// ============================================================
-// RENDER
-// ============================================================
 function getDisplayOrders() {
-  return ALL_ORDERS.filter(o => {
-    if (ACTIVE_BRAND !== 'ALL' && o.brand_id !== ACTIVE_BRAND) return false;
-    return true;
-  });
+  return ALL_ORDERS.filter(o => ACTIVE_BRAND === 'ALL' || o.brand_id === ACTIVE_BRAND);
 }
 
 function renderAll() {
@@ -195,7 +173,6 @@ function renderAll() {
   document.getElementById('count-pending').textContent = pending.length;
   document.getElementById('count-making').textContent  = making.length;
   document.getElementById('count-done').textContent    = done.length;
-
   document.getElementById('stat-pending').textContent    = pending.length;
   document.getElementById('stat-making').textContent     = making.length;
   document.getElementById('stat-done-today').textContent = done.length;
@@ -203,18 +180,16 @@ function renderAll() {
   document.getElementById('col-pending').innerHTML = pending.length
     ? pending.map(o => renderCard(o, 'pending')).join('')
     : `<div class="empty-col"><div style="font-size:28px">✅</div><div>No pending orders</div></div>`;
-
   document.getElementById('col-making').innerHTML = making.length
     ? making.map(o => renderCard(o, 'making')).join('')
     : `<div class="empty-col"><div style="font-size:28px">👨‍🍳</div><div>Nothing in progress</div></div>`;
-
   document.getElementById('col-done').innerHTML = done.length
     ? done.map(o => renderCard(o, 'done')).join('')
     : `<div class="empty-col"><div style="font-size:28px">🍽</div><div>No ready orders</div></div>`;
 }
 
 function renderCard(o, status) {
-  const orderId = o.order_id || o.id || '—';
+  const orderId = o.order_id || '—';
   const brandColor = (o.brand_id === 'HH') ? 'var(--hh)' : 'var(--bb)';
   const tableLabel = o.table_number ? `🪑 ${o.table_number}` : '';
   const custLabel  = o.customer_name && o.customer_name !== 'Walk-in' ? o.customer_name : 'Walk-in';
@@ -223,11 +198,7 @@ function renderCard(o, status) {
 
   const items = Array.isArray(o.items) ? o.items : [];
   const itemsHtml = items.length
-    ? items.map(i => `
-        <div class="order-item">
-          <div class="item-qty">${i.qty}×</div>
-          <div class="item-name">${i.name}</div>
-        </div>`).join('')
+    ? items.map(i => `<div class="order-item"><div class="item-qty">${i.qty}×</div><div class="item-name">${i.name}</div></div>`).join('')
     : `<div class="order-item"><div class="item-name" style="color:rgba(255,255,255,0.4)">— item details not available —</div></div>`;
 
   const footerBtns = status === 'pending'
@@ -251,11 +222,7 @@ function renderCard(o, status) {
     </div>`;
 }
 
-function moveOrder(orderId, newStatus) {
-  kitchenState[orderId] = newStatus;
-  renderAll();
-}
-
+function moveOrder(orderId, newStatus) { kitchenState[orderId] = newStatus; renderAll(); }
 function switchBrand(brand, btn) {
   ACTIVE_BRAND = brand;
   document.querySelectorAll('.kds-tab').forEach(b => b.classList.remove('active'));
@@ -263,13 +230,10 @@ function switchBrand(brand, btn) {
   renderAll();
 }
 
-// Clock
 function updateClock() {
-  const now = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
-  document.getElementById('kds-clock').textContent = now;
+  document.getElementById('kds-clock').textContent = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
 }
 
-// Auto-refresh every 60 seconds
 setInterval(loadOrders, 60000);
 setInterval(updateClock, 1000);
 updateClock();
