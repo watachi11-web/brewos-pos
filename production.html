@@ -41,6 +41,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .btn-primary { background:var(--green); color:#fff; }
 .btn-primary:hover { background:var(--green2); }
 .btn-sm { padding:6px 12px; font-size:11.5px; }
+.btn:disabled { opacity:.5; pointer-events:none; }
 
 .content { flex:1; overflow-y:auto; padding:20px 28px 28px; }
 
@@ -71,7 +72,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 .empty-col { text-align:center; padding:30px 10px; color:var(--muted); font-size:12px; opacity:0.7; }
 
-/* MODAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
 .modal { background:var(--card); border-radius:18px; width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
@@ -85,12 +85,13 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .form-input:focus { border-color:var(--green2); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.form-hint { font-size:10px; color:var(--muted); margin-top:4px; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
@@ -110,7 +111,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <a href="staff.html" class="nav-item"><span class="nav-icon">🧑‍💼</span>Staff</a>
       <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
@@ -119,7 +120,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         <div class="topbar-title">Production Planning</div>
         <div class="topbar-actions">
           <button class="btn btn-ghost" onclick="loadProduction()">⟳ Refresh</button>
-          <button class="btn btn-primary" onclick="openModal('add-modal')">+ New Prep Task</button>
+          <button class="btn btn-primary" onclick="openAddModal()">+ New Prep Task</button>
         </div>
       </div>
     </div>
@@ -162,67 +163,89 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   </div>
 </div>
 
-<!-- ADD MODAL -->
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">New Prep Task</div>
-      <button class="modal-close" onclick="closeModal('add-modal')">×</button>
+      <button class="modal-close" onclick="UI.closeModal('add-modal')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label class="form-label">Item to Prepare</label>
-        <input class="form-input" type="text" id="add-name" placeholder="e.g. Pulled Chicken (filling)">
+        <label class="form-label">Product</label>
+        <select class="form-input" id="add-product">
+          <option value="">⏳ Loading…</option>
+        </select>
+        <div class="form-hint">รายการนี้ดึงจากเมนูจริงใน products sheet — ระบบจะดึง brand ให้อัตโนมัติจากเมนูที่เลือก</div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Target Quantity</label>
-          <input class="form-input" type="number" id="add-qty" placeholder="0">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Brand</label>
-          <select class="form-input" id="add-brand">
-            <option value="SHARED">Shared</option>
-            <option value="BB">Brain Brew</option>
-            <option value="HH">Heng Heng</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label class="form-label">Planned Quantity</label>
+        <input class="form-input" type="number" id="add-qty" placeholder="0">
       </div>
       <div class="form-group">
         <label class="form-label">Note (optional)</label>
-        <input class="form-input" type="text" id="add-note" placeholder="e.g. กรัม, มล., ชิ้น">
+        <input class="form-input" type="text" id="add-note" placeholder="e.g. สำหรับเตรียมช่วงเช้า">
       </div>
       <div class="form-footer">
-        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveTask()">Create Task</button>
+        <button class="btn btn-ghost" onclick="UI.closeModal('add-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-task-btn" onclick="saveTask()">Create Task</button>
       </div>
     </div>
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+// ═══════════════════════════════════════════════════════════
+// #FIX ทั้งไฟล์ — เดิม field name ไม่ตรงกับ getProduction()/createProduction()/
+// updateProduction() ใน รหัส.gs เลยสักจุด (prep_id→batch_id, product_name→product_id,
+// target_qty→planned_qty, prepared_qty→actual_qty, date→batch_date, note→notes) และ
+// สถานะ 'in_progress' ที่ใช้ในหน้านี้ก็ไม่มีใน backend จริง (backend default แค่ 'planned'
+// กับ 'completed') — แก้โดยใช้ field name จริงทั้งหมด และยังคง 'in_progress' ไว้ได้เพราะ
+// updateProduction() ใน รหัส.gs เขียนสถานะเป็น string ตรงๆ ไม่ validate ค่า จึงเก็บ
+// 'in_progress' ได้จริงแม้ createProduction() จะไม่เคย set ค่านี้เป็นค่าเริ่มต้นก็ตาม
+// ใช้ api.js แทน GAS_URL/fetch ตรงๆ ด้วย
+// ═══════════════════════════════════════════════════════════
 let TASKS = [];
+let PRODUCT_MAP = {}; // product_id -> {name, emoji, brand_id}
 
 const BRAND_COLOR = { BB:'#52B788', HH:'#FB923C', SHARED:'#9CA3AF' };
 
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
+
 async function loadProduction() {
   try {
-    const res = await fetch(`${GAS_URL}?action=get_production`);
-    const json = await res.json();
-    TASKS = (json.success && json.data) ? json.data : [];
+    const [tasks, menu] = await Promise.all([API.production(), API.menuData()]);
+    TASKS = tasks || [];
+    PRODUCT_MAP = {};
+    (menu.products || []).forEach(p => { PRODUCT_MAP[p.product_id] = p; });
   } catch(e) {
     console.error('loadProduction:', e);
+    UI.toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, 'error');
     TASKS = [];
   }
   renderAll();
 }
 document.addEventListener('DOMContentLoaded', loadProduction);
 
+function productLabel(productId) {
+  const p = PRODUCT_MAP[productId];
+  return p ? `${p.emoji||'🍽'} ${p.name}` : (productId || 'Unknown product');
+}
+function productBrand(productId) {
+  const p = PRODUCT_MAP[productId];
+  return p ? p.brand_id : 'SHARED';
+}
+
+function taskColumn(t) {
+  if (t.status === 'completed') return 'done';
+  if (t.status === 'in_progress') return 'progress';
+  return 'pending'; // 'planned' หรือค่าอื่นที่ไม่รู้จัก
+}
+
 function renderAll() {
-  const pending  = TASKS.filter(t => t.status === 'pending');
-  const progress = TASKS.filter(t => t.status === 'in_progress');
-  const done     = TASKS.filter(t => t.status === 'done');
+  const pending  = TASKS.filter(t => taskColumn(t) === 'pending');
+  const progress = TASKS.filter(t => taskColumn(t) === 'progress');
+  const done     = TASKS.filter(t => taskColumn(t) === 'done');
 
   document.getElementById('kpi-total').textContent = TASKS.length;
   document.getElementById('kpi-pending').textContent = pending.length;
@@ -239,95 +262,112 @@ function renderAll() {
 }
 
 function renderCard(t) {
-  const pct = t.target_qty > 0 ? Math.min(100, (t.prepared_qty/t.target_qty)*100) : 0;
-  const color = t.status === 'done' ? 'var(--done)' : t.status === 'in_progress' ? 'var(--progress)' : 'var(--pending)';
-  const brandColor = BRAND_COLOR[t.brand_id] || '#9CA3AF';
+  const planned = Number(t.planned_qty || 0);
+  const actual = Number(t.actual_qty || 0);
+  const pct = planned > 0 ? Math.min(100, (actual/planned)*100) : 0;
+  const col = taskColumn(t);
+  const color = col === 'done' ? 'var(--done)' : col === 'progress' ? 'var(--progress)' : 'var(--pending)';
+  const brand = t.brand_id || productBrand(t.product_id);
+  const brandColor = BRAND_COLOR[brand] || '#9CA3AF';
 
   let actions = '';
-  if (t.status === 'pending') {
-    actions = `<button class="btn btn-ghost btn-sm" style="flex:1" onclick="startTask('${t.prep_id}')">▶ Start</button>`;
-  } else if (t.status === 'in_progress') {
+  if (col === 'pending') {
+    actions = `<button class="btn btn-ghost btn-sm" style="flex:1" onclick="startTask('${t.batch_id}')">▶ Start</button>`;
+  } else if (col === 'progress') {
     actions = `
-      <input class="update-input" type="number" placeholder="${t.prepared_qty}" id="qty-${t.prep_id}">
-      <button class="btn btn-ghost btn-sm" onclick="updateQty('${t.prep_id}')">Update</button>
-      <button class="btn btn-primary btn-sm" onclick="finishTask('${t.prep_id}')">✓ Done</button>
+      <input class="update-input" type="number" placeholder="${actual}" id="qty-${t.batch_id}">
+      <button class="btn btn-ghost btn-sm" onclick="updateQty('${t.batch_id}')">Update</button>
+      <button class="btn btn-primary btn-sm" onclick="finishTask('${t.batch_id}', ${planned})">✓ Done</button>
     `;
   } else {
-    actions = `<button class="btn btn-ghost btn-sm" style="flex:1" onclick="reopenTask('${t.prep_id}')">↩ Reopen</button>`;
+    actions = `<button class="btn btn-ghost btn-sm" style="flex:1" onclick="reopenTask('${t.batch_id}')">↩ Reopen</button>`;
   }
 
   return `
     <div class="prep-card">
-      <div class="prep-name">${t.product_name}</div>
+      <div class="prep-name">${productLabel(t.product_id)}</div>
       <div class="prep-meta">
         <div class="brand-dot" style="background:${brandColor}"></div>
-        <div class="prep-brand">${t.brand_id} · ${t.date}</div>
+        <div class="prep-brand">${brand} · ${t.batch_date}</div>
       </div>
       <div class="prep-progress-wrap"><div class="prep-progress-fill" style="width:${pct}%;background:${color}"></div></div>
-      <div class="prep-qty-row"><span>${t.prepared_qty.toLocaleString()} / ${t.target_qty.toLocaleString()}</span><span>${pct.toFixed(0)}%</span></div>
-      ${t.note ? `<div class="prep-note">${t.note}</div>` : ''}
+      <div class="prep-qty-row"><span>${actual.toLocaleString()} / ${planned.toLocaleString()}</span><span>${pct.toFixed(0)}%</span></div>
+      ${t.notes ? `<div class="prep-note">${t.notes}</div>` : ''}
       <div class="prep-actions">${actions}</div>
     </div>
   `;
 }
 
-async function updateStatus(prepId, status, preparedQty) {
+async function updateTaskStatus(batchId, status, actualQty) {
   try {
-    const body = { action:'update_production', prep_id:prepId, status };
-    if (preparedQty !== undefined) body.prepared_qty = preparedQty;
-    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(body) });
-    const json = await res.json();
-    if (json.success) await loadProduction();
-    else alert('Failed: ' + json.error);
-  } catch(e) { alert('Error: ' + e.message); }
+    const body = { batch_id: batchId, status };
+    if (actualQty !== undefined) body.actual_qty = actualQty;
+    const result = await API.updateProduction(body);
+    if (!result || !result.success) throw new Error((result && result.error) || 'อัปเดตไม่สำเร็จ');
+    await loadProduction();
+  } catch(e) {
+    UI.toast('อัปเดตไม่สำเร็จ: ' + e.message, 'error');
+  }
 }
 
-function startTask(id) {
-  const t = TASKS.find(x=>x.prep_id===id);
-  updateStatus(id, 'in_progress');
-}
-function finishTask(id) {
-  const t = TASKS.find(x=>x.prep_id===id);
-  updateStatus(id, 'done', t.target_qty);
-}
-function reopenTask(id) { updateStatus(id, 'in_progress'); }
+function startTask(id) { updateTaskStatus(id, 'in_progress'); }
+function finishTask(id, planned) { updateTaskStatus(id, 'completed', planned); }
+function reopenTask(id) { updateTaskStatus(id, 'in_progress'); }
 
 function updateQty(id) {
   const input = document.getElementById(`qty-${id}`);
   const val = parseFloat(input.value);
-  if (!val || val < 0) { alert('Enter a valid quantity'); return; }
-  updateStatus(id, 'in_progress', val);
+  if (!val || val < 0) { UI.toast('กรอกจำนวนให้ถูกต้อง', 'error'); return; }
+  updateTaskStatus(id, 'in_progress', val);
 }
 
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+async function openAddModal() {
+  UI.openModal('add-modal');
+  const sel = document.getElementById('add-product');
+  sel.innerHTML = '<option value="">⏳ Loading…</option>';
+  try {
+    const menu = await API.menuData();
+    sel.innerHTML = '<option value="">— Select a menu item —</option>' +
+      (menu.products || []).map(p => `<option value="${p.product_id}">${p.emoji||'🍽'} ${p.name} (${p.brand_id})</option>`).join('');
+  } catch(e) {
+    sel.innerHTML = `<option value="">⚠️ Failed to load: ${e.message}</option>`;
+  }
+}
 
 async function saveTask() {
-  const name = document.getElementById('add-name').value.trim();
+  const productId = document.getElementById('add-product').value;
   const qty = parseFloat(document.getElementById('add-qty').value);
-  if (!name) { alert('Please enter an item name.'); return; }
-  if (!qty || qty <= 0) { alert('Please enter a valid target quantity.'); return; }
+  if (!productId) { UI.toast('กรุณาเลือกเมนู', 'error'); return; }
+  if (!qty || qty <= 0) { UI.toast('กรุณากรอกจำนวนที่ถูกต้อง', 'error'); return; }
 
+  const brand = productBrand(productId) || (PRODUCT_MAP[productId] && PRODUCT_MAP[productId].brand_id) || 'SHARED';
+
+  const btn = document.getElementById('save-task-btn');
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, {
-      method:'POST',
-      body: JSON.stringify({
-        action:'create_production', product_name:name, target_qty:qty,
-        brand_id: document.getElementById('add-brand').value,
-        note: document.getElementById('add-note').value.trim(),
-      })
+    const result = await API.createProduction({
+      product_id: productId,
+      brand_id: brand,
+      planned_qty: qty,
+      notes: document.getElementById('add-note').value.trim(),
+      produced_by: Identity.getName(),
     });
-    const json = await res.json();
-    if (json.success) {
-      closeModal('add-modal');
-      ['add-name','add-qty','add-note'].forEach(id => document.getElementById(id).value = '');
-      await loadProduction();
-    } else alert('Failed: ' + json.error);
-  } catch(e) { alert('Error: ' + e.message); }
+    if (!result || !result.success) throw new Error((result && result.error) || 'สร้างงานไม่สำเร็จ');
+    UI.toast('สร้าง prep task แล้ว: ' + result.batch_id);
+    UI.closeModal('add-modal');
+    ['add-qty','add-note'].forEach(id => document.getElementById(id).value = '');
+    await loadProduction();
+  } catch(e) {
+    UI.toast('สร้างไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+  }
 }
 
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+  });
 });
 </script>
 </body>
