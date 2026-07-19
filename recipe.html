@@ -42,8 +42,8 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 .btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
 .btn-primary { background:var(--green); color:#fff; }
 .btn-primary:hover { background:var(--green2); }
+.btn:disabled { opacity:.5; pointer-events:none; }
 
-/* LAYOUT */
 .recipe-layout { display:flex; flex:1; overflow:hidden; }
 .recipe-list-panel { width:300px; flex-shrink:0; border-right:1px solid var(--border); display:flex; flex-direction:column; overflow:hidden; }
 .list-search { padding:14px; border-bottom:1px solid var(--border); }
@@ -99,8 +99,6 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 .ing-qty-val { font-size:13px; color:var(--text); }
 .ing-cost { font-size:13px; color:var(--text); font-weight:500; }
 
-.stock-warn { background:var(--warning-bg); border:1px solid #FDE68A; border-radius:10px; padding:10px 14px; font-size:12px; color:var(--warning); margin-bottom:14px; }
-
 .cost-breakdown { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .cost-item { background:var(--bg); border-radius:12px; padding:14px; }
 .cost-item.highlight { background:var(--success-bg); }
@@ -111,7 +109,6 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 
 .empty-state { padding:50px 20px; text-align:center; color:var(--muted); }
 
-/* MODAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
 .modal { background:var(--card); border-radius:18px; width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
@@ -124,7 +121,6 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 .form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block; font-weight:600; }
 .form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; }
 .form-input:focus { border-color:var(--green2); }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
 .ing-line-row { display:grid; grid-template-columns:2fr 1fr 0.8fr auto; gap:8px; align-items:center; margin-bottom:8px; }
 .ing-line-remove { width:30px; height:30px; border-radius:8px; background:var(--danger-bg); border:1px solid #FECACA; color:var(--danger); cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
@@ -136,7 +132,7 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
@@ -154,7 +150,7 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
       <div class="nav-label" style="margin-top:14px">Settings</div>
       <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
@@ -194,7 +190,6 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
   </div>
 </div>
 
-<!-- ===== ADD RECIPE MODAL ===== -->
 <div class="modal-overlay" id="add-recipe-modal">
   <div class="modal modal-wide">
     <div class="modal-header">
@@ -226,15 +221,17 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 
       <div class="form-footer">
         <button class="btn btn-ghost" onclick="closeAddRecipeModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveRecipeForm()">Save Recipe</button>
+        <button class="btn btn-primary" id="save-recipe-btn" onclick="saveRecipeForm()">Save Recipe</button>
       </div>
     </div>
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
-
+// #FIX — เดิมไฟล์นี้ hardcode GAS_URL/fetch เอง ไม่ใช้ api.js — เปลี่ยนมาใช้
+// API.recipes()/API.menuData()/API.ingredients()/API.createRecipe() แทน (field name
+// ของเดิมตรงกับ รหัส.gs อยู่แล้ว ไม่มี logic bug ต้องแก้) + เปลี่ยน alert() เป็น UI.toast()
 let RECIPES = [];
 let ACTIVE_BRAND = 'ALL';
 let activeRecipeId = null;
@@ -244,6 +241,8 @@ const CAT_LABELS = {
   'CAT-HH-01':'Sandwiches', 'CAT-HH-02':'Salad Box', 'CAT-HH-03':'Noodles', 'CAT-HH-04':'Drinks',
   'CAT-BB-01':'Signature', 'CAT-BB-02':'Classic Iced',
 };
+
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
 
 function fmt(n) { return '฿' + Number(n||0).toFixed(2); }
 
@@ -258,19 +257,10 @@ function gpRingColor(gp) {
   return '#DC2626';
 }
 
-// ============================================================
-// DATA LOADING
-// ============================================================
 async function loadRecipeData() {
   document.getElementById('recipe-list').innerHTML = '<div class="empty-state">⏳ Loading…</div>';
   try {
-    const res = await fetch(`${GAS_URL}?action=get_recipes`);
-    const json = await res.json();
-    if (json.success && json.data) {
-      RECIPES = json.data;
-    } else {
-      RECIPES = [];
-    }
+    RECIPES = await API.recipes();
   } catch(e) {
     console.error('loadRecipeData error:', e);
     RECIPES = [];
@@ -279,12 +269,8 @@ async function loadRecipeData() {
   }
   renderRecipeList();
 }
-
 document.addEventListener('DOMContentLoaded', loadRecipeData);
 
-// ============================================================
-// LIST
-// ============================================================
 function getFilteredRecipes(filter = '') {
   return RECIPES.filter(r => {
     if (ACTIVE_BRAND !== 'ALL' && r.brand !== ACTIVE_BRAND) return false;
@@ -335,9 +321,6 @@ function switchBrand(brand, btn) {
   renderRecipeList();
 }
 
-// ============================================================
-// DETAIL
-// ============================================================
 function selectRecipe(id) {
   activeRecipeId = id;
   scaleMultiplier = 1;
@@ -357,14 +340,12 @@ function renderDetail() {
   document.getElementById('empty-detail').style.display = 'none';
   document.getElementById('recipe-detail').style.display = 'block';
 
-  const cost = recipe.cost * scaleMultiplier / Math.max(1, scaleMultiplier === 1 ? 1 : 1); // cost per serving stays same; scaled total shown separately
   const costPerServing = recipe.cost;
   const margin = recipe.selling_price - costPerServing;
   const gp = recipe.gp_percent;
   const circumference = 2 * Math.PI * 30;
   const offset = circumference - (Math.max(0,Math.min(100,gp)) / 100) * circumference;
   const ringColor = gpRingColor(gp);
-
   const totalLineCost = costPerServing * scaleMultiplier;
 
   document.getElementById('recipe-detail').innerHTML = `
@@ -481,27 +462,21 @@ function renderDetail() {
   `;
 }
 
-// ============================================================
-// ADD / EDIT RECIPE FORM
-// ============================================================
+// ── ADD / EDIT RECIPE FORM ──
 let ALL_PRODUCTS = [];
 let ALL_INGREDIENTS = [];
-let formLines = []; // [{ ingredient_id, qty }]
+let formLines = [];
 
 async function openAddRecipeModal() {
-  document.getElementById('add-recipe-modal').classList.add('show');
+  UI.openModal('add-recipe-modal');
   document.getElementById('ar-product').innerHTML = '<option value="">⏳ Loading…</option>';
   document.getElementById('ar-lines').innerHTML = '';
   formLines = [];
 
   try {
-    const [menuRes, ingRes] = await Promise.all([
-      fetch(`${GAS_URL}?action=get_menu_data`).then(r => r.json()),
-      fetch(`${GAS_URL}?action=get_ingredients`).then(r => r.json()),
-    ]);
-
-    ALL_PRODUCTS = (menuRes.success && menuRes.data && menuRes.data.products) ? menuRes.data.products : [];
-    ALL_INGREDIENTS = (ingRes.success && ingRes.data) ? ingRes.data : [];
+    const [menu, ingredients] = await Promise.all([API.menuData(), API.ingredients()]);
+    ALL_PRODUCTS = menu.products || [];
+    ALL_INGREDIENTS = ingredients || [];
 
     const recipeProductNames = new Set(RECIPES.map(r => r.name));
 
@@ -512,15 +487,13 @@ async function openAddRecipeModal() {
         return `<option value="${p.product_id}" data-name="${p.name}">${p.emoji||'🍽'} ${p.name}${hasRecipe ? ' (has recipe — will overwrite)' : ''}</option>`;
       }).join('');
 
-    addIngredientLine(); // start with one empty line
+    addIngredientLine();
   } catch(e) {
     document.getElementById('ar-product').innerHTML = `<option value="">⚠️ Failed to load: ${e.message}</option>`;
   }
 }
 
-function closeAddRecipeModal() {
-  document.getElementById('add-recipe-modal').classList.remove('show');
-}
+function closeAddRecipeModal() { UI.closeModal('add-recipe-modal'); }
 
 function onProductSelected() {
   const sel = document.getElementById('ar-product');
@@ -530,7 +503,6 @@ function onProductSelected() {
   const selectedOption = sel.options[sel.selectedIndex];
   const productName = selectedOption.getAttribute('data-name');
 
-  // ถ้าสินค้านี้มี recipe อยู่แล้ว ให้โหลดมาแก้ไขต่อ
   const existing = RECIPES.find(r => r.name === productName);
   if (existing && existing.lines && existing.lines.length) {
     formLines = existing.lines.map(l => ({ ingredient_id: l.ingredient_id, qty: l.qty }));
@@ -549,19 +521,12 @@ function addIngredientLine() {
   formLines.push({ ingredient_id: '', qty: '' });
   renderIngredientLines();
 }
-
 function removeIngredientLine(idx) {
   formLines.splice(idx, 1);
   renderIngredientLines();
 }
-
-function updateLineIngredient(idx, ingId) {
-  formLines[idx].ingredient_id = ingId;
-}
-
-function updateLineQty(idx, qty) {
-  formLines[idx].qty = qty;
-}
+function updateLineIngredient(idx, ingId) { formLines[idx].ingredient_id = ingId; }
+function updateLineQty(idx, qty) { formLines[idx].qty = qty; }
 
 function renderIngredientLines() {
   const container = document.getElementById('ar-lines');
@@ -588,16 +553,15 @@ function renderIngredientLines() {
 async function saveRecipeForm() {
   const sel = document.getElementById('ar-product');
   const productId = sel.value;
-  if (!productId) { alert('Please select a product.'); return; }
+  if (!productId) { UI.toast('กรุณาเลือกเมนู', 'error'); return; }
 
   const selectedOption = sel.options[sel.selectedIndex];
   const productName = selectedOption.getAttribute('data-name');
 
   const validLines = formLines.filter(l => l.ingredient_id && l.qty && Number(l.qty) > 0);
-  if (!validLines.length) { alert('Please add at least one valid ingredient line.'); return; }
+  if (!validLines.length) { UI.toast('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'error'); return; }
 
   const payload = {
-    action: 'create_recipe',
     product_id: productId,
     product_name: productName,
     lines: validLines.map(l => {
@@ -611,26 +575,28 @@ async function saveRecipeForm() {
     }),
   };
 
+  const btn = document.getElementById('save-recipe-btn');
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-    const json = await res.json();
-    if (json.success) {
-      closeAddRecipeModal();
-      await loadRecipeData();
-      const saved = RECIPES.find(r => r.name === productName);
-      if (saved) selectRecipe(saved.recipe_id);
-    } else {
-      alert('Failed to save: ' + (json.error || 'unknown error'));
-    }
+    const result = await API.createRecipe(payload);
+    if (!result || !result.success) throw new Error((result && result.error) || 'บันทึกไม่สำเร็จ');
+    UI.toast('บันทึกสูตรแล้ว');
+    closeAddRecipeModal();
+    await loadRecipeData();
+    const saved = RECIPES.find(r => r.name === productName);
+    if (saved) selectRecipe(saved.recipe_id);
   } catch(e) {
-    alert('Error: ' + e.message);
+    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
   }
 }
 
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
+  });
 });
-
 </script>
 </body>
 </html>
