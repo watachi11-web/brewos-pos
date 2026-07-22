@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brand Editor — BrewOS</title>
+<title>Brand & Menu Editor — Brain Brew × Heng Heng</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green:#143D2B; --green2:#1E5A3F;
+  --green:#143D2B; --green2:#1E5A3F; --orange:#F26C21;
   --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
-  --success:#16A34A; --success-bg:#F0FDF4;
+  --bb:#52B788; --hh:#FB923C;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
@@ -29,52 +29,67 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .sidebar-footer { padding:12px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:11px; color:rgba(255,255,255,0.4); }
 
 .topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
-.topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
 .topbar-title { font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; }
+.brand-switch { display:flex; gap:4px; background:var(--card); padding:4px; border-radius:10px; border:1px solid var(--border); }
+.brand-tab { padding:7px 16px; border-radius:7px; font-size:12px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'Anuphan','Poppins',sans-serif; }
+.brand-tab.active { background:var(--green); color:#fff; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; }
 .btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
 .btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
-.btn-ghost:hover { background:#faf8f3; }
+.btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
+.btn-primary { background:var(--green); color:#fff; }
+.btn-primary:hover { background:var(--green2); }
+.btn-sm { padding:6px 12px; font-size:11.5px; }
+.btn:disabled { opacity:.5; pointer-events:none; }
 
-.content { flex:1; overflow-y:auto; padding:20px 28px 28px; max-width:900px; }
-.content::-webkit-scrollbar { width:6px; }
-.content::-webkit-scrollbar-thumb { background:#d5cdbb; border-radius:3px; }
+.content { flex:1; overflow-y:auto; padding:20px 28px 28px; }
 
-.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.cat-section { margin-bottom:22px; }
+.cat-section-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.cat-title { font-size:14px; font-weight:700; }
+.cat-badge { font-size:10px; color:var(--muted); background:var(--card); border:1px solid var(--border); border-radius:10px; padding:2px 9px; }
+.add-item-btn { margin-left:auto; font-size:11px; padding:6px 12px; }
 
-.brand-card { background:var(--card); border:1px solid var(--border); border-radius:18px; overflow:hidden; margin-bottom:16px; }
-.brand-header { padding:24px; text-align:center; color:#fff; }
-.brand-icon-preview { font-size:40px; margin-bottom:8px; }
-.brand-name-preview { font-family:'Poppins',sans-serif; font-size:18px; font-weight:600; }
-.brand-tagline-preview { font-size:11.5px; opacity:0.85; margin-top:4px; }
+.product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+.product-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; position:relative; }
+.product-card.unavailable { opacity:.5; }
+.product-emoji { font-size:28px; margin-bottom:8px; }
+.product-name { font-size:13px; font-weight:600; margin-bottom:2px; }
+.product-name-th { font-size:11px; color:var(--muted); margin-bottom:8px; }
+.product-price-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+.product-price { font-size:16px; font-weight:800; color:var(--green); }
+.product-cost { font-size:10.5px; color:var(--muted); }
+.product-actions { display:flex; gap:6px; }
+.icon-btn { flex:1; padding:6px; border-radius:7px; background:var(--bg); border:1px solid var(--border); color:var(--text); cursor:pointer; font-size:11px; display:flex; align-items:center; justify-content:center; gap:4px; }
+.icon-btn:hover { background:#faf8f3; }
+.icon-btn.danger:hover { background:#FEF2F2; color:#DC2626; border-color:#FECACA; }
+.featured-badge { position:absolute; top:10px; right:10px; background:var(--orange); color:#fff; font-size:8px; font-weight:800; padding:2px 6px; border-radius:6px; }
 
-.brand-body { padding:20px; }
+.empty-state { padding:40px 24px; text-align:center; color:var(--muted); }
+.loading-text { padding:40px; text-align:center; color:var(--muted); font-size:13px; }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal { background:var(--card); border-radius:18px; width:440px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.modal-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:15px; font-weight:600; }
+.modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+.modal-body { padding:20px 24px; }
 .form-group { margin-bottom:16px; }
 .form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block; font-weight:600; }
 .form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; }
 .form-input:focus { border-color:var(--green2); }
-.color-row { display:flex; gap:10px; align-items:center; }
-.color-swatch { width:42px; height:42px; border-radius:10px; border:2px solid var(--border); cursor:pointer; flex-shrink:0; padding:0; }
-.color-presets { display:flex; gap:6px; margin-top:8px; }
-.preset-dot { width:24px; height:24px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:all 0.15s; }
-.preset-dot:hover { transform:scale(1.15); }
-.preset-dot.selected { border-color:var(--text); }
-
-.save-bar { position:sticky; bottom:0; background:var(--card); border-top:1px solid var(--border); padding:16px 24px; display:flex; justify-content:flex-end; gap:8px; margin-top:8px; border-radius:0 0 18px 18px; }
-.btn-save { background:var(--green); color:#fff; padding:10px 22px; border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; }
-.btn-save:hover { background:var(--green2); }
-
-.shop-info-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:16px; }
-.section-title { font-size:14px; font-weight:600; margin-bottom:16px; }
-
-.save-toast { position:fixed; bottom:24px; right:24px; background:var(--green); color:#fff; padding:10px 18px; border-radius:12px; font-size:13px; font-weight:500; transform:translateY(60px); opacity:0; transition:all 0.3s; z-index:100; }
-.save-toast.show { transform:translateY(0); opacity:1; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.checkbox-row { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.checkbox-row input { width:16px; height:16px; accent-color:var(--green); }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
@@ -85,219 +100,340 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <a href="orders.html" class="nav-item"><span class="nav-icon">📋</span>Orders</a>
       <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
       <a href="recipe.html" class="nav-item"><span class="nav-icon">📝</span>Recipes</a>
-      <a href="production.html" class="nav-item"><span class="nav-icon">🏭</span>Production</a>
       <div class="nav-label" style="margin-top:14px">Business</div>
       <a href="crm.html" class="nav-item"><span class="nav-icon">👥</span>CRM / Members</a>
       <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
       <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span>Reports</a>
-      <div class="nav-label" style="margin-top:14px">Settings</div>
+      <div class="nav-label" style="margin-top:14px">Admin</div>
       <a href="staff.html" class="nav-item"><span class="nav-icon">🧑‍💼</span>Staff</a>
-      <a href="brand_editor.html" class="nav-item active"><span class="nav-icon">🎨</span>Brand Editor</a>
+      <a href="brand_editor.html" class="nav-item active"><span class="nav-icon">🎨</span>Brand & Menu</a>
       <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
     <div class="topbar">
       <div class="topbar-top">
-        <div class="topbar-title">Brand Editor</div>
+        <div class="topbar-title">Brand & Menu Editor</div>
+        <div class="brand-switch">
+          <button class="brand-tab active" onclick="switchBrand('ALL', this)">All</button>
+          <button class="brand-tab" onclick="switchBrand('BB', this)">Brain Brew</button>
+          <button class="brand-tab" onclick="switchBrand('HH', this)">Heng Heng</button>
+        </div>
         <div class="topbar-actions">
-          <button class="btn btn-ghost" onclick="loadBrandData()">⟳ Refresh</button>
+          <button class="btn btn-ghost" onclick="loadData()">⟳ Refresh</button>
+          <button class="btn btn-ghost" onclick="openCategoryModal()">+ Category</button>
+          <button class="btn btn-primary" onclick="openProductModal()">+ Menu Item</button>
         </div>
       </div>
     </div>
 
-    <div class="content" id="content">
-      <div style="text-align:center;padding:60px;color:var(--muted)">⏳ Loading…</div>
+    <div class="content" id="menu-content">
+      <div class="loading-text">⏳ Loading…</div>
     </div>
   </div>
 </div>
 
-<div class="save-toast" id="save-toast">✅ Saved</div>
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="product-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="product-modal-title">Add Menu Item</div>
+      <button class="modal-close" onclick="UI.closeModal('product-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="pm-id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input class="form-input" type="text" id="pm-name" placeholder="e.g. Neuron Latte">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Name (Thai)</label>
+          <input class="form-input" type="text" id="pm-name-th" placeholder="ชื่อไทย">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <select class="form-input" id="pm-brand" onchange="populateCategoryOptions()">
+            <option value="BB">Brain Brew</option>
+            <option value="HH">Heng Heng</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-input" id="pm-category"></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Price (฿)</label>
+          <input class="form-input" type="number" id="pm-price" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cost (฿)</label>
+          <input class="form-input" type="number" id="pm-cost" placeholder="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Emoji</label>
+          <input class="form-input" type="text" id="pm-emoji" placeholder="☕" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Image URL (optional)</label>
+          <input class="form-input" type="text" id="pm-image" placeholder="https://…">
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="pm-featured">
+        <label for="pm-featured" style="font-size:12.5px">Featured / Best Seller</label>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="UI.closeModal('product-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-product-btn" onclick="saveProduct()">Save Item</button>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- CATEGORY MODAL -->
+<div class="modal-overlay" id="category-modal">
+  <div class="modal" style="width:380px">
+    <div class="modal-header">
+      <div class="modal-title">Add Category</div>
+      <button class="modal-close" onclick="UI.closeModal('category-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category Name</label>
+        <input class="form-input" type="text" id="cm-name" placeholder="e.g. Cold Brew">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <select class="form-input" id="cm-brand">
+            <option value="BB">Brain Brew</option>
+            <option value="HH">Heng Heng</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Emoji</label>
+          <input class="form-input" type="text" id="cm-emoji" placeholder="☕" maxlength="4">
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="UI.closeModal('category-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-category-btn" onclick="saveCategory()">Save Category</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
-let SETTINGS = {};
+// ═══════════════════════════════════════════════════════════
+// brand_editor.html — ผูกกับ create_product/update_product/delete_product/create_category
+// ที่เพิ่งเพิ่มเข้า รหัส.gs v4.8.0 (เดิม backend ไม่มี route จัดการเมนูเลย — api.js เคย
+// stub ไว้เป็น notImplemented() ทั้งหมด ตอนนี้ใช้งานได้จริงแล้ว)
+// ═══════════════════════════════════════════════════════════
+let CATEGORIES = [];
+let PRODUCTS = [];
+let ACTIVE_BRAND = 'ALL';
 
-const PRESET_COLORS = ['#143D2B','#1E5A3F','#F26C21','#FB923C','#6366F1','#0EA5E9','#DC2626','#D97706','#52B788','#92400E'];
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
 
-async function loadBrandData() {
+async function loadData() {
+  document.getElementById('menu-content').innerHTML = '<div class="loading-text">⏳ Loading…</div>';
   try {
-    const res = await fetch(`${GAS_URL}?action=get_settings`);
-    const json = await res.json();
-    SETTINGS = (json.success && json.data) ? json.data : {};
+    const menu = await API.menuData();
+    CATEGORIES = menu.categories || [];
+    PRODUCTS = menu.products || [];
   } catch(e) {
-    console.error(e);
-    SETTINGS = {};
+    console.error('loadData failed:', e);
+    document.getElementById('menu-content').innerHTML = `<div class="empty-state">โหลดไม่สำเร็จ: ${e.message}</div>`;
+    return;
   }
-  render();
+  renderMenu();
 }
-document.addEventListener('DOMContentLoaded', loadBrandData);
+document.addEventListener('DOMContentLoaded', loadData);
 
-function val(key, fallback='') {
-  return SETTINGS[key] ? SETTINGS[key].value : fallback;
+function switchBrand(brand, btn) {
+  ACTIVE_BRAND = brand;
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMenu();
 }
 
-function render() {
-  const bbColor = val('brand_bb_color', '#143D2B');
-  const hhColor = val('brand_hh_color', '#F26C21');
-  const bbEmoji = val('brand_bb_emoji', '☕');
-  const hhEmoji = val('brand_hh_emoji', '🍱');
-  const bbTag = val('brand_bb_tagline', 'Specialty Coffee');
-  const hhTag = val('brand_hh_tagline', 'อาหารเพื่อสุขภาพ');
-  const bbName = val('shop_name_bb', 'Brain Brew Coffee');
-  const hhName = val('shop_name_hh', 'Heng Heng Phanit');
+function renderMenu() {
+  const cats = CATEGORIES.filter(c => ACTIVE_BRAND === 'ALL' || c.brand_id === ACTIVE_BRAND)
+    .sort((a,b) => (a.display_order||99) - (b.display_order||99));
+  const content = document.getElementById('menu-content');
 
-  document.getElementById('content').innerHTML = `
-    <div class="shop-info-card">
-      <div class="section-title">🏪 Shop Information</div>
-      <div class="two-col">
-        <div class="form-group">
-          <label class="form-label">Address</label>
-          <input class="form-input" id="shop_address" value="${val('shop_address')}" onchange="save('shop_address', this.value)">
+  if (!cats.length) {
+    content.innerHTML = '<div class="empty-state">No categories found for this brand yet. Click "+ Category" to add one.</div>';
+    return;
+  }
+
+  content.innerHTML = cats.map(cat => {
+    const products = PRODUCTS.filter(p => p.category_id === cat.category_id);
+    return `
+      <div class="cat-section">
+        <div class="cat-section-header">
+          <span style="font-size:18px">${cat.emoji||'☕'}</span>
+          <span class="cat-title">${cat.name}</span>
+          <span class="cat-badge">${cat.brand_id} · ${products.length} items</span>
+          <button class="btn btn-ghost add-item-btn" onclick="openProductModal('${cat.category_id}','${cat.brand_id}')">+ Add item here</button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Phone</label>
-          <input class="form-input" id="shop_phone" value="${val('shop_phone')}" onchange="save('shop_phone', this.value)">
+        <div class="product-grid">
+          ${products.length ? products.map(p => renderProductCard(p)).join('') : '<div class="empty-state" style="grid-column:1/-1;padding:20px">No items in this category</div>'}
         </div>
       </div>
-    </div>
+    `;
+  }).join('');
+}
 
-    <div class="two-col">
-      <div class="brand-card">
-        <div class="brand-header" style="background:${bbColor}" id="bb-preview-header">
-          <div class="brand-icon-preview" id="bb-preview-icon">${bbEmoji}</div>
-          <div class="brand-name-preview" id="bb-preview-name">${bbName}</div>
-          <div class="brand-tagline-preview" id="bb-preview-tag">${bbTag}</div>
-        </div>
-        <div class="brand-body">
-          <div class="form-group">
-            <label class="form-label">Brand Name</label>
-            <input class="form-input" id="shop_name_bb" value="${bbName}" oninput="livePreview('bb')" onchange="save('shop_name_bb', this.value)">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tagline</label>
-            <input class="form-input" id="brand_bb_tagline" value="${bbTag}" oninput="livePreview('bb')" onchange="save('brand_bb_tagline', this.value)">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Icon / Emoji</label>
-            <input class="form-input" id="brand_bb_emoji" value="${bbEmoji}" maxlength="4" oninput="livePreview('bb')" onchange="save('brand_bb_emoji', this.value)" style="width:80px">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Brand Color</label>
-            <div class="color-row">
-              <input type="color" class="color-swatch" id="brand_bb_color" value="${bbColor}" oninput="livePreview('bb')" onchange="save('brand_bb_color', this.value)">
-              <input class="form-input" id="bb_color_text" value="${bbColor}" onchange="syncColorText('bb', this.value)" style="flex:1">
-            </div>
-            <div class="color-presets" id="bb-presets"></div>
-          </div>
-        </div>
+function renderProductCard(p) {
+  return `
+    <div class="product-card">
+      ${p.is_featured ? '<div class="featured-badge">★ FEATURED</div>' : ''}
+      <div class="product-emoji">${p.emoji || '🍽'}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-name-th">${p.name_th || '&nbsp;'}</div>
+      <div class="product-price-row">
+        <span class="product-price">฿${p.base_price}</span>
+        <span class="product-cost">cost ฿${p.cost_price}</span>
       </div>
-
-      <div class="brand-card">
-        <div class="brand-header" style="background:${hhColor}" id="hh-preview-header">
-          <div class="brand-icon-preview" id="hh-preview-icon">${hhEmoji}</div>
-          <div class="brand-name-preview" id="hh-preview-name">${hhName}</div>
-          <div class="brand-tagline-preview" id="hh-preview-tag">${hhTag}</div>
-        </div>
-        <div class="brand-body">
-          <div class="form-group">
-            <label class="form-label">Brand Name</label>
-            <input class="form-input" id="shop_name_hh" value="${hhName}" oninput="livePreview('hh')" onchange="save('shop_name_hh', this.value)">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tagline</label>
-            <input class="form-input" id="brand_hh_tagline" value="${hhTag}" oninput="livePreview('hh')" onchange="save('brand_hh_tagline', this.value)">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Icon / Emoji</label>
-            <input class="form-input" id="brand_hh_emoji" value="${hhEmoji}" maxlength="4" oninput="livePreview('hh')" onchange="save('brand_hh_emoji', this.value)" style="width:80px">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Brand Color</label>
-            <div class="color-row">
-              <input type="color" class="color-swatch" id="brand_hh_color" value="${hhColor}" oninput="livePreview('hh')" onchange="save('brand_hh_color', this.value)">
-              <input class="form-input" id="hh_color_text" value="${hhColor}" onchange="syncColorText('hh', this.value)" style="flex:1">
-            </div>
-            <div class="color-presets" id="hh-presets"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="shop-info-card" style="margin-top:16px">
-      <div class="section-title">🧾 Receipt Footer Text</div>
-      <div class="two-col">
-        <div class="form-group">
-          <label class="form-label">Brain Brew Receipt Footer</label>
-          <input class="form-input" id="receipt_footer_bb" value="${val('receipt_footer_bb')}" onchange="save('receipt_footer_bb', this.value)">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Heng Heng Receipt Footer</label>
-          <input class="form-input" id="receipt_footer_hh" value="${val('receipt_footer_hh')}" onchange="save('receipt_footer_hh', this.value)">
-        </div>
+      <div class="product-actions">
+        <button class="icon-btn" onclick='editProduct(${JSON.stringify(p)})'>✎ Edit</button>
+        <button class="icon-btn danger" onclick="deleteProductConfirm('${p.product_id}','${p.name.replace(/'/g,"\\'")}')">✕ Delete</button>
       </div>
     </div>
   `;
-
-  renderPresets('bb', bbColor);
-  renderPresets('hh', hhColor);
 }
 
-function renderPresets(brand, current) {
-  const wrap = document.getElementById(`${brand}-presets`);
-  wrap.innerHTML = PRESET_COLORS.map(c => `
-    <div class="preset-dot ${c.toLowerCase()===current.toLowerCase()?'selected':''}" style="background:${c}" onclick="pickPreset('${brand}','${c}')"></div>
-  `).join('');
+// ── PRODUCT MODAL ──
+function populateCategoryOptions() {
+  const brand = document.getElementById('pm-brand').value;
+  const sel = document.getElementById('pm-category');
+  const cats = CATEGORIES.filter(c => c.brand_id === brand);
+  sel.innerHTML = cats.map(c => `<option value="${c.category_id}">${c.emoji||''} ${c.name}</option>`).join('') || '<option value="">No categories — add one first</option>';
 }
 
-function pickPreset(brand, color) {
-  document.getElementById(`brand_${brand}_color`).value = color;
-  document.getElementById(`${brand}_color_text`).value = color;
-  livePreview(brand);
-  save(`brand_${brand}_color`, color);
+function openProductModal(categoryId, brandId) {
+  document.getElementById('product-modal-title').textContent = 'Add Menu Item';
+  document.getElementById('pm-id').value = '';
+  document.getElementById('pm-name').value = '';
+  document.getElementById('pm-name-th').value = '';
+  document.getElementById('pm-price').value = '';
+  document.getElementById('pm-cost').value = '';
+  document.getElementById('pm-emoji').value = '';
+  document.getElementById('pm-image').value = '';
+  document.getElementById('pm-featured').checked = false;
+  document.getElementById('pm-brand').value = brandId || (ACTIVE_BRAND !== 'ALL' ? ACTIVE_BRAND : 'BB');
+  populateCategoryOptions();
+  if (categoryId) document.getElementById('pm-category').value = categoryId;
+  UI.openModal('product-modal');
 }
 
-function syncColorText(brand, value) {
-  if (!/^#[0-9A-Fa-f]{6}$/.test(value)) return;
-  document.getElementById(`brand_${brand}_color`).value = value;
-  livePreview(brand);
-  save(`brand_${brand}_color`, value);
+function editProduct(p) {
+  document.getElementById('product-modal-title').textContent = 'Edit Menu Item';
+  document.getElementById('pm-id').value = p.product_id;
+  document.getElementById('pm-name').value = p.name;
+  document.getElementById('pm-name-th').value = p.name_th || '';
+  document.getElementById('pm-price').value = p.base_price;
+  document.getElementById('pm-cost').value = p.cost_price;
+  document.getElementById('pm-emoji').value = p.emoji || '';
+  document.getElementById('pm-image').value = p.image_url || '';
+  document.getElementById('pm-featured').checked = !!p.is_featured;
+  document.getElementById('pm-brand').value = p.brand_id;
+  populateCategoryOptions();
+  document.getElementById('pm-category').value = p.category_id;
+  UI.openModal('product-modal');
 }
 
-function livePreview(brand) {
-  const name = document.getElementById(`shop_name_${brand}`).value;
-  const tag = document.getElementById(`brand_${brand}_tagline`).value;
-  const emoji = document.getElementById(`brand_${brand}_emoji`).value;
-  const color = document.getElementById(`brand_${brand}_color`).value;
+async function saveProduct() {
+  const id = document.getElementById('pm-id').value;
+  const name = document.getElementById('pm-name').value.trim();
+  if (!name) { UI.toast('กรุณากรอกชื่อเมนู', 'error'); return; }
 
-  document.getElementById(`${brand}-preview-name`).textContent = name;
-  document.getElementById(`${brand}-preview-tag`).textContent = tag;
-  document.getElementById(`${brand}-preview-icon`).textContent = emoji;
-  document.getElementById(`${brand}-preview-header`).style.background = color;
-  document.getElementById(`${brand}_color_text`).value = color;
-  renderPresets(brand, color);
-}
+  const payload = {
+    name,
+    name_th: document.getElementById('pm-name-th').value.trim(),
+    brand_id: document.getElementById('pm-brand').value,
+    category_id: document.getElementById('pm-category').value,
+    base_price: parseFloat(document.getElementById('pm-price').value) || 0,
+    cost_price: parseFloat(document.getElementById('pm-cost').value) || 0,
+    emoji: document.getElementById('pm-emoji').value.trim() || '🍽',
+    image_url: document.getElementById('pm-image').value.trim(),
+    is_featured: document.getElementById('pm-featured').checked,
+  };
 
-async function save(key, value) {
+  const btn = document.getElementById('save-product-btn');
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'update_setting', key, value }) });
-    const json = await res.json();
-    if (json.success) {
-      if (SETTINGS[key]) SETTINGS[key].value = value;
-      showToast();
-    }
+    const result = id ? await API.updateProduct({ product_id: id, ...payload }) : await API.createProduct(payload);
+    if (!result || !result.success) throw new Error((result && result.error) || 'บันทึกไม่สำเร็จ');
+    UI.toast(id ? 'แก้ไขเมนูแล้ว' : 'เพิ่มเมนูใหม่แล้ว: ' + result.product_id);
+    UI.closeModal('product-modal');
+    await loadData();
   } catch(e) {
-    console.error('save failed', e);
+    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
   }
 }
 
-function showToast() {
-  const t = document.getElementById('save-toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+async function deleteProductConfirm(id, name) {
+  if (!confirm(`Delete "${name}"? It will be hidden from the menu (soft delete) — existing order history is preserved.`)) return;
+  try {
+    const result = await API.deleteProduct(id);
+    if (!result || !result.success) throw new Error((result && result.error) || 'ลบไม่สำเร็จ');
+    UI.toast('ลบเมนูแล้ว');
+    await loadData();
+  } catch(e) {
+    UI.toast('ลบไม่สำเร็จ: ' + e.message, 'error');
+  }
 }
+
+// ── CATEGORY MODAL ──
+function openCategoryModal() {
+  document.getElementById('cm-name').value = '';
+  document.getElementById('cm-emoji').value = '';
+  document.getElementById('cm-brand').value = ACTIVE_BRAND !== 'ALL' ? ACTIVE_BRAND : 'BB';
+  UI.openModal('category-modal');
+}
+
+async function saveCategory() {
+  const name = document.getElementById('cm-name').value.trim();
+  if (!name) { UI.toast('กรุณากรอกชื่อหมวดหมู่', 'error'); return; }
+
+  const btn = document.getElementById('save-category-btn');
+  UI.loading(btn, true);
+  try {
+    const result = await API.createCategory({
+      name,
+      brand_id: document.getElementById('cm-brand').value,
+      emoji: document.getElementById('cm-emoji').value.trim() || '☕',
+    });
+    if (!result || !result.success) throw new Error((result && result.error) || 'บันทึกไม่สำเร็จ');
+    UI.toast('เพิ่มหมวดหมู่แล้ว: ' + result.category_id);
+    UI.closeModal('category-modal');
+    await loadData();
+  } catch(e) {
+    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+  });
+});
 </script>
 </body>
 </html>
