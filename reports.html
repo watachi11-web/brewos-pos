@@ -46,26 +46,19 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .content::-webkit-scrollbar { width:6px; }
 .content::-webkit-scrollbar-thumb { background:#d5cdbb; border-radius:3px; }
 
-/* KPI */
 .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
 .kpi-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; }
 .kpi-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; font-weight:600; }
 .kpi-value { font-size:22px; font-weight:700; color:var(--text); line-height:1; }
 .kpi-sub { font-size:11px; color:var(--muted); margin-top:5px; }
-.kpi-trend { font-size:11px; margin-top:4px; font-weight:500; }
-.trend-up { color:var(--success); }
-.trend-down { color:var(--danger); }
 
-/* GRID */
 .two-col { display:grid; grid-template-columns:1.4fr 0.6fr; gap:16px; margin-bottom:16px; }
-.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:16px; }
 .card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
 .card-header { padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
 .card-title { font-size:13px; font-weight:600; color:var(--text); }
 .card-sub { font-size:10.5px; color:var(--muted); }
 .card-body { padding:18px; }
 
-/* MENU TABLE */
 .menu-grid { grid-template-columns:2fr 1fr 1fr 1fr; }
 .table-header { display:grid; padding:10px 16px; background:var(--green); font-size:10px; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
 .table-row { display:grid; padding:11px 16px; border-bottom:1px solid var(--border); align-items:center; font-size:12.5px; }
@@ -73,7 +66,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .table-row:hover { background:#faf8f3; }
 .rank-badge { width:20px; height:20px; border-radius:50%; background:var(--green); color:#fff; font-size:9px; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
 
-/* BRAND COMPARE */
 .brand-compare { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .brand-card { border-radius:12px; padding:16px; border:1px solid var(--border); }
 .brand-card.bb { background:rgba(82,183,136,0.08); border-color:rgba(82,183,136,0.25); }
@@ -86,15 +78,13 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 .empty-state { padding:40px 24px; text-align:center; color:var(--muted); }
 .loading-text { color:var(--muted); font-size:12px; padding:20px; text-align:center; }
-
-/* CHART */
 .chart-wrap { position:relative; height:220px; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
@@ -110,9 +100,10 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
       <a href="reports.html" class="nav-item active"><span class="nav-icon">📊</span>Reports</a>
       <div class="nav-label" style="margin-top:14px">Settings</div>
+      <a href="staff.html" class="nav-item"><span class="nav-icon">🧑‍💼</span>Staff</a>
       <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
@@ -133,8 +124,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
     </div>
 
     <div class="content">
-
-      <!-- KPIs -->
       <div class="kpi-row">
         <div class="kpi-card">
           <div class="kpi-label">Total Revenue</div>
@@ -158,7 +147,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         </div>
       </div>
 
-      <!-- Revenue trend chart + Brand comparison -->
       <div class="two-col">
         <div class="card">
           <div class="card-header">
@@ -178,7 +166,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         </div>
       </div>
 
-      <!-- Top Menu + Brand Compare -->
       <div class="two-col" style="margin-bottom:16px">
         <div class="card">
           <div class="card-header">
@@ -198,7 +185,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         </div>
       </div>
 
-      <!-- Daily breakdown -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">Daily Breakdown</div>
@@ -209,19 +195,22 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         </div>
         <div id="daily-body"><div class="loading-text">Loading…</div></div>
       </div>
-
     </div>
   </div>
 </div>
 
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+// #FIX — เดิม hardcode GAS_URL/fetch เอง เปลี่ยนมาใช้ API.ordersToday() จาก api.js
+// (field name ที่ใช้ตรงกับ getOrdersFromSheet() อยู่แล้ว ไม่มี logic bug ต้องแก้)
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 let ALL_ORDERS = [];
 let PERIOD_DAYS = 30;
 let revenueChart = null;
 let brandDonut = null;
+
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
 
 function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
 
@@ -232,26 +221,18 @@ function dateKeyBkk(val) {
   return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
 }
 
-// ============================================================
-// LOAD
-// ============================================================
 async function loadReportData() {
   try {
-    const res = await fetch(`${GAS_URL}?action=get_orders_sheet`);
-    const json = await res.json();
-    ALL_ORDERS = (json.success && json.data) ? json.data : [];
+    ALL_ORDERS = await API.ordersToday();
   } catch(e) {
     console.error('loadReportData:', e);
+    UI.toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, 'error');
     ALL_ORDERS = [];
   }
   renderAll();
 }
-
 document.addEventListener('DOMContentLoaded', loadReportData);
 
-// ============================================================
-// PERIOD
-// ============================================================
 function setPeriod(days, btn) {
   PERIOD_DAYS = days;
   document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
@@ -264,17 +245,11 @@ function getFilteredOrders() {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - PERIOD_DAYS);
   const cutoffStr = dateKeyBkk(cutoff);
-  return ALL_ORDERS.filter(o => {
-    const k = dateKeyBkk(o.created_at);
-    return k >= cutoffStr;
-  });
+  return ALL_ORDERS.filter(o => dateKeyBkk(o.created_at) >= cutoffStr);
 }
 
-// ============================================================
-// RENDER
-// ============================================================
 function renderAll() {
-  const orders = getFilteredOrders();
+  const orders = getFilteredOrders().filter(o => o.order_status !== 'cancelled');
   renderKPIs(orders);
   renderRevenueChart(orders);
   renderBrandDonut(orders);
@@ -287,7 +262,6 @@ function renderKPIs(orders) {
   const totalRev = orders.reduce((s,o) => s + Number(o.total_amount||0), 0);
   const avg = orders.length ? totalRev / orders.length : 0;
 
-  // top item by qty
   const itemCount = {};
   orders.forEach(o => {
     if (!Array.isArray(o.items)) return;
@@ -319,7 +293,6 @@ function renderKPIs(orders) {
 }
 
 function renderRevenueChart(orders) {
-  // Build daily revenue map
   const dayMap = {};
   orders.forEach(o => {
     const k = dateKeyBkk(o.created_at);
@@ -327,16 +300,13 @@ function renderRevenueChart(orders) {
     dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount||0);
   });
 
-  // Generate date range
   const displayDays = Math.min(PERIOD_DAYS === 0 ? 60 : PERIOD_DAYS, 60);
   const labels = [], data = [];
   for (let i = displayDays - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const key = dateKeyBkk(d);
-    const dd = String(d.getDate()).padStart(2,'0');
-    const mo = MONTHS[d.getMonth()];
-    labels.push(`${dd} ${mo}`);
+    labels.push(`${String(d.getDate()).padStart(2,'0')} ${MONTHS[d.getMonth()]}`);
     data.push(dayMap[key] || 0);
   }
 
@@ -344,22 +314,13 @@ function renderRevenueChart(orders) {
   if (revenueChart) revenueChart.destroy();
   revenueChart = new Chart(ctx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets:[{
-        data, backgroundColor: labels.map((_,i) => i === labels.length-1 ? '#143D2B' : '#52B788aa'),
-        borderRadius:5, borderSkipped:false,
-      }]
-    },
+    data: { labels, datasets:[{ data, backgroundColor: labels.map((_,i) => i === labels.length-1 ? '#143D2B' : '#52B788aa'), borderRadius:5, borderSkipped:false }] },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false} },
       scales:{
-        x:{ grid:{display:false}, ticks:{ color:'#6b7d68', font:{size:10},
-          callback(v) { return labels[v].slice(0,6); },
-          maxTicksLimit: displayDays > 30 ? 10 : 14 }},
-        y:{ grid:{color:'rgba(0,0,0,0.04)'}, ticks:{ color:'#6b7d68', font:{size:10},
-          callback: v => '฿'+(v/1000).toFixed(0)+'k' }}
+        x:{ grid:{display:false}, ticks:{ color:'#6b7d68', font:{size:10}, callback(v) { return labels[v].slice(0,6); }, maxTicksLimit: displayDays > 30 ? 10 : 14 }},
+        y:{ grid:{color:'rgba(0,0,0,0.04)'}, ticks:{ color:'#6b7d68', font:{size:10}, callback: v => '฿'+(v/1000).toFixed(0)+'k' }}
       }
     }
   });
@@ -387,9 +348,7 @@ function renderBrandDonut(orders) {
       <div style="flex:1;color:var(--text);font-size:12px">${b.name}</div>
       <div style="font-weight:600;font-size:12px">${fmt(b.rev)}</div>
     </div>
-    <div style="padding-left:16px;color:var(--muted);font-size:10.5px;margin-top:-4px">
-      ${total > 0 ? ((b.rev/total)*100).toFixed(1) : 0}% of revenue
-    </div>
+    <div style="padding-left:16px;color:var(--muted);font-size:10.5px;margin-top:-4px">${total > 0 ? ((b.rev/total)*100).toFixed(1) : 0}% of revenue</div>
   `).join('');
 }
 
@@ -408,10 +367,7 @@ function renderTopMenu(orders) {
   const top = Object.entries(itemMap).sort((a,b)=>b[1].rev-a[1].rev).slice(0,10);
   const body = document.getElementById('top-menu-body');
 
-  if (!top.length) {
-    body.innerHTML = '<div class="empty-state">No data for selected period</div>';
-    return;
-  }
+  if (!top.length) { body.innerHTML = '<div class="empty-state">No data for selected period</div>'; return; }
 
   body.innerHTML = top.map(([name, d], i) => `
     <div class="table-row menu-grid">
@@ -429,7 +385,6 @@ function renderTopMenu(orders) {
 function renderBrandCompare(orders) {
   const bb = orders.filter(o => o.brand_id === 'BB');
   const hh = orders.filter(o => o.brand_id === 'HH');
-
   const bbRev = bb.reduce((s,o)=>s+Number(o.total_amount||0),0);
   const hhRev = hh.reduce((s,o)=>s+Number(o.total_amount||0),0);
   const bbAvg = bb.length ? bbRev/bb.length : 0;
@@ -452,7 +407,6 @@ function renderBrandCompare(orders) {
 }
 
 function renderDailyBreakdown(orders) {
-  // Group by date
   const dayMap = {};
   orders.forEach(o => {
     const k = dateKeyBkk(o.created_at);
@@ -460,17 +414,12 @@ function renderDailyBreakdown(orders) {
     if (!dayMap[k]) dayMap[k] = { orders:0, rev:0, bb:0, hh:0 };
     dayMap[k].orders++;
     dayMap[k].rev += Number(o.total_amount||0);
-    if (o.brand_id === 'BB') dayMap[k].bb++;
-    else dayMap[k].hh++;
+    if (o.brand_id === 'BB') dayMap[k].bb++; else dayMap[k].hh++;
   });
 
   const sorted = Object.entries(dayMap).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 60);
   const body = document.getElementById('daily-body');
-
-  if (!sorted.length) {
-    body.innerHTML = '<div class="empty-state">No data for selected period</div>';
-    return;
-  }
+  if (!sorted.length) { body.innerHTML = '<div class="empty-state">No data for selected period</div>'; return; }
 
   body.innerHTML = sorted.map(([date, d]) => {
     const [y, m, dd] = date.split('-');
@@ -482,9 +431,7 @@ function renderDailyBreakdown(orders) {
         <div style="color:var(--muted)">${d.orders}</div>
         <div style="font-weight:600">${fmt(d.rev)}</div>
         <div style="color:var(--muted)">${fmt(avg)}</div>
-        <div style="font-size:11px;color:var(--muted)">
-          <span style="color:var(--bb)">BB ${d.bb}</span> / <span style="color:var(--hh)">HH ${d.hh}</span>
-        </div>
+        <div style="font-size:11px;color:var(--muted)"><span style="color:var(--bb)">BB ${d.bb}</span> / <span style="color:var(--hh)">HH ${d.hh}</span></div>
       </div>
     `;
   }).join('');
@@ -493,11 +440,7 @@ function renderDailyBreakdown(orders) {
 function exportReport() {
   const orders = getFilteredOrders();
   const rows = [['Date','Order ID','Brand','Customer','Total','Payment Method','Items Count']];
-  orders.forEach(o => rows.push([
-    dateKeyBkk(o.created_at), o.order_id||'', o.brand_id||'',
-    o.customer_name||'Walk-in', o.total_amount||0,
-    o.payment_method||'', o.items_count||1
-  ]));
+  orders.forEach(o => rows.push([dateKeyBkk(o.created_at), o.order_id||'', o.brand_id||'', o.customer_name||'Walk-in', o.total_amount||0, o.payment_method||'', o.items_count||1]));
   const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
