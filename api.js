@@ -1,5 +1,5 @@
 /**
- * BrewOS — Shared API Client v2.0.0
+ * BrewOS — Shared API Client v2.1.0
  * All back-office pages import this file via <script src="api.js">
  *
  * แก้จาก v1.x:
@@ -100,9 +100,13 @@ const API = {
   // #REMOVED — ไม่มี route create_product/update_product/delete_product ใน รหัส.gs
   // (products sheet เป็น read-only จาก backend ปัจจุบัน ต้องแก้ไขตรงใน Google Sheet เอง
   //  หรือแจ้งทีมพัฒนาให้เพิ่ม route เหล่านี้ถ้าต้องการจัดการเมนูผ่านหน้าเว็บ)
-  createProduct: notImplemented('เพิ่มเมนูใหม่ผ่านหน้าเว็บ'),
-  updateProduct: notImplemented('แก้ไขเมนูผ่านหน้าเว็บ'),
-  deleteProduct: notImplemented('ลบเมนูผ่านหน้าเว็บ'),
+  // #FIX v4.8.0 — รหัส.gs เพิ่ม route create_product/update_product/delete_product แล้ว
+  // (ของเดิม notImplemented() เพราะ backend ไม่มี route พวกนี้มาก่อน)
+  createProduct: (data) => apiPost('create_product', data),
+  updateProduct: (data) => apiPost('update_product', data),
+  deleteProduct: (product_id) => apiPost('delete_product', { product_id }),
+  createCategory: (data) => apiPost('create_category', data),
+  updateCategory: (data) => apiPost('update_category', data),
 
   // Orders
   ordersToday: (p = {}) => apiGet('get_orders_sheet', p),
