@@ -3,16 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Staff — BrewOS</title>
+<title>Staff — Brain Brew × Heng Heng</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green:#143D2B; --green2:#1E5A3F;
+  --green:#143D2B; --green2:#1E5A3F; --orange:#F26C21;
   --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
   --success:#16A34A; --success-bg:#F0FDF4;
   --danger:#DC2626; --danger-bg:#FEF2F2;
-  --bb:#52B788; --hh:#FB923C;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
@@ -40,46 +39,52 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .btn-primary { background:var(--green); color:#fff; }
 .btn-primary:hover { background:var(--green2); }
 .btn-sm { padding:6px 12px; font-size:11.5px; }
+.btn:disabled { opacity:.5; pointer-events:none; }
 
 .content { flex:1; overflow-y:auto; padding:20px 28px 28px; }
-
-.tab-row { display:flex; gap:4px; margin-bottom:18px; background:var(--card); padding:4px; border-radius:11px; width:fit-content; border:1px solid var(--border); }
-.tab-btn { padding:8px 20px; border-radius:8px; font-size:12.5px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'Anuphan','Poppins',sans-serif; }
-.tab-btn.active { background:var(--green); color:#fff; }
 
 .kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
 .kpi-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
 .kpi-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; font-weight:600; }
 .kpi-value { font-size:22px; font-weight:700; }
 
-.staff-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
-.staff-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:18px; }
-.staff-top { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.staff-avatar { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:#fff; flex-shrink:0; }
-.staff-name { font-size:14px; font-weight:600; }
-.staff-role { font-size:11px; color:var(--muted); margin-top:2px; }
-.staff-status { margin-left:auto; }
-.status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; }
-.staff-info-row { display:flex; justify-content:space-between; font-size:12px; padding:5px 0; border-bottom:1px solid var(--bg); }
-.staff-info-row:last-of-type { border-bottom:none; }
-.info-label { color:var(--muted); }
-.info-value { font-weight:500; }
-.staff-clock-btn { width:100%; margin-top:12px; padding:9px; border-radius:9px; font-size:12.5px; font-weight:600; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; }
-.clock-in-btn  { background:var(--success-bg); color:var(--success); border:1px solid rgba(22,163,74,0.25); }
-.clock-out-btn { background:var(--danger-bg); color:var(--danger); border:1px solid rgba(220,38,38,0.25); }
+.tab-row { display:flex; gap:4px; margin-bottom:20px; background:rgba(0,0,0,0.03); padding:3px; border-radius:10px; width:fit-content; }
+.tab-btn { padding:7px 18px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'Anuphan','Poppins',sans-serif; }
+.tab-btn.active { background:var(--card); color:var(--text); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
 
-/* ATTENDANCE TABLE */
+.filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; }
+.search-wrap { position:relative; }
+.search-input { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px 9px 36px; font-size:12.5px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; width:240px; }
+.search-input:focus { border-color:var(--green2); }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:0.4; pointer-events:none; }
+.select-filter { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; cursor:pointer; }
+
 .table-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
-.table-header { display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; background:var(--green); font-size:10.5px; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
-.table-row { display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; border-bottom:1px solid var(--border); align-items:center; }
+.table-header { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; background:var(--green); font-size:10.5px; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
+.table-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; border-bottom:1px solid var(--border); align-items:center; transition:background 0.1s; }
 .table-row:last-child { border-bottom:none; }
 .table-row:hover { background:#faf8f3; }
-.empty-state { padding:50px 20px; text-align:center; color:var(--muted); }
 
-/* MODAL */
+.staff-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
+.staff-name { font-size:13px; font-weight:600; color:var(--text); }
+.staff-id { font-size:10.5px; color:var(--muted); margin-top:1px; }
+
+.status-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; }
+.status-active { background:var(--success-bg); color:var(--success); }
+.status-inactive { background:var(--danger-bg); color:var(--danger); }
+.status-dot { width:5px; height:5px; border-radius:50%; background:currentColor; }
+
+.brand-badge { display:inline-flex; padding:3px 9px; border-radius:20px; font-size:10px; font-weight:700; }
+.brand-BB { background:#DCFCE7; color:#16a34a; }
+.brand-HH { background:#FEF3C7; color:#B45309; }
+.brand-SHARED { background:#EEF2FF; color:#4F46E5; }
+
+.empty-state { padding:60px 24px; text-align:center; color:var(--muted); }
+.loading-text { padding:40px; text-align:center; color:var(--muted); font-size:13px; }
+
 .modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
-.modal { background:var(--card); border-radius:18px; width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.modal { background:var(--card); border-radius:18px; width:460px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
 .modal-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
 .modal-title { font-size:15px; font-weight:600; }
 .modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
@@ -90,12 +95,14 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .form-input:focus { border-color:var(--green2); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.pin-display { background:var(--success-bg); border:1px solid #BBF7D0; border-radius:12px; padding:16px; text-align:center; margin-bottom:16px; }
+.pin-code { font-size:28px; font-weight:800; letter-spacing:6px; color:var(--success); font-family:'Poppins',sans-serif; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
@@ -106,7 +113,6 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <a href="orders.html" class="nav-item"><span class="nav-icon">📋</span>Orders</a>
       <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
       <a href="recipe.html" class="nav-item"><span class="nav-icon">📝</span>Recipes</a>
-      <a href="production.html" class="nav-item"><span class="nav-icon">🏭</span>Production</a>
       <div class="nav-label" style="margin-top:14px">Business</div>
       <a href="crm.html" class="nav-item"><span class="nav-icon">👥</span>CRM / Members</a>
       <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
@@ -115,16 +121,16 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <a href="staff.html" class="nav-item active"><span class="nav-icon">🧑‍💼</span>Staff</a>
       <a href="settings.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
     <div class="topbar">
       <div class="topbar-top">
-        <div class="topbar-title">Staff Management</div>
+        <div class="topbar-title">Staff</div>
         <div class="topbar-actions">
-          <button class="btn btn-ghost" onclick="loadStaffData()">⟳ Refresh</button>
-          <button class="btn btn-primary" onclick="openModal('add-modal')">+ Add Staff</button>
+          <button class="btn btn-ghost" onclick="loadAll()">⟳ Refresh</button>
+          <button class="btn btn-primary" onclick="UI.openModal('add-staff-modal')">+ Add Staff</button>
         </div>
       </div>
     </div>
@@ -132,43 +138,59 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
     <div class="content">
       <div class="kpi-row">
         <div class="kpi-card"><div class="kpi-label">Total Staff</div><div class="kpi-value" id="kpi-total">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Clocked In Now</div><div class="kpi-value" style="color:var(--success)" id="kpi-clocked">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Hours Today</div><div class="kpi-value" id="kpi-hours">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Avg Wage</div><div class="kpi-value" id="kpi-wage">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Active Today</div><div class="kpi-value" style="color:var(--success)" id="kpi-active">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Clocked In Now</div><div class="kpi-value" style="color:var(--orange)" id="kpi-clocked-in">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Total Payroll (est.)</div><div class="kpi-value" id="kpi-payroll">—</div></div>
       </div>
 
       <div class="tab-row">
         <button class="tab-btn active" onclick="switchTab('staff', this)">Staff List</button>
-        <button class="tab-btn" onclick="switchTab('attendance', this)">Attendance Log</button>
+        <button class="tab-btn" onclick="switchTab('attendance', this)">Attendance</button>
       </div>
 
       <div id="tab-staff">
-        <div class="staff-grid" id="staff-grid"></div>
+        <div class="filter-row">
+          <div class="search-wrap">
+            <svg class="search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#6b7d68" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+            <input class="search-input" type="text" placeholder="Search staff…" oninput="filterStaff(this.value)">
+          </div>
+          <select class="select-filter" id="brand-filter" onchange="renderStaff()">
+            <option value="">All Brands</option>
+            <option value="BB">Brain Brew</option>
+            <option value="HH">Heng Heng</option>
+            <option value="SHARED">Shared</option>
+          </select>
+        </div>
+        <div class="table-card">
+          <div class="table-header">
+            <div>Staff</div><div>Role</div><div>Brand</div><div>Wage/hr</div><div>Status</div><div style="text-align:right">Actions</div>
+          </div>
+          <div id="staff-body"><div class="loading-text">⏳ Loading…</div></div>
+        </div>
       </div>
 
       <div id="tab-attendance" style="display:none">
         <div class="table-card">
-          <div class="table-header">
+          <div class="table-header" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr">
             <div>Staff</div><div>Date</div><div>Clock In</div><div>Clock Out</div><div>Hours</div>
           </div>
-          <div id="attendance-body"></div>
+          <div id="attendance-body"><div class="loading-text">⏳ Loading…</div></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ADD STAFF MODAL -->
-<div class="modal-overlay" id="add-modal">
+<div class="modal-overlay" id="add-staff-modal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title">Add Staff Member</div>
-      <button class="modal-close" onclick="closeModal('add-modal')">×</button>
+      <button class="modal-close" onclick="UI.closeModal('add-staff-modal')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Full Name</label>
-        <input class="form-input" type="text" id="add-name" placeholder="e.g. สมหญิง">
+        <input class="form-input" type="text" id="add-name" placeholder="e.g. สมหญิง ใจดี">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -180,8 +202,8 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <select class="form-input" id="add-role">
             <option value="Barista">Barista</option>
             <option value="Cashier">Cashier</option>
-            <option value="Manager">Manager</option>
             <option value="Kitchen">Kitchen</option>
+            <option value="Manager">Manager</option>
           </select>
         </div>
       </div>
@@ -196,193 +218,168 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
         </div>
         <div class="form-group">
           <label class="form-label">Hourly Wage (฿)</label>
-          <input class="form-input" type="number" id="add-wage" placeholder="40">
+          <input class="form-input" type="number" id="add-wage" placeholder="40" value="40">
         </div>
       </div>
       <div class="form-footer">
-        <button class="btn btn-ghost" onclick="closeModal('add-modal')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveStaff()">Add Staff</button>
+        <button class="btn btn-ghost" onclick="UI.closeModal('add-staff-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-staff-btn" onclick="saveStaff()">Add Staff</button>
       </div>
     </div>
   </div>
 </div>
 
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal" style="width:360px">
+    <div class="modal-header">
+      <div class="modal-title">Staff Added 🎉</div>
+      <button class="modal-close" onclick="UI.closeModal('pin-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="pin-display">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">PIN CODE</div>
+        <div class="pin-code" id="pin-display-code">0000</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);text-align:center">จดรหัส PIN นี้ไว้ให้พนักงานใช้เข้าระบบ (แสดงครั้งเดียวเท่านั้น)</div>
+    </div>
+  </div>
+</div>
+
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
 let STAFF = [];
 let ATTENDANCE = [];
+let filterText = '';
 
-const BRAND_COLOR = { BB:'#52B788', HH:'#FB923C', SHARED:'#143D2B' };
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
 
-function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
-function todayStr() {
-  const d = new Date();
-  return new Date(d.toLocaleString('en-US',{timeZone:'Asia/Bangkok'})).toISOString().slice(0,10);
-}
-
+function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString(); }
 function avatarColor(name) {
   const colors = ['#143D2B','#1E5A3F','#F26C21','#6366F1','#0EA5E9','#D97706'];
   let hash = 0;
-  for (let i=0;i<name.length;i++) hash = name.charCodeAt(i) + hash*31;
+  for (let i=0; i<(name||'').length; i++) hash = name.charCodeAt(i) + hash * 31;
   return colors[Math.abs(hash) % colors.length];
 }
 
-async function loadStaffData() {
+async function loadAll() {
+  document.getElementById('staff-body').innerHTML = '<div class="loading-text">⏳ Loading…</div>';
   try {
-    const [staffRes, attRes] = await Promise.all([
-      fetch(`${GAS_URL}?action=get_staff`).then(r=>r.json()),
-      fetch(`${GAS_URL}?action=get_attendance`).then(r=>r.json()),
-    ]);
-    STAFF = (staffRes.success && staffRes.data) ? staffRes.data : [];
-    ATTENDANCE = (attRes.success && attRes.data) ? attRes.data : [];
+    [STAFF, ATTENDANCE] = await Promise.all([API.staff(), API.attendance()]);
   } catch(e) {
-    console.error('loadStaffData:', e);
+    console.error('loadAll failed:', e);
+    UI.toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, 'error');
     STAFF = []; ATTENDANCE = [];
   }
-  renderAll();
+  renderKPIs();
+  renderStaff();
+  renderAttendance();
 }
-document.addEventListener('DOMContentLoaded', loadStaffData);
+document.addEventListener('DOMContentLoaded', loadAll);
 
-function isClockedIn(staffId) {
-  const today = todayStr();
-  return ATTENDANCE.some(a => a.staff_id === staffId && a.date === today && a.clock_in && !a.clock_out);
-}
-
-function todayHours(staffId) {
-  const today = todayStr();
-  return ATTENDANCE.filter(a => a.staff_id === staffId && a.date === today)
-    .reduce((s,a) => s + a.hours_worked, 0);
-}
-
-function renderAll() {
-  const today = todayStr();
-  const clockedInNow = STAFF.filter(s => isClockedIn(s.staff_id)).length;
-  const todayTotalHours = ATTENDANCE.filter(a => a.date === today).reduce((s,a)=>s+a.hours_worked,0);
-  const avgWage = STAFF.length ? STAFF.reduce((s,m)=>s+m.hourly_wage,0)/STAFF.length : 0;
-
+function renderKPIs() {
+  const active = STAFF.filter(s => s.status === 'active');
   document.getElementById('kpi-total').textContent = STAFF.length;
-  document.getElementById('kpi-clocked').textContent = clockedInNow;
-  document.getElementById('kpi-hours').textContent = todayTotalHours.toFixed(1) + 'h';
-  document.getElementById('kpi-wage').textContent = fmt(avgWage) + '/hr';
+  document.getElementById('kpi-active').textContent = active.length;
 
-  renderStaffGrid();
-  renderAttendanceTable();
+  const todayKey = new Date().toISOString().slice(0,10);
+  const clockedIn = ATTENDANCE.filter(a => a.date === todayKey && a.clock_in && !a.clock_out);
+  document.getElementById('kpi-clocked-in').textContent = clockedIn.length;
+
+  const totalWage = active.reduce((s,st) => s + Number(st.hourly_wage||0), 0);
+  document.getElementById('kpi-payroll').textContent = fmt(totalWage) + '/hr';
 }
 
-function renderStaffGrid() {
-  const grid = document.getElementById('staff-grid');
-  if (!STAFF.length) {
-    grid.innerHTML = `<div class="empty-state">No staff members yet</div>`;
-    return;
-  }
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-staff').style.display = tab === 'staff' ? 'block' : 'none';
+  document.getElementById('tab-attendance').style.display = tab === 'attendance' ? 'block' : 'none';
+}
 
-  grid.innerHTML = STAFF.map(s => {
-    const initials = s.name.slice(0,2).toUpperCase();
-    const clockedIn = isClockedIn(s.staff_id);
-    const hrsToday = todayHours(s.staff_id);
-    const brandColor = BRAND_COLOR[s.brand_id] || '#9CA3AF';
+function filterStaff(q) { filterText = q.toLowerCase(); renderStaff(); }
 
+function renderStaff() {
+  const brandFilter = document.getElementById('brand-filter').value;
+  const items = STAFF.filter(s => {
+    if (brandFilter && s.brand_id !== brandFilter) return false;
+    if (filterText && !(s.name||'').toLowerCase().includes(filterText) && !(s.phone||'').includes(filterText)) return false;
+    return true;
+  });
+
+  const body = document.getElementById('staff-body');
+  if (!items.length) { body.innerHTML = '<div class="empty-state">No staff found</div>'; return; }
+
+  body.innerHTML = items.map(s => {
+    const initials = (s.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
     return `
-      <div class="staff-card">
-        <div class="staff-top">
+      <div class="table-row">
+        <div style="display:flex;align-items:center;gap:10px">
           <div class="staff-avatar" style="background:${avatarColor(s.name)}">${initials}</div>
           <div>
             <div class="staff-name">${s.name}</div>
-            <div class="staff-role">${s.role} · ${s.brand_id}</div>
-          </div>
-          <div class="staff-status">
-            <span class="status-dot" style="background:${clockedIn?'var(--success)':'#D1D5DB'}"></span>
-            <span style="font-size:10.5px;color:var(--muted)">${clockedIn?'On shift':'Off'}</span>
+            <div class="staff-id">${s.staff_id}${s.phone ? ' · ' + s.phone : ''}</div>
           </div>
         </div>
-        <div class="staff-info-row"><span class="info-label">Wage</span><span class="info-value">${fmt(s.hourly_wage)}/hr</span></div>
-        <div class="staff-info-row"><span class="info-label">Today</span><span class="info-value">${hrsToday.toFixed(1)}h</span></div>
-        <div class="staff-info-row"><span class="info-label">Since</span><span class="info-value">${s.start_date}</span></div>
-        ${clockedIn
-          ? `<button class="staff-clock-btn clock-out-btn" onclick="doClockOut('${s.staff_id}')">⏹ Clock Out</button>`
-          : `<button class="staff-clock-btn clock-in-btn" onclick="doClockIn('${s.staff_id}')">▶ Clock In</button>`
-        }
+        <div style="font-size:12.5px">${s.role}</div>
+        <div><span class="brand-badge brand-${s.brand_id}">${s.brand_id}</span></div>
+        <div style="font-size:12.5px;font-weight:600">${fmt(s.hourly_wage)}/hr</div>
+        <div><span class="status-badge status-${s.status === 'active' ? 'active' : 'inactive'}"><span class="status-dot"></span>${s.status}</span></div>
+        <div style="text-align:right;font-size:11px;color:var(--muted)">${s.start_date ? s.start_date.slice(0,10) : '—'}</div>
       </div>
     `;
   }).join('');
 }
 
-function renderAttendanceTable() {
+function renderAttendance() {
+  const sorted = [...ATTENDANCE].sort((a,b) => (b.date||'').localeCompare(a.date||''));
   const body = document.getElementById('attendance-body');
-  if (!ATTENDANCE.length) {
-    body.innerHTML = `<div class="empty-state">No attendance records yet</div>`;
-    return;
-  }
-  const staffMap = {};
-  STAFF.forEach(s => staffMap[s.staff_id] = s.name);
+  if (!sorted.length) { body.innerHTML = '<div class="empty-state">No attendance records yet</div>'; return; }
 
-  const sorted = [...ATTENDANCE].sort((a,b) => b.date.localeCompare(a.date));
-  body.innerHTML = sorted.map(a => `
-    <div class="table-row">
-      <div style="font-weight:500">${staffMap[a.staff_id] || a.staff_id}</div>
-      <div style="color:var(--muted)">${a.date}</div>
-      <div>${a.clock_in || '—'}</div>
-      <div>${a.clock_out || '<span style="color:var(--success)">Active</span>'}</div>
-      <div style="font-weight:600">${a.hours_worked ? a.hours_worked.toFixed(1)+'h' : '—'}</div>
+  const staffMap = {};
+  STAFF.forEach(s => { staffMap[s.staff_id] = s.name; });
+
+  body.innerHTML = sorted.slice(0, 100).map(a => `
+    <div class="table-row" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr">
+      <div style="font-size:12.5px;font-weight:500">${staffMap[a.staff_id] || a.staff_id}</div>
+      <div style="font-size:12px;color:var(--muted)">${a.date}</div>
+      <div style="font-size:12px">${a.clock_in || '—'}</div>
+      <div style="font-size:12px">${a.clock_out || '—'}</div>
+      <div style="font-size:12px;font-weight:600">${a.hours_worked ? a.hours_worked.toFixed(1) + 'h' : '—'}</div>
     </div>
   `).join('');
 }
 
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-staff').style.display = tab==='staff' ? 'block' : 'none';
-  document.getElementById('tab-attendance').style.display = tab==='attendance' ? 'block' : 'none';
-}
-
-async function doClockIn(staffId) {
-  try {
-    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'clock_in', staff_id: staffId }) });
-    const json = await res.json();
-    if (json.success) await loadStaffData();
-    else alert('Failed: ' + json.error);
-  } catch(e) { alert('Error: ' + e.message); }
-}
-
-async function doClockOut(staffId) {
-  try {
-    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify({ action:'clock_out', staff_id: staffId }) });
-    const json = await res.json();
-    if (json.success) await loadStaffData();
-    else alert('Failed: ' + json.error);
-  } catch(e) { alert('Error: ' + e.message); }
-}
-
-function openModal(id) { document.getElementById(id).classList.add('show'); }
-function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-
 async function saveStaff() {
   const name = document.getElementById('add-name').value.trim();
-  if (!name) { alert('Please enter a name.'); return; }
+  if (!name) { UI.toast('Please enter a name.', 'error'); return; }
 
+  const btn = document.getElementById('save-staff-btn');
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, {
-      method:'POST',
-      body: JSON.stringify({
-        action:'create_staff', name,
-        phone: document.getElementById('add-phone').value.trim(),
-        role: document.getElementById('add-role').value,
-        brand_id: document.getElementById('add-brand').value,
-        hourly_wage: document.getElementById('add-wage').value || 40,
-      })
+    const result = await API.createStaff({
+      name, phone: document.getElementById('add-phone').value.trim(),
+      role: document.getElementById('add-role').value,
+      brand_id: document.getElementById('add-brand').value,
+      hourly_wage: parseFloat(document.getElementById('add-wage').value) || 40,
     });
-    const json = await res.json();
-    if (json.success) {
-      closeModal('add-modal');
-      ['add-name','add-phone','add-wage'].forEach(id => document.getElementById(id).value = '');
-      await loadStaffData();
-      alert(`Staff added! PIN code: ${json.pin}`);
-    } else alert('Failed: ' + json.error);
-  } catch(e) { alert('Error: ' + e.message); }
+    if (!result || !result.success) throw new Error((result && result.error) || 'บันทึกไม่สำเร็จ');
+    UI.closeModal('add-staff-modal');
+    ['add-name','add-phone','add-wage'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('add-wage').value = 40;
+    document.getElementById('pin-display-code').textContent = result.pin;
+    UI.openModal('pin-modal');
+    await loadAll();
+  } catch(e) {
+    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+  }
 }
 
-document.querySelectorAll('.modal-overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+  });
 });
 </script>
 </body>
