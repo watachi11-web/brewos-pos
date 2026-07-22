@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Settings — BrewOS</title>
+<title>Settings — Brain Brew × Heng Heng</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --green:#143D2B; --green2:#1E5A3F;
+  --green:#143D2B; --green2:#1E5A3F; --orange:#F26C21;
   --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
   --text:#1a2e1a; --muted:#6b7d68;
   --success:#16A34A; --success-bg:#F0FDF4;
@@ -29,48 +29,37 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .sidebar-footer { padding:12px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:11px; color:rgba(255,255,255,0.4); }
 
 .topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
-.topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
 .topbar-title { font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; }
 .btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
 .btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
-.btn-ghost:hover { background:#faf8f3; }
+.btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
 .btn-primary { background:var(--green); color:#fff; }
 .btn-primary:hover { background:var(--green2); }
+.btn:disabled { opacity:.5; pointer-events:none; }
 
 .content { flex:1; overflow-y:auto; padding:20px 28px 28px; max-width:760px; }
-.content::-webkit-scrollbar { width:6px; }
-.content::-webkit-scrollbar-thumb { background:#d5cdbb; border-radius:3px; }
 
-.section-card { background:var(--card); border:1px solid var(--border); border-radius:16px; margin-bottom:18px; overflow:hidden; }
-.section-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-.section-title { font-size:14px; font-weight:600; color:var(--text); }
-.section-body { padding:4px 0; }
-
-.setting-row { display:flex; align-items:center; gap:16px; padding:14px 20px; border-bottom:1px solid var(--bg); }
+.settings-group { background:var(--card); border:1px solid var(--border); border-radius:16px; margin-bottom:16px; overflow:hidden; }
+.settings-group-header { padding:14px 20px; border-bottom:1px solid var(--border); font-size:13px; font-weight:700; color:var(--text); }
+.setting-row { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--border); gap:16px; }
 .setting-row:last-child { border-bottom:none; }
-.setting-label { flex:1; }
-.setting-name { font-size:13px; font-weight:500; color:var(--text); }
+.setting-label { font-size:13px; font-weight:500; color:var(--text); }
 .setting-desc { font-size:11px; color:var(--muted); margin-top:2px; }
-.setting-input { background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:8px 12px; font-size:13px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; width:260px; transition:border 0.15s; }
+.setting-input { width:180px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:13px; font-family:'Anuphan','Poppins',sans-serif; outline:none; color:var(--text); text-align:right; }
 .setting-input:focus { border-color:var(--green2); }
-.setting-toggle { position:relative; width:42px; height:24px; flex-shrink:0; }
-.setting-toggle input { opacity:0; width:0; height:0; }
-.toggle-slider { position:absolute; cursor:pointer; inset:0; background:#d5cdbb; border-radius:12px; transition:0.2s; }
-.toggle-slider:before { content:""; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.2s; }
-input:checked + .toggle-slider { background:var(--green); }
-input:checked + .toggle-slider:before { transform:translateX(18px); }
+.save-row-btn { padding:6px 12px; font-size:11px; border-radius:7px; border:none; background:var(--green); color:#fff; cursor:pointer; font-family:'Anuphan','Poppins',sans-serif; flex-shrink:0; }
+.save-row-btn:disabled { opacity:.4; pointer-events:none; }
 
-.save-toast { position:fixed; bottom:24px; right:24px; background:var(--green); color:#fff; padding:10px 18px; border-radius:12px; font-size:13px; font-weight:500; transform:translateY(60px); opacity:0; transition:all 0.3s; z-index:100; }
-.save-toast.show { transform:translateY(0); opacity:1; }
-
-.version-tag { background:rgba(22,163,74,0.1); color:var(--success); border-radius:6px; padding:2px 8px; font-size:11px; font-weight:600; }
+.empty-state { padding:40px 24px; text-align:center; color:var(--muted); }
+.loading-text { padding:30px; text-align:center; color:var(--muted); font-size:13px; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
@@ -86,16 +75,16 @@ input:checked + .toggle-slider:before { transform:translateX(18px); }
       <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
       <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span>Reports</a>
       <div class="nav-label" style="margin-top:14px">Settings</div>
+      <a href="staff.html" class="nav-item"><span class="nav-icon">🧑‍💼</span>Staff</a>
       <a href="settings.html" class="nav-item active"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div class="sidebar-footer">Owner · All Brands</div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
   </div>
 
   <div class="main">
     <div class="topbar">
       <div class="topbar-top">
         <div class="topbar-title">Settings</div>
-        <span class="version-tag">BrewOS v2.4</span>
         <div class="topbar-actions">
           <button class="btn btn-ghost" onclick="loadSettings()">⟳ Refresh</button>
         </div>
@@ -103,120 +92,92 @@ input:checked + .toggle-slider:before { transform:translateX(18px); }
     </div>
 
     <div class="content" id="settings-content">
-      <div style="text-align:center;padding:60px;color:var(--muted)">⏳ Loading settings…</div>
+      <div class="loading-text">⏳ Loading…</div>
     </div>
   </div>
 </div>
 
-<div class="save-toast" id="save-toast">✅ Setting saved</div>
-
+<script src="api.js"></script>
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+// ═══════════════════════════════════════════════════════════
+// settings.html — ผูกกับ get_settings()/update_setting() ใน รหัส.gs ที่มีอยู่แล้ว
+// getSettings() คืนค่าเป็น object { key: {value, label, type, group} } — จัดกลุ่มตาม
+// field 'group' แล้ว render เป็น form ให้แก้ทีละค่า บันทึกทันทีทีละ setting (ไม่มี
+// batch save เพราะ backend เขียนทีละ key อยู่แล้ว)
+// ═══════════════════════════════════════════════════════════
 let SETTINGS = {};
 
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
+
 async function loadSettings() {
+  document.getElementById('settings-content').innerHTML = '<div class="loading-text">⏳ Loading…</div>';
   try {
-    const res = await fetch(`${GAS_URL}?action=get_settings`);
-    const json = await res.json();
-    SETTINGS = (json.success && json.data) ? json.data : {};
+    SETTINGS = await API.settings();
   } catch(e) {
-    console.error('loadSettings:', e);
-    SETTINGS = {};
+    console.error('loadSettings failed:', e);
+    document.getElementById('settings-content').innerHTML = `<div class="empty-state">โหลดไม่สำเร็จ: ${e.message}</div>`;
+    return;
   }
   renderSettings();
 }
-
 document.addEventListener('DOMContentLoaded', loadSettings);
 
 function renderSettings() {
-  // กลุ่ม settings ตาม group
+  const keys = Object.keys(SETTINGS);
+  const content = document.getElementById('settings-content');
+
+  if (!keys.length) {
+    content.innerHTML = `<div class="empty-state">ยังไม่มีการตั้งค่าใน settings sheet<br><span style="font-size:11px">เพิ่มแถวใน sheet 'settings' พร้อม key/value/label/type/group เพื่อให้แสดงที่นี่</span></div>`;
+    return;
+  }
+
   const groups = {};
-  Object.entries(SETTINGS).forEach(([key, s]) => {
-    if (!groups[s.group]) groups[s.group] = [];
-    groups[s.group].push({ key, ...s });
+  keys.forEach(k => {
+    const s = SETTINGS[k];
+    const g = s.group || 'General';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push({ key: k, ...s });
   });
 
-  const groupIcons = {
-    Brand: '🏪', Receipt: '🧾', Hours: '🕐', General: '⚙️', Notifications: '🔔'
-  };
-
-  const content = document.getElementById('settings-content');
-  content.innerHTML = Object.entries(groups).map(([group, items]) => `
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">${groupIcons[group]||'⚙️'} ${group}</div>
-      </div>
-      <div class="section-body">
-        ${items.map(s => renderSettingRow(s)).join('')}
-      </div>
+  content.innerHTML = Object.entries(groups).map(([groupName, items]) => `
+    <div class="settings-group">
+      <div class="settings-group-header">${groupName}</div>
+      ${items.map(item => `
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">${item.label || item.key}</div>
+            <div class="setting-desc">${item.key}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input class="setting-input" type="${item.type === 'number' ? 'number' : 'text'}"
+              id="set-${item.key}" value="${item.value}"
+              onkeydown="if(event.key==='Enter') saveSetting('${item.key}')">
+            <button class="save-row-btn" id="save-btn-${item.key}" onclick="saveSetting('${item.key}')">Save</button>
+          </div>
+        </div>
+      `).join('')}
     </div>
-  `).join('') + `
-    <div class="section-card">
-      <div class="section-header"><div class="section-title">ℹ️ System Info</div></div>
-      <div class="section-body">
-        <div class="setting-row">
-          <div class="setting-label"><div class="setting-name">Version</div><div class="setting-desc">BrewOS backend version</div></div>
-          <div style="font-size:13px;color:var(--muted);font-weight:500">v2.4.0</div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><div class="setting-name">Google Sheet</div><div class="setting-desc">Primary data source</div></div>
-          <a href="https://docs.google.com/spreadsheets/d/1QX_Qs9vuv0mNvvPjSaJoY0utZibFy7-iulARDto73CU/edit" target="_blank" class="btn btn-ghost" style="padding:6px 12px;font-size:11.5px">Open Sheet ↗</a>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><div class="setting-name">Apps Script</div><div class="setting-desc">Backend API endpoint</div></div>
-          <a href="https://script.google.com/home" target="_blank" class="btn btn-ghost" style="padding:6px 12px;font-size:11.5px">Open Scripts ↗</a>
-        </div>
-      </div>
-    </div>
-  `;
+  `).join('');
 }
 
-function renderSettingRow(s) {
-  if (s.type === 'boolean') {
-    const checked = s.value === 'true' ? 'checked' : '';
-    return `
-      <div class="setting-row">
-        <div class="setting-label">
-          <div class="setting-name">${s.label}</div>
-        </div>
-        <label class="setting-toggle">
-          <input type="checkbox" ${checked} onchange="saveSetting('${s.key}', this.checked.toString())">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>`;
-  }
-  return `
-    <div class="setting-row">
-      <div class="setting-label">
-        <div class="setting-name">${s.label}</div>
-      </div>
-      <input class="setting-input" type="${s.type === 'time' ? 'time' : 'text'}"
-        value="${s.value}" 
-        onchange="saveSetting('${s.key}', this.value)"
-        placeholder="—">
-    </div>`;
-}
+async function saveSetting(key) {
+  const input = document.getElementById(`set-${key}`);
+  const btn = document.getElementById(`save-btn-${key}`);
+  const value = input.value;
 
-async function saveSetting(key, value) {
+  UI.loading(btn, true);
   try {
-    const res = await fetch(GAS_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'update_setting', key, value })
-    });
-    const json = await res.json();
-    if (json.success) {
-      SETTINGS[key].value = value;
-      showToast();
-    }
+    const result = await API.updateSetting({ key, value });
+    if (!result || !result.success) throw new Error((result && result.error) || 'บันทึกไม่สำเร็จ');
+    UI.toast(`บันทึก "${key}" แล้ว`);
+    SETTINGS[key].value = value;
   } catch(e) {
-    alert('Failed to save: ' + e.message);
+    console.error('saveSetting failed:', e);
+    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+    btn.textContent = 'Save';
   }
-}
-
-function showToast() {
-  const t = document.getElementById('save-toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
 }
 </script>
 </body>
