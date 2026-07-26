@@ -84,6 +84,9 @@
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
   .card-title { font-size: 14px; font-weight: 600; color: #111; }
   .card-subtitle { font-size: 12px; color: #999; }
+  .period-selector { display: flex; gap: 4px; background: #F5F3EF; padding: 3px; border-radius: 8px; flex-shrink: 0; }
+  .period-tab { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; color: #888; border: none; background: transparent; transition: all 0.15s; font-family: 'Anuphan','Poppins',sans-serif; }
+  .period-tab.active { background: #fff; color: #111; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
 
   .bottom-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
@@ -253,7 +256,12 @@
         <div class="card-header">
           <div>
             <div class="card-title">Revenue Overview</div>
-            <div class="card-subtitle">Last 7 days (real data)</div>
+            <div class="card-subtitle" id="revenue-period-label">Last 7 days</div>
+          </div>
+          <div class="period-selector" id="period-selector">
+            <button class="period-tab active" onclick="setPeriod(7,this)">7D</button>
+            <button class="period-tab" onclick="setPeriod(30,this)">30D</button>
+            <button class="period-tab" onclick="setPeriod(90,this)">90D</button>
           </div>
         </div>
         <canvas id="revenue-chart" height="220"></canvas>
@@ -331,6 +339,8 @@
 // breakdown ครบ) ตอนนี้เปลี่ยนมาใช้ API.dashboardSummary() ตรงๆ แทนการ duplicate logic
 // ═══════════════════════════════════════════════════════════
 let ACTIVE_BRAND = Identity.getBrand() || 'ALL';
+let PERIOD_DAYS = 7;
+let ALL_ORDERS_RAW = [];
 
 document.getElementById('user-name').textContent = Identity.getName();
 document.getElementById('avatar-initials').textContent = Identity.getName().slice(0,2).toUpperCase();
@@ -543,6 +553,67 @@ function scrollToAlerts() {
 }
 
 // ============================================================
+// PERIOD SELECTOR — #FIX เดิมไม่มีตัวเลือกช่วงข้อมูลเลย กราฟ/เมนูขายดีตายตัวที่ค่า
+// จาก getDashboardSummary() (7 วัน/30 วัน คงที่จาก backend) ตอนนี้คำนวณกราฟ+เมนูขายดี
+// ใหม่ฝั่ง client จาก orders ดิบตามช่วงที่เลือกได้ (7D/30D/90D) เหมือน reports.html
+// ส่วน KPI การ์ดบนสุด (ยอดวันนี้ ฯลฯ) ยังคงอิง "วันนี้" เสมอ ไม่ผูกกับตัวเลือกนี้
+// ============================================================
+function dateKeyBkkLocal(val) {
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return '';
+  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+  return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
+}
+
+function setPeriod(days, btn) {
+  PERIOD_DAYS = days;
+  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('revenue-period-label').textContent = `Last ${days} days`;
+  recomputeForPeriod();
+}
+
+function recomputeForPeriod() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - PERIOD_DAYS);
+  const cutoffStr = dateKeyBkkLocal(cutoff);
+
+  const periodOrders = ALL_ORDERS_RAW.filter(o => o.order_status !== 'cancelled' && dateKeyBkkLocal(o.created_at) >= cutoffStr);
+
+  const dayMap = {};
+  periodOrders.forEach(o => {
+    const k = dateKeyBkkLocal(o.created_at);
+    if (!k) return;
+    dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount||0);
+  });
+  const labels = [], values = [];
+  for (let i = PERIOD_DAYS - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = dateKeyBkkLocal(d);
+    labels.push(`${String(d.getDate()).padStart(2,'0')}/${d.getMonth()+1}`);
+    values.push(dayMap[key] || 0);
+  }
+  renderRevenueChart(labels, values);
+
+  const itemMap = {};
+  periodOrders.forEach(o => {
+    (o.items||[]).forEach(i => {
+      if (!itemMap[i.name]) itemMap[i.name] = { name: i.name, revenue: 0, qty: 0 };
+      itemMap[i.name].revenue += Number(i.total||0) || Number(i.price||0)*Number(i.qty||1);
+      itemMap[i.name].qty += Number(i.qty||1);
+    });
+  });
+  const bestSellers = Object.values(itemMap).sort((a,b) => b.revenue - a.revenue).slice(0, 7)
+    .map(i => ({ name: i.name, cat: '', revenue: Math.round(i.revenue), gp: null }));
+  renderBestSellers(bestSellers);
+
+  const bbRev = periodOrders.filter(o => o.brand_id === 'BB').reduce((s,o) => s + Number(o.total_amount||0), 0);
+  const hhRev = periodOrders.filter(o => o.brand_id === 'HH').reduce((s,o) => s + Number(o.total_amount||0), 0);
+  renderDonutChart(bbRev, hhRev);
+}
+
+// ============================================================
 // INIT / LOAD
 // ============================================================
 async function loadDashboard() {
@@ -552,14 +623,14 @@ async function loadDashboard() {
       API.ordersToday(),
     ]);
 
+    ALL_ORDERS_RAW = orders || [];
+
     // ยอดเมื่อวาน = index รองสุดท้ายของ revenue_trend (7 วันล่าสุด รวมวันนี้)
     const trend = summary.revenue_trend || [];
     const prevDayRevenue = trend.length >= 2 ? trend[trend.length - 2] : 0;
 
     renderKPIs(summary, prevDayRevenue);
-    renderRevenueChart(summary.revenue_labels || [], trend);
-    renderBestSellers(summary.best_sellers || []);
-    renderDonutChart(summary.brand_bb?.revenue || 0, summary.brand_hh?.revenue || 0);
+    recomputeForPeriod(); // #FIX — กราฟ/เมนูขายดี/โดนัท คำนวณตามช่วงที่เลือกไว้เสมอ (ไม่ใช่ค่าคงที่จาก backend)
 
     // Recent orders — เอาแค่วันนี้ เรียงล่าสุดก่อน (ordersToday คืนย้อนกลับมาแล้วจาก backend)
     const today = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
