@@ -59,7 +59,11 @@ const apiGet = async (action, params = {}) => {
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   }
-  const res = await fetch(url.toString());
+  // #FIX — เดิมไม่มี cache-busting เลย ทำให้เบราว์เซอร์ (โดยเฉพาะ WebView บนแท็บเล็ต)
+  // อาจ serve response เก่าจาก HTTP cache แทนที่จะยิงไป Apps Script จริง ทำให้ข้อมูล
+  // ที่เห็นบนหน้าจอ "ไม่ซิงค์" กับ Google Sheet ล่าสุด — เติม timestamp กันแคชเสมอ
+  url.searchParams.set('_ts', Date.now());
+  const res = await fetch(url.toString(), { cache: 'no-store' });
   const json = await res.json();
   if (!json.success) throw new Error(json.error || ('API error: ' + action));
   return json.data;
