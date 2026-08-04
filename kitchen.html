@@ -76,20 +76,20 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 <body>
 
 <div class="kds-header">
-  <div class="kds-logo"><img src="logo-hh-icon.png" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display='none'"> Kitchen Display</div>
+  <div class="kds-logo"><img src="logo-hh-icon.png" style="width:22px;height:22px;object-fit:contain;vertical-align:middle;margin-right:6px" onerror="this.style.display='none'"> Kitchen Display / จอครัว</div>
   <div class="kds-brand-tabs">
-    <button class="kds-tab active" onclick="switchBrand('ALL',this)">All</button>
+    <button class="kds-tab active" onclick="switchBrand('ALL',this)">All / ทั้งหมด</button>
     <button class="kds-tab" onclick="switchBrand('BB',this)">Brain Brew</button>
     <button class="kds-tab" onclick="switchBrand('HH',this)">Heng Heng</button>
   </div>
   <div class="kds-stats">
-    <div class="kds-stat"><div class="kds-stat-val" id="stat-pending">0</div><div class="kds-stat-lbl">Pending</div></div>
-    <div class="kds-stat"><div class="kds-stat-val" id="stat-making">0</div><div class="kds-stat-lbl">Making</div></div>
-    <div class="kds-stat"><div class="kds-stat-val" id="stat-done-today">0</div><div class="kds-stat-lbl">Done Today</div></div>
+    <div class="kds-stat"><div class="kds-stat-val" id="stat-pending">0</div><div class="kds-stat-lbl">Pending / รอทำ</div></div>
+    <div class="kds-stat"><div class="kds-stat-val" id="stat-making">0</div><div class="kds-stat-lbl">Making / กำลังทำ</div></div>
+    <div class="kds-stat"><div class="kds-stat-val" id="stat-done-today">0</div><div class="kds-stat-lbl">Done Today / เสร็จวันนี้</div></div>
   </div>
   <div class="kds-time" id="kds-clock">--:--</div>
   <button class="kds-refresh" onclick="loadOrders()">⟳ Refresh</button>
-  <a href="dashboard.html" style="margin-left:8px"><button class="kds-refresh">← Back</button></a>
+  <a href="dashboard.html" style="margin-left:8px"><button class="kds-refresh">← Back / กลับ</button></a>
 </div>
 
 <!-- #NOTE — kitchen status (pending/making/ready) เก็บใน memory ของเบราว์เซอร์เท่านั้น
@@ -102,7 +102,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <div class="kds-col">
     <div class="kds-col-header">
       <div class="kds-col-dot" style="background:var(--pending)"></div>
-      <div class="kds-col-title" style="color:var(--pending)">New Orders</div>
+      <div class="kds-col-title" style="color:var(--pending)">New Orders / ออเดอร์ใหม่</div>
       <div class="kds-col-count" id="count-pending">0</div>
     </div>
     <div class="kds-col-body" id="col-pending"></div>
@@ -110,7 +110,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <div class="kds-col">
     <div class="kds-col-header">
       <div class="kds-col-dot" style="background:var(--making)"></div>
-      <div class="kds-col-title" style="color:var(--making)">In Progress</div>
+      <div class="kds-col-title" style="color:var(--making)">In Progress / กำลังทำ</div>
       <div class="kds-col-count" id="count-making">0</div>
     </div>
     <div class="kds-col-body" id="col-making"></div>
@@ -118,7 +118,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <div class="kds-col">
     <div class="kds-col-header">
       <div class="kds-col-dot" style="background:var(--done)"></div>
-      <div class="kds-col-title" style="color:var(--done)">Ready</div>
+      <div class="kds-col-title" style="color:var(--done)">Ready / พร้อมเสิร์ฟ</div>
       <div class="kds-col-count" id="count-done">0</div>
     </div>
     <div class="kds-col-body" id="col-done"></div>
@@ -179,13 +179,13 @@ function renderAll() {
 
   document.getElementById('col-pending').innerHTML = pending.length
     ? pending.map(o => renderCard(o, 'pending')).join('')
-    : `<div class="empty-col"><div style="font-size:28px">✅</div><div>No pending orders</div></div>`;
+    : `<div class="empty-col"><div style="font-size:28px">✅</div><div>No pending orders / ไม่มีออเดอร์รอทำ</div></div>`;
   document.getElementById('col-making').innerHTML = making.length
     ? making.map(o => renderCard(o, 'making')).join('')
-    : `<div class="empty-col"><div style="font-size:28px">👨‍🍳</div><div>Nothing in progress</div></div>`;
+    : `<div class="empty-col"><div style="font-size:28px">👨‍🍳</div><div>Nothing in progress / ไม่มีรายการกำลังทำ</div></div>`;
   document.getElementById('col-done').innerHTML = done.length
     ? done.map(o => renderCard(o, 'done')).join('')
-    : `<div class="empty-col"><div style="font-size:28px">🍽</div><div>No ready orders</div></div>`;
+    : `<div class="empty-col"><div style="font-size:28px">🍽</div><div>No ready orders / ไม่มีรายการพร้อมเสิร์ฟ</div></div>`;
 }
 
 function renderCard(o, status) {
@@ -199,14 +199,14 @@ function renderCard(o, status) {
   const items = Array.isArray(o.items) ? o.items : [];
   const itemsHtml = items.length
     ? items.map(i => `<div class="order-item"><div class="item-qty">${i.qty}×</div><div class="item-name">${i.name}</div></div>`).join('')
-    : `<div class="order-item"><div class="item-name" style="color:rgba(255,255,255,0.4)">— item details not available —</div></div>`;
+    : `<div class="order-item"><div class="item-name" style="color:rgba(255,255,255,0.4)">— item details not available / ไม่มีรายละเอียดสินค้า —</div></div>`;
 
   const footerBtns = status === 'pending'
-    ? `<button class="action-btn btn-start" onclick="moveOrder('${orderId}','making')">▶ Start</button>`
+    ? `<button class="action-btn btn-start" onclick="moveOrder('${orderId}','making')">▶ Start / เริ่มทำ</button>`
     : status === 'making'
-    ? `<button class="action-btn btn-recall" onclick="moveOrder('${orderId}','pending')">↩ Recall</button>
-       <button class="action-btn btn-done" onclick="moveOrder('${orderId}','done')">✓ Ready</button>`
-    : `<button class="action-btn btn-recall" onclick="moveOrder('${orderId}','making')">↩ Reopen</button>`;
+    ? `<button class="action-btn btn-recall" onclick="moveOrder('${orderId}','pending')">↩ Recall / ย้อนกลับ</button>
+       <button class="action-btn btn-done" onclick="moveOrder('${orderId}','done')">✓ Ready / เสร็จแล้ว</button>`
+    : `<button class="action-btn btn-recall" onclick="moveOrder('${orderId}','making')">↩ Reopen / เปิดใหม่</button>`;
 
   return `
     <div class="order-card" id="card-${orderId}">
