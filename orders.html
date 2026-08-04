@@ -110,7 +110,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
       <span class="logo-mark">BrewOS</span>
     </div>
     <div class="logo-sub">Back Office</div>
-    <div class="brand-chip">All Brands</div>
+    <div class="brand-chip">All Brands / ทุกแบรนด์</div>
   </div>
   <nav>
     <div class="nav-section">Main</div>
@@ -141,12 +141,12 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 <div class="main">
   <div class="topbar">
     <div class="topbar-left">
-      <h2>Orders</h2>
+      <h2>Orders / ออเดอร์</h2>
       <p id="ordersStats">กำลังโหลด...</p>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
-      <button class="btn btn-outline btn-sm" onclick="loadOrders()">🔄 Refresh</button>
-      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="loadOrders()">🔄 Refresh / รีเฟรช</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ Export CSV / ส่งออก</button>
     </div>
   </div>
 
@@ -158,29 +158,29 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
         <div class="kpi-delta" id="kpiTodayOrdersSub">&nbsp;</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Revenue</div>
+        <div class="kpi-label">Revenue / ยอดขาย</div>
         <div class="kpi-value" id="kpiTodayRevenue">—</div>
         <div class="kpi-delta" id="kpiTodayRevenueSub">&nbsp;</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Avg. Order Value</div>
+        <div class="kpi-label">Avg. Order Value / ยอดเฉลี่ยต่อบิล</div>
         <div class="kpi-value" id="kpiAvgOrder">—</div>
         <div class="kpi-delta">&nbsp;</div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-label">Cancelled</div>
+        <div class="kpi-label">Cancelled / ยกเลิก</div>
         <div class="kpi-value" id="kpiCancelled">—</div>
         <div class="kpi-delta" id="kpiCancelledSub">&nbsp;</div>
       </div>
     </div>
 
     <div class="toolbar">
-      <input class="search-box" placeholder="Search order ID, customer..." id="orderSearch" oninput="filterOrders()">
-      <button class="filter-chip active" onclick="setStatus('all',this)">All</button>
-      <button class="filter-chip" onclick="setStatus('completed',this)">Completed</button>
-      <button class="filter-chip" onclick="setStatus('cancelled',this)">Cancelled</button>
-      <select class="sel" id="brandSel" onchange="filterOrders()"><option>All Brands</option><option>Brain Brew</option><option>Heng Heng</option></select>
-      <select class="sel" id="dateSel" onchange="filterOrders()"><option>Today</option><option>Yesterday</option><option>This Week</option><option>This Month</option><option>All Time</option></select>
+      <input class="search-box" placeholder="Search order ID, customer... / ค้นหาเลขออเดอร์, ชื่อลูกค้า" id="orderSearch" oninput="filterOrders()">
+      <button class="filter-chip active" onclick="setStatus('all',this)">All / ทั้งหมด</button>
+      <button class="filter-chip" onclick="setStatus('completed',this)">Completed / สำเร็จ</button>
+      <button class="filter-chip" onclick="setStatus('cancelled',this)">Cancelled / ยกเลิก</button>
+      <select class="sel" id="brandSel" onchange="filterOrders()"><option>All Brands / ทุกแบรนด์</option><option>Brain Brew</option><option>Heng Heng</option></select>
+      <select class="sel" id="dateSel" onchange="filterOrders()"><option>Today / วันนี้</option><option>Yesterday / เมื่อวาน</option><option>This Week / สัปดาห์นี้</option><option>This Month / เดือนนี้</option><option>All Time / ทั้งหมด</option></select>
     </div>
 
     <div class="orders-layout">
@@ -189,15 +189,15 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
           <table>
             <thead>
               <tr>
-                <th>Order ID</th>
-                <th>Time</th>
-                <th>Customer</th>
-                <th>Brand</th>
-                <th>Type</th>
-                <th>Items</th>
-                <th>Total</th>
-                <th>Payment</th>
-                <th>Status</th>
+                <th>Order ID / เลขออเดอร์</th>
+                <th>Time / เวลา</th>
+                <th>Customer / ลูกค้า</th>
+                <th>Brand / แบรนด์</th>
+                <th>Type / ประเภท</th>
+                <th>Items / รายการ</th>
+                <th>Total / ยอดรวม</th>
+                <th>Payment / ชำระเงิน</th>
+                <th>Status / สถานะ</th>
               </tr>
             </thead>
             <tbody id="orderBody"></tbody>
@@ -206,35 +206,35 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
       </div>
 
       <div class="detail-panel" id="detailPanel">
-        <div class="detail-empty" id="detailEmpty">Select an order to view details</div>
+        <div class="detail-empty" id="detailEmpty">Select an order to view details / เลือกออเดอร์เพื่อดูรายละเอียด</div>
         <div id="detailContent" style="display:none">
           <div class="detail-header">
             <div>
               <div class="detail-order-id" id="detOrderId">—</div>
               <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="detOrderTime">—</div>
             </div>
-            <span class="badge badge-completed" id="detBadge">Completed</span>
+            <span class="badge badge-completed" id="detBadge">Completed / สำเร็จ</span>
           </div>
           <div class="detail-meta">
-            <div class="meta-row"><span class="meta-label">Customer</span><span class="meta-value" id="detCustomer">—</span></div>
-            <div class="meta-row"><span class="meta-label">Order Type</span><span class="meta-value" id="detType">—</span></div>
-            <div class="meta-row"><span class="meta-label">Payment</span><span class="meta-value" id="detPay">—</span></div>
+            <div class="meta-row"><span class="meta-label">Customer / ลูกค้า</span><span class="meta-value" id="detCustomer">—</span></div>
+            <div class="meta-row"><span class="meta-label">Order Type / ประเภทออเดอร์</span><span class="meta-value" id="detType">—</span></div>
+            <div class="meta-row"><span class="meta-label">Payment / ชำระเงิน</span><span class="meta-value" id="detPay">—</span></div>
           </div>
 
           <div class="items-section">
-            <div class="items-title">Order Items</div>
+            <div class="items-title">Order Items / รายการสินค้า</div>
             <div id="detItems"></div>
           </div>
 
           <div class="totals-section">
-            <div class="total-row grand"><span>Total</span><span id="detTotal">฿0</span></div>
+            <div class="total-row grand"><span>Total / ยอดรวม</span><span id="detTotal">฿0</span></div>
           </div>
 
           <div id="detNoteBox" style="display:none;padding:0 20px 16px"></div>
 
           <div class="detail-actions">
-            <button class="btn btn-outline btn-sm" onclick="printReceipt()">🖨 Print Receipt</button>
-            <button class="btn btn-danger btn-sm" id="detCancelBtn" onclick="openCancelModal()">✕ Cancel Order</button>
+            <button class="btn btn-outline btn-sm" onclick="printReceipt()">🖨 Print Receipt / พิมพ์ใบเสร็จ</button>
+            <button class="btn btn-danger btn-sm" id="detCancelBtn" onclick="openCancelModal()">✕ Cancel Order / ยกเลิกออเดอร์</button>
           </div>
         </div>
       </div>
@@ -248,20 +248,20 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 <div class="modal-overlay" id="cancelModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">⚠️ Cancel Order</div>
+      <div class="modal-title">⚠️ Cancel Order / ยกเลิกออเดอร์</div>
       <button class="modal-close" onclick="closeCancelModal()">×</button>
     </div>
     <div class="modal-body">
       <div style="font-size:13px;color:var(--muted);margin-bottom:14px" id="cancelOrderInfo"></div>
       <div class="form-group">
-        <label class="form-label">Reason</label>
-        <textarea class="form-control" id="cancelReason" rows="3" placeholder="e.g. Customer cancelled, wrong order..."></textarea>
+        <label class="form-label">Reason / เหตุผล</label>
+        <textarea class="form-control" id="cancelReason" rows="3" placeholder="e.g. Customer cancelled, wrong order... / เช่น ลูกค้ายกเลิก, สั่งผิด"></textarea>
       </div>
       <div style="font-size:11px;color:var(--muted)">คืนสต๊อกวัตถุดิบให้อัตโนมัติตามสูตรของออเดอร์นี้ทันที</div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeCancelModal()">Back</button>
-      <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">Cancel Order</button>
+      <button class="btn btn-outline" onclick="closeCancelModal()">Back / กลับ</button>
+      <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">Cancel Order / ยืนยันยกเลิก</button>
     </div>
   </div>
 </div>
@@ -355,7 +355,7 @@ function getFilteredOrders() {
 function renderOrders(data) {
   const body = document.getElementById('orderBody');
   if (!data.length) {
-    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">No orders found</td></tr>';
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">No orders found / ไม่พบออเดอร์</td></tr>';
     return;
   }
   body.innerHTML = data.map(o => `
@@ -368,7 +368,7 @@ function renderOrders(data) {
       <td>${o.items_count} items</td>
       <td class="td-bold">${fmt(o.total)}</td>
       <td style="font-size:12px;color:var(--muted);">${o.pay}</td>
-      <td><span class="badge badge-${o.status}">${o.status}</span></td>
+      <td><span class="badge badge-${o.status}">${o.status === 'cancelled' ? 'Cancelled / ยกเลิก' : 'Completed / สำเร็จ'}</span></td>
     </tr>`).join('');
 }
 
@@ -399,7 +399,7 @@ function selectOrder(id) {
 
   const badge = document.getElementById('detBadge');
   badge.className = 'badge badge-' + o.status;
-  badge.textContent = o.status.charAt(0).toUpperCase() + o.status.slice(1);
+  badge.textContent = (o.status === 'cancelled' ? 'Cancelled / ยกเลิก' : 'Completed / สำเร็จ');
 
   document.getElementById('detCustomer').textContent = o.customer;
   document.getElementById('detType').textContent = o.type + (o.table ? ' · ห้อง ' + o.table : '');
@@ -472,7 +472,7 @@ async function confirmCancelOrder() {
   }
 }
 
-function printReceipt(){ showToast('Print function is not yet connected to a physical printer.'); }
+function printReceipt(){ showToast('Print function is not yet connected to a physical printer. / ยังไม่ได้เชื่อมต่อเครื่องพิมพ์'); }
 function exportCSV() {
   const items = getFilteredOrders();
   const rows = [['Order ID','Time','Customer','Brand','Type','Total','Payment','Status']];
