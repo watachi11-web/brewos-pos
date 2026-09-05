@@ -13,6 +13,7 @@
   --danger: #DC2626; --danger-bg:#FEF2F2;
   --warning:#D97706; --warning-bg:#FFFBEB;
   --success:#16A34A; --success-bg:#F0FDF4;
+  --sub:#7C3AED; --sub-bg:#F3E8FF;
 }
 * { box-sizing:border-box; margin:0; padding:0; }
 html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
@@ -98,6 +99,7 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 .ing-sub { font-size:10.5px; color:var(--muted); margin-top:2px; }
 .ing-qty-val { font-size:13px; color:var(--text); }
 .ing-cost { font-size:13px; color:var(--text); font-weight:500; }
+.sub-tag { display:inline-block; font-size:9px; font-weight:700; color:var(--sub); background:var(--sub-bg); border-radius:6px; padding:1px 6px; margin-left:6px; }
 
 .cost-breakdown { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
 .cost-item { background:var(--bg); border-radius:12px; padding:14px; }
@@ -122,6 +124,7 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 .form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; }
 .form-input:focus { border-color:var(--green2); }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.form-hint { font-size:10.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
 .ing-line-row { display:grid; grid-template-columns:2fr 1fr 0.8fr auto; gap:8px; align-items:center; margin-bottom:8px; }
 .ing-line-remove { width:30px; height:30px; border-radius:8px; background:var(--danger-bg); border:1px solid #FECACA; color:var(--danger); cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .ing-line-remove:hover { background:#FEE2E2; }
@@ -139,12 +142,10 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
       <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span>Dashboard</a>
       <a href="pos.html" class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
       <div class="nav-label" style="margin-top:14px">Operations</div>
-      <a href="kitchen.html" class="nav-item"><span class="nav-icon">👨‍🍳</span>Kitchen</a>
-      <a href="orders.html" class="nav-item"><span class="nav-icon">📋</span>Orders</a>
-      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
+      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory / อุปกรณ์</a>
       <a href="recipe.html" class="nav-item active"><span class="nav-icon">📝</span>Recipes</a>
       <div class="nav-label" style="margin-top:14px">Business</div>
-      <a href="crm.html" class="nav-item"><span class="nav-icon">👥</span>CRM / Members</a>
+      <a href="crm.html" class="nav-item"><span class="nav-icon">👥</span>CRM / ลูกค้า</a>
       <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
       <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span>Reports</a>
       <div class="nav-label" style="margin-top:14px">Settings</div>
@@ -202,7 +203,7 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
         <select class="form-input" id="ar-product" onchange="onProductSelected()">
           <option value="">— Select a menu item —</option>
         </select>
-        <div style="font-size:10.5px;color:var(--muted);margin-top:6px">
+        <div class="form-hint">
           Selecting a product that already has a recipe will let you edit/overwrite it.
         </div>
       </div>
@@ -217,6 +218,9 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
         </div>
         <div id="ar-lines"></div>
         <button class="btn btn-ghost" style="margin-top:8px;font-size:12px;padding:7px 14px" onclick="addIngredientLine()">+ Add ingredient line</button>
+        <div class="form-hint">
+          รายการที่มีป้าย <span class="sub-tag">SUB-RECIPE</span> คือสูตรแม่ (เช่น น้ำสลัดโฮมเมด) — ต้นทุนคำนวณอัตโนมัติจากส่วนผสมจริงในหน้านี้เอง ไม่ต้องกรอกต้นทุนเอง
+        </div>
       </div>
 
       <div class="form-footer">
@@ -229,9 +233,10 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 
 <script src="api.js"></script>
 <script>
-// #FIX — เดิมไฟล์นี้ hardcode GAS_URL/fetch เอง ไม่ใช้ api.js — เปลี่ยนมาใช้
-// API.recipes()/API.menuData()/API.ingredients()/API.createRecipe() แทน (field name
-// ของเดิมตรงกับ รหัส.gs อยู่แล้ว ไม่มี logic bug ต้องแก้) + เปลี่ยน alert() เป็น UI.toast()
+// #FIX — ใช้ api.js แทน hardcode fetch เอง (field name เดิมตรงกับ รหัส.gs อยู่แล้ว)
+// #SUBFIX — เพิ่ม sub-recipe (เช่น น้ำสลัดโฮมเมด) เข้าไปใน dropdown เลือกวัตถุดิบตอนสร้างสูตร
+// ของเดิมดึงมาแค่ API.ingredients() เท่านั้น ทำให้ไม่มีทางเลือก sub-recipe เป็นส่วนผสมของ
+// เมนูอื่นได้เลยจากหน้านี้ (เช่น จะทำสูตรแซนวิชที่ใช้น้ำสลัดโฮมเมด 20g ไม่มีตัวเลือกให้เลือก)
 let RECIPES = [];
 let ACTIVE_BRAND = 'ALL';
 let activeRecipeId = null;
@@ -422,7 +427,7 @@ function renderDetail() {
           return `
             <div class="ing-row">
               <div>
-                <div class="ing-name">${line.name}</div>
+                <div class="ing-name">${line.name}${line.is_sub_recipe ? '<span class="sub-tag">SUB-RECIPE</span>' : ''}</div>
                 <div class="ing-sub">${line.unit}</div>
               </div>
               <div class="ing-qty-val">${(line.qty*scaleMultiplier).toLocaleString()} ${line.unit}</div>
@@ -464,7 +469,8 @@ function renderDetail() {
 
 // ── ADD / EDIT RECIPE FORM ──
 let ALL_PRODUCTS = [];
-let ALL_INGREDIENTS = [];
+let ALL_INGREDIENTS = [];   // ingredients sheet เท่านั้น
+let ALL_SUB_RECIPES = [];   // #SUBFIX — sub_recipes (ผ่าน API.recipes() grouped by product_id) มารวมใน dropdown เดียวกัน
 let formLines = [];
 
 async function openAddRecipeModal() {
@@ -478,12 +484,23 @@ async function openAddRecipeModal() {
     ALL_PRODUCTS = menu.products || [];
     ALL_INGREDIENTS = ingredients || [];
 
-    const recipeProductNames = new Set(RECIPES.map(r => r.name));
+    // #SUBFIX — ดึงรายการ sub-recipe ที่มีอยู่จริงจากบรรทัดของ RECIPES ที่โหลดไว้แล้ว
+    // (is_sub_recipe flag มาจาก getRecipesWithCost() ใน รหัส.gs) เอามาสร้างเป็นตัวเลือก
+    // "วัตถุดิบเสมือน" เพิ่มในดรอปดาวน์ ใช้ product_id ของ sub-recipe เป็น ingredient_id ตรงๆ
+    const subMap = {};
+    RECIPES.forEach(r => (r.lines || []).forEach(l => {
+      if (l.is_sub_recipe && !subMap[l.ingredient_id]) {
+        subMap[l.ingredient_id] = { ingredient_id: l.ingredient_id, name: l.name, unit: l.unit };
+      }
+    }));
+    ALL_SUB_RECIPES = Object.values(subMap);
+
+    const recipeProductIds = new Set(RECIPES.map(r => r.product_id));
 
     const sel = document.getElementById('ar-product');
     sel.innerHTML = '<option value="">— Select a menu item —</option>' +
       ALL_PRODUCTS.map(p => {
-        const hasRecipe = recipeProductNames.has(p.name);
+        const hasRecipe = recipeProductIds.has(p.product_id);
         return `<option value="${p.product_id}" data-name="${p.name}">${p.emoji||'🍽'} ${p.name}${hasRecipe ? ' (has recipe — will overwrite)' : ''}</option>`;
       }).join('');
 
@@ -500,21 +517,25 @@ function onProductSelected() {
   const productId = sel.value;
   if (!productId) return;
 
-  const selectedOption = sel.options[sel.selectedIndex];
-  const productName = selectedOption.getAttribute('data-name');
-
-  const existing = RECIPES.find(r => r.name === productName);
+  // #SUBFIX — ตอนนี้หาสูตรเดิมด้วย product_id ตรงๆ แทนชื่อ (แม่นยำกว่า ไม่พังเวลาชื่อซ้ำ)
+  const existing = RECIPES.find(r => r.product_id === productId);
   if (existing && existing.lines && existing.lines.length) {
     formLines = existing.lines.map(l => ({ ingredient_id: l.ingredient_id, qty: l.qty }));
     renderIngredientLines();
   }
 }
 
+// #SUBFIX — dropdown วัตถุดิบตอนนี้รวมทั้ง ingredients จริง และ sub-recipe (มี optgroup แยกให้ดูง่าย)
 function ingredientOptionsHtml(selectedId) {
+  const ingOptions = ALL_INGREDIENTS.map(i =>
+    `<option value="${i.ingredient_id}" ${i.ingredient_id===selectedId?'selected':''}>${i.name} (${i.unit})</option>`
+  ).join('');
+  const subOptions = ALL_SUB_RECIPES.map(s =>
+    `<option value="${s.ingredient_id}" ${s.ingredient_id===selectedId?'selected':''}>🧪 ${s.name} (${s.unit}) — sub-recipe</option>`
+  ).join('');
   return '<option value="">— Select ingredient —</option>' +
-    ALL_INGREDIENTS.map(i =>
-      `<option value="${i.ingredient_id}" ${i.ingredient_id===selectedId?'selected':''}>${i.name} (${i.unit})</option>`
-    ).join('');
+    (subOptions ? `<optgroup label="Sub-recipes (สูตรแม่)">${subOptions}</optgroup>` : '') +
+    `<optgroup label="Ingredients (วัตถุดิบ+แพ็กเกจจิ้ง)">${ingOptions}</optgroup>`;
 }
 
 function addIngredientLine() {
@@ -528,6 +549,10 @@ function removeIngredientLine(idx) {
 function updateLineIngredient(idx, ingId) { formLines[idx].ingredient_id = ingId; }
 function updateLineQty(idx, qty) { formLines[idx].qty = qty; }
 
+function findIngredientOrSub(id) {
+  return ALL_INGREDIENTS.find(i => i.ingredient_id === id) || ALL_SUB_RECIPES.find(s => s.ingredient_id === id);
+}
+
 function renderIngredientLines() {
   const container = document.getElementById('ar-lines');
   if (!formLines.length) {
@@ -535,7 +560,7 @@ function renderIngredientLines() {
     return;
   }
   container.innerHTML = formLines.map((line, idx) => {
-    const ing = ALL_INGREDIENTS.find(i => i.ingredient_id === line.ingredient_id);
+    const ing = findIngredientOrSub(line.ingredient_id);
     const unit = ing ? ing.unit : '—';
     return `
       <div class="ing-line-row">
@@ -565,7 +590,7 @@ async function saveRecipeForm() {
     product_id: productId,
     product_name: productName,
     lines: validLines.map(l => {
-      const ing = ALL_INGREDIENTS.find(i => i.ingredient_id === l.ingredient_id);
+      const ing = findIngredientOrSub(l.ingredient_id);
       return {
         ingredient_id: l.ingredient_id,
         ingredient_name: ing ? ing.name : '',
@@ -583,7 +608,7 @@ async function saveRecipeForm() {
     UI.toast('บันทึกสูตรแล้ว');
     closeAddRecipeModal();
     await loadRecipeData();
-    const saved = RECIPES.find(r => r.name === productName);
+    const saved = RECIPES.find(r => r.product_id === productId);
     if (saved) selectRecipe(saved.recipe_id);
   } catch(e) {
     UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
