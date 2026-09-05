@@ -8,36 +8,36 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
 <style>
-:root { --brand-dark:#1B4332; --brand-mid:#2D6A4F; --brand-light:#52B788; --brand-accent:#F97316; }
+:root { --brand-dark:#1B4332; --brand-mid:#2D6A4F; --brand-light:#52B788; --brand-accent:#F97316; --brand-cream:#FDFDF5; }
 * { box-sizing:border-box; margin:0; padding:0; }
 html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; color:#1a2e1a; overflow-x:hidden; }
 .app { display:flex; height:100vh; }
-.sidebar { width:220px; background:#1B4332; border-right:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
+.sidebar { width:220px; background:var(--brand-cream); border-right:1px solid rgba(30,58,30,0.08); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
 .main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(30,58,30,0.08); }
 .sidebar-logo-brand { font-family:'Playfair Display',serif; font-size:13px; color:#1a2e1a; }
 .sidebar-logo-sub { font-size:10px; color:#4a6741; margin-top:2px; letter-spacing:0.05em; text-transform:uppercase; }
 .nav-section { padding:12px 12px 4px; }
 .nav-label { font-size:9px; color:rgba(0,0,0,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:4px; }
 .nav-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; font-size:12px; color:#4a6741; cursor:pointer; transition:all 0.15s; text-decoration:none; }
-.nav-item:hover { background:rgba(255,255,255,0.05); color:#1a2e1a; }
-.nav-item.active { background:var(--brand-dark); color:#1a2e1a; }
+.nav-item:hover { background:rgba(30,58,30,0.05); color:#1a2e1a; }
+.nav-item.active { background:var(--brand-dark); color:#ffffff; }
 .nav-icon { width:16px; text-align:center; font-size:13px; }
-.topbar { background:#1B4332; border-bottom:1px solid rgba(255,255,255,0.06); padding:0 24px; height:56px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
+.topbar { background:var(--brand-cream); border-bottom:1px solid rgba(30,58,30,0.08); padding:0 24px; height:56px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
 .topbar-title { font-size:15px; font-weight:600; color:#1a2e1a; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
 .btn { padding:7px 16px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
-.btn-ghost { background:rgba(255,255,255,0.06); color:#1a2e1a; border:1px solid rgba(255,255,255,0.08); }
-.btn-ghost:hover { background:rgba(255,255,255,0.1); color:#1a2e1a; }
+.btn-ghost { background:rgba(30,58,30,0.06); color:#1a2e1a; border:1px solid rgba(30,58,30,0.1); }
+.btn-ghost:hover { background:rgba(30,58,30,0.12); color:#1a2e1a; }
 .btn-primary { background:var(--brand-dark); color: #fff; }
 .btn-primary:hover { background:var(--brand-mid); }
 .btn:disabled { opacity:.5; pointer-events:none; }
 .content { flex:1; overflow-y:auto; padding:24px; }
 .content::-webkit-scrollbar { width:4px; }
-.content::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
-.month-selector { display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.05); padding:3px 12px 3px 3px; border-radius:10px; }
+.content::-webkit-scrollbar-thumb { background:rgba(30,58,30,0.15); border-radius:2px; }
+.month-selector { display:flex; align-items:center; gap:8px; background:rgba(30,58,30,0.05); padding:3px 12px 3px 3px; border-radius:10px; }
 .month-nav { width:28px; height:28px; border-radius:7px; background:transparent; border:none; color:#4a6741; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
-.month-nav:hover { background:rgba(255,255,255,0.1); color:#1a2e1a; }
+.month-nav:hover { background:rgba(30,58,30,0.1); color:#1a2e1a; }
 .month-label { font-size:12px; font-weight:500; color:#1a2e1a; min-width:100px; text-align:center; }
 .kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
 .kpi-card { background:#ffffff; border:1px solid #e0d8cc; border-radius:14px; padding:16px 18px; }
@@ -49,14 +49,14 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; 
 .kpi-profit { border-color:rgba(82,183,136,0.2); background:rgba(82,183,136,0.05); }
 .kpi-profit .kpi-value { color:var(--brand-light); }
 .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-.card { background: #ffffff; border:1px solid rgba(255,255,255,0.06); border-radius:14px; overflow:hidden; }
-.card-header { padding:14px 18px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; }
+.card { background: #ffffff; border:1px solid rgba(30,58,30,0.08); border-radius:14px; overflow:hidden; }
+.card-header { padding:14px 18px; border-bottom:1px solid rgba(30,58,30,0.06); display:flex; align-items:center; justify-content:space-between; }
 .card-title { font-size:12px; font-weight:600; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; }
 .card-body { padding:16px 18px; }
-.tab-row { display:flex; gap:4px; margin-bottom:20px; background:rgba(255,255,255,0.04); padding:3px; border-radius:10px; width:fit-content; }
+.tab-row { display:flex; gap:4px; margin-bottom:20px; background:rgba(30,58,30,0.04); padding:3px; border-radius:10px; width:fit-content; }
 .tab-btn { padding:7px 18px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; color:#4a6741; border:none; background:transparent; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
-.tab-btn.active { background:#ffffff; color:#1a2e1a; box-shadow:0 1px 4px rgba(0,0,0,0.4); }
-.pl-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; }
+.tab-btn.active { background:#ffffff; color:#1a2e1a; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
+.pl-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(30,58,30,0.05); font-size:13px; }
 .pl-row:last-child { border-bottom:none; }
 .pl-row.total { font-weight:700; font-size:14px; border-top:1px solid #e0d8cc; margin-top:4px; padding-top:12px; }
 .pl-row.subtotal { color:#4a6741; font-size:12px; }
@@ -67,37 +67,41 @@ html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; 
 .pl-negative { color:#EF4444; }
 .pl-neutral  { color:#1a2e1a; }
 .pl-section-header { font-size:10px; color:rgba(0,0,0,0.35); text-transform:uppercase; letter-spacing:0.08em; padding:12px 0 4px; }
+.pl-note { font-size:10.5px; color:#4a6741; background:rgba(30,58,30,0.04); border-radius:8px; padding:8px 10px; margin:6px 0 4px; line-height:1.5; }
 .exp-grid { grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; gap:12px; }
-.table-card { background:#1B4332; border:1px solid rgba(255,255,255,0.06); border-radius:14px; overflow:hidden; }
-.table-header { display:grid; padding:11px 16px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.05); font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
-.table-row { display:grid; padding:11px 16px; border-bottom:1px solid rgba(255,255,255,0.04); align-items:center; transition:background 0.1s; font-size:12px; }
+.table-card { background:#ffffff; border:1px solid rgba(30,58,30,0.08); border-radius:14px; overflow:hidden; }
+.table-header { display:grid; padding:11px 16px; background:rgba(30,58,30,0.035); border-bottom:1px solid rgba(30,58,30,0.08); font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
+.table-row { display:grid; padding:11px 16px; border-bottom:1px solid rgba(30,58,30,0.06); align-items:center; transition:background 0.1s; font-size:12px; }
 .table-row:last-child { border-bottom:none; }
-.table-row:hover { background:rgba(255,255,255,0.02); }
+.table-row:hover { background:rgba(30,58,30,0.025); }
+.table-row.capex-row { background:rgba(249,115,22,0.04); }
 .exp-badge { display:inline-flex; padding:2px 9px; border-radius:10px; font-size:10px; font-weight:600; }
+.capex-tag { font-size:9px; font-weight:700; color:#F97316; background:rgba(249,115,22,0.12); border-radius:6px; padding:1px 6px; margin-left:6px; }
 .filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; }
 .search-wrap { position:relative; }
-.search-icon-abs { position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.3; }
-.search-input { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px 8px 32px; font-size:12px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; width:200px; }
+.search-icon-abs { position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.4; }
+.search-input { background:#ffffff; border:1px solid rgba(30,58,30,0.15); border-radius:8px; padding:8px 12px 8px 32px; font-size:12px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; width:200px; }
 .search-input:focus { border-color:var(--brand-light); }
 .search-input::placeholder { color:rgba(0,0,0,0.35); }
-.select-filter { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; font-size:12px; color:var(--green);font-weight:700; font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
+.select-filter { background:#ffffff; border:1px solid rgba(30,58,30,0.15); border-radius:8px; padding:8px 12px; font-size:12px; color:#1a2e1a;font-weight:500; font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
 .select-filter option { background:#ffffff; }
 canvas { max-height:200px; }
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
 .modal-overlay.show { opacity:1; pointer-events:all; }
-.modal { background:#ffffff; border-radius:20px; width:480px; max-height:85vh; overflow-y:auto; border:1px solid rgba(255,255,255,0.08); }
-.modal-header { padding:20px 24px 16px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; }
+.modal { background:#ffffff; border-radius:20px; width:480px; max-height:85vh; overflow-y:auto; border:1px solid rgba(30,58,30,0.08); }
+.modal-header { padding:20px 24px 16px; border-bottom:1px solid rgba(30,58,30,0.08); display:flex; align-items:center; justify-content:space-between; }
 .modal-title { font-size:15px; font-weight:600; color:#1a2e1a; }
 .modal-close { background:none; border:none; color:#4a6741; font-size:20px; cursor:pointer; }
 .modal-close:hover { color:#1a2e1a; }
 .modal-body { padding:20px 24px; }
 .form-group { margin-bottom:16px; }
 .form-label { font-size:11px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; display:block; }
-.form-input { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:9px; padding:9px 12px; font-size:13px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; }
+.form-input { width:100%; background:#ffffff; border:1px solid rgba(30,58,30,0.15); border-radius:9px; padding:9px 12px; font-size:13px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; }
 .form-input:focus { border-color:var(--brand-light); }
 .form-input::placeholder { color:rgba(0,0,0,0.35); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.form-hint { font-size:10px; color:#4a6741; margin-top:4px; }
 .loading-text { text-align:center; padding:40px; color:#4a6741; font-size:13px; }
 </style>
 </head>
@@ -113,17 +117,16 @@ canvas { max-height:200px; }
       <a href="dashboard.html" class="nav-item"><span class="nav-icon">⬛</span>Dashboard</a>
       <a href="pos.html"       class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
       <div class="nav-label" style="margin-top:12px">Operations</div>
-      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
+      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory / อุปกรณ์</a>
       <a href="recipe.html"    class="nav-item"><span class="nav-icon">🧪</span>Recipes</a>
-      <a href="production.html"class="nav-item"><span class="nav-icon">🏭</span>Production</a>
       <div class="nav-label" style="margin-top:12px">Business</div>
-      <a href="crm.html"       class="nav-item"><span class="nav-icon">👥</span>CRM / Members</a>
+      <a href="crm.html"       class="nav-item"><span class="nav-icon">👥</span>CRM / ลูกค้า</a>
       <a href="finance.html"   class="nav-item active"><span class="nav-icon">💰</span>Finance</a>
       <a href="reports.html"   class="nav-item"><span class="nav-icon">📊</span>Reports</a>
       <div class="nav-label" style="margin-top:12px">Settings</div>
       <a href="settings.html"  class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
     </div>
-    <div style="padding:12px 20px;border-top:1px solid rgba(255,255,255,0.06);">
+    <div style="padding:12px 20px;border-top:1px solid rgba(30,58,30,0.08);">
       <div style="font-size:11px;color:rgba(0,0,0,0.35)" id="staff-name-label">Owner · All Brands</div>
     </div>
   </div>
@@ -168,7 +171,7 @@ canvas { max-height:200px; }
               <div class="kpi-sub" id="kpi-gp-pct">—</div>
             </div>
             <div class="kpi-card">
-              <div class="kpi-label">Op. Expenses</div>
+              <div class="kpi-label">Op. Expenses + ค่าเสื่อม</div>
               <div class="kpi-value" id="kpi-opex">—</div>
               <div class="kpi-sub" id="kpi-opex-pct">—</div>
             </div>
@@ -217,7 +220,7 @@ canvas { max-height:200px; }
       <div id="tab-expenses" style="display:none">
         <div class="filter-row">
           <div class="search-wrap">
-            <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+            <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#4a6741" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
             <input class="search-input" type="text" placeholder="Search expenses…" oninput="filterExpenses(this.value)">
           </div>
           <select class="select-filter" id="exp-cat-filter" onchange="filterExpenses()">
@@ -227,10 +230,18 @@ canvas { max-height:200px; }
             <option value="salary">Salary</option>
             <option value="utility">Utilities</option>
             <option value="marketing">Marketing</option>
-            <option value="equipment">Equipment</option>
+            <option value="equipment">Equipment (repair/rent)</option>
+            <option value="ingredient_purchase">Ingredient Purchase (สต๊อก — ไม่นับ OpEx)</option>
+            <option value="packaging_purchase">Packaging Purchase (สต๊อก — ไม่นับ OpEx)</option>
+            <option value="equipment_purchase">Equipment Purchase (สินทรัพย์ — ไม่นับ OpEx)</option>
             <option value="other">Other</option>
           </select>
           <span style="margin-left:auto;font-size:11px;color:#4a6741" id="exp-total-label">Total: ฿0</span>
+        </div>
+        <div class="pl-note" style="margin-bottom:12px">
+          🏷️ รายการที่มีป้าย <span class="capex-tag">CAPEX</span> คือเงินที่จ่ายซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์ —
+          แสดงไว้ให้เห็นกระแสเงินสดที่จ่ายจริง แต่ <strong>ไม่ถูกนับเป็น OpEx ในหน้า P&L</strong>
+          เพราะต้นทุนเหล่านี้จะถูกนับผ่าน COGS ตอนขายจริง (วัตถุดิบ/แพ็กเกจจิ้ง) หรือค่าเสื่อมราคารายเดือน (อุปกรณ์) แทน
         </div>
 
         <div class="table-card">
@@ -263,12 +274,11 @@ canvas { max-height:200px; }
         <div class="form-group">
           <label class="form-label">Category</label>
           <select class="form-input" id="exp-cat">
-            <option value="cogs">COGS / Ingredients</option>
             <option value="rent">Rent</option>
             <option value="salary">Salary / Payroll</option>
             <option value="utility">Utilities</option>
             <option value="marketing">Marketing</option>
-            <option value="equipment">Equipment</option>
+            <option value="equipment">Equipment (ซ่อม/บำรุง — นับเป็น OpEx)</option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -303,7 +313,8 @@ canvas { max-height:200px; }
         <label class="form-label">Note (optional)</label>
         <input class="form-input" type="text" id="exp-note" placeholder="Optional">
       </div>
-      <div class="form-footer">
+      <div class="form-hint">การซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์ใหม่ ให้บันทึกผ่านหน้า Inventory (Receive Stock / Add Asset) แทน — ระบบจะ log รายจ่ายให้อัตโนมัติและคำนวณต้นทุนถูกต้อง ไม่ต้องมาเพิ่มซ้ำที่นี่</div>
+      <div class="form-footer" style="margin-top:12px">
         <button class="btn btn-ghost" onclick="UI.closeModal('add-expense-modal')">Cancel</button>
         <button class="btn btn-primary" id="save-expense-btn" onclick="saveExpense()">Save Expense</button>
       </div>
@@ -314,10 +325,10 @@ canvas { max-height:200px; }
 <script src="api.js"></script>
 <script>
 // ============================================================
-// #FIX — เดิม P&L Overview ทั้งหน้าเป็นตัวเลข hardcoded ('฿186,400' ฯลฯ) ไม่เชื่อมกับ
-// backend เลย ตอนนี้ดึงจริงจาก API.financeSummary({month}) ซึ่งคำนวณจาก orders/
-// order_lines/expenses ตรงๆ ใน รหัส.gs (getFinanceSummary) — เปลี่ยนเดือนแล้ว
-// เห็นข้อมูลเดือนนั้นจริง ไม่ใช่ค่าคงที่เดือนพฤษภาคม 2026 ตลอดไป
+// #FIX (v2) — P&L ดึงจริงจาก API.financeSummary({month}) ซึ่งตอนนี้ตัดปัญหานับต้นทุนซ้ำ
+// (CapEx/สต๊อกที่ซื้อมาไม่ถูกนับเป็น OpEx อีกต่อไป — ดู #CAPEXFIX ใน รหัส.gs) และแสดงบรรทัด
+// ค่าเสื่อมราคาอุปกรณ์แยกให้เห็นชัดใน P&L Statement แล้ว (เดิมกำไรสุทธิหักค่าเสื่อมไปเงียบๆ
+// โดยไม่มีบรรทัดไหนอธิบายให้เห็นบนจอเลย ตัวเลขดูเหมือนไม่ตรงกัน)
 // ============================================================
 let currentMonth = new Date();
 let EXPENSES = [];
@@ -325,8 +336,17 @@ let CURRENT_SUMMARY = null;
 
 document.getElementById('staff-name-label').textContent = Identity.getName() + ' · All Brands';
 
-const CAT_COLORS = { cogs:'#52B788', rent:'#F97316', salary:'#818CF8', utility:'#22D3EE', marketing:'#FCD34D', equipment:'#F87171', other:'#94A3B8' };
-const CAT_LABELS = { cogs:'COGS', rent:'Rent', salary:'Salary', utility:'Utilities', marketing:'Marketing', equipment:'Equipment', other:'Other' };
+const CAT_COLORS = {
+  cogs:'#52B788', rent:'#F97316', salary:'#818CF8', utility:'#22D3EE', marketing:'#FCD34D',
+  equipment:'#F87171', other:'#94A3B8',
+  ingredient_purchase:'#A78BFA', packaging_purchase:'#F0ABFC', equipment_purchase:'#FB923C',
+};
+const CAT_LABELS = {
+  cogs:'COGS', rent:'Rent', salary:'Salary', utility:'Utilities', marketing:'Marketing',
+  equipment:'Equipment (repair)', other:'Other',
+  ingredient_purchase:'Ingredient Purchase', packaging_purchase:'Packaging Purchase', equipment_purchase:'Equipment Purchase',
+};
+const CAPEX_CATEGORIES = ['ingredient_purchase', 'packaging_purchase', 'equipment_purchase'];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
@@ -376,6 +396,8 @@ function renderOverview(s) {
   const cogs = s.cogs || 0;
   const gp = s.gross_profit || 0;
   const opex = s.total_expenses || 0;
+  const dep = s.depreciation || 0;
+  const capex = s.capex_and_inventory_spend || 0;
   const net = s.net_profit || 0;
 
   document.getElementById('kpi-rev').textContent = fmtB(rev);
@@ -384,8 +406,10 @@ function renderOverview(s) {
   document.getElementById('kpi-cogs-pct').textContent = pctOf(cogs, rev) + ' of revenue';
   document.getElementById('kpi-gp').textContent = fmtB(gp);
   document.getElementById('kpi-gp-pct').textContent = 'GP ' + (s.gross_margin_pct ?? 0) + '%';
-  document.getElementById('kpi-opex').textContent = fmtB(opex);
-  document.getElementById('kpi-opex-pct').textContent = pctOf(opex, rev) + ' of revenue';
+  // #FIX — KPI การ์ดนี้ตอนนี้รวม OpEx + ค่าเสื่อมราคาเข้าด้วยกัน (ตัวเลขเดียวกับที่ถูกหักจริง
+  // ออกจากกำไรสุทธิ) แทนที่จะโชว์แค่ OpEx เฉยๆ ซึ่งทำให้ตัวเลขดูไม่ตรงกับ Net Profit ที่แสดง
+  document.getElementById('kpi-opex').textContent = fmtB(opex + dep);
+  document.getElementById('kpi-opex-pct').textContent = 'OpEx ' + fmtB(opex) + ' + ค่าเสื่อม ' + fmtB(dep);
   document.getElementById('kpi-net').textContent = fmtB(net);
   document.getElementById('kpi-net-pct').textContent = 'NP ' + (s.net_margin_pct ?? 0) + '%';
 
@@ -399,17 +423,22 @@ function renderOverview(s) {
     <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value pl-positive">${fmtB(rev)}</span></div>
 
     <div class="pl-section-header">Cost of Goods Sold</div>
-    <div class="pl-row"><span class="pl-label">Total COGS</span><span class="pl-value pl-negative">-${fmtB(cogs)}</span></div>
+    <div class="pl-row"><span class="pl-label">Total COGS (วัตถุดิบ+แพ็กเกจจิ้งที่ใช้จริง)</span><span class="pl-value pl-negative">-${fmtB(cogs)}</span></div>
 
     <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Gross Profit</span><span class="pl-value pl-positive">${fmtB(gp)}</span></div>
 
     <div class="pl-section-header">Operating Expenses</div>
     ${Object.keys(expByCat).length ? Object.entries(expByCat).map(([cat, amt]) =>
       `<div class="pl-row subtotal"><span class="pl-label indent">${CAT_LABELS[cat] || cat}</span><span class="pl-value pl-negative">-${fmtB(amt)}</span></div>`
-    ).join('') : '<div class="pl-row subtotal"><span class="pl-label indent">No expenses recorded this month</span></div>'}
+    ).join('') : '<div class="pl-row subtotal"><span class="pl-label indent">No operating expenses recorded this month</span></div>'}
     <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value pl-negative">-${fmtB(opex)}</span></div>
 
+    <div class="pl-section-header">Depreciation</div>
+    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์ (รายเดือน)</span><span class="pl-value pl-negative">-${fmtB(dep)}</span></div>
+
     <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Net Profit</span><span class="pl-value pl-positive" style="font-size:16px">${fmtB(net)}</span></div>
+
+    ${capex > 0 ? `<div class="pl-note">💵 เดือนนี้จ่ายเงินสดซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่ได้ถูกหักในหน้า P&L นี้ตรงๆ (จะทยอยนับผ่าน COGS ตอนขายจริง หรือค่าเสื่อมราคารายเดือน) ดูรายละเอียดได้ในแท็บ Expenses</div>` : ''}
   `;
   document.getElementById('pl-statement-body').innerHTML = plHtml;
 
@@ -501,6 +530,7 @@ async function loadExpenses() {
     EXPENSES = (data || []).map(e => ({
       id: e.expense_id, desc: e.description, cat: e.category, brand: e.brand_id,
       amount: e.amount, date: e.date,
+      is_capex: CAPEX_CATEGORIES.indexOf(String(e.category||'')) !== -1,
     }));
     renderExpenses();
   } catch (e) {
@@ -520,7 +550,7 @@ function renderExpenses(filter = '') {
     exps = exps.filter(e => (e.desc||'').toLowerCase().includes(q) || (CAT_LABELS[e.cat]||'').toLowerCase().includes(q));
   }
   const total = exps.reduce((s,e) => s+Number(e.amount||0), 0);
-  document.getElementById('exp-total-label').textContent = `Total: ${fmtB(total)}`;
+  document.getElementById('exp-total-label').textContent = `Total (ทุกหมวดรวม CAPEX): ${fmtB(total)}`;
 
   if (!exps.length) {
     body.innerHTML = '<div class="loading-text">No expenses found for this month</div>';
@@ -528,8 +558,8 @@ function renderExpenses(filter = '') {
   }
 
   body.innerHTML = exps.map(e => `
-    <div class="table-row exp-grid">
-      <div><div style="font-size:12px;font-weight:500;color:#1a2e1a">${e.desc || '—'}</div></div>
+    <div class="table-row exp-grid ${e.is_capex ? 'capex-row' : ''}">
+      <div><div style="font-size:12px;font-weight:500;color:#1a2e1a">${e.desc || '—'}${e.is_capex ? '<span class="capex-tag">CAPEX</span>' : ''}</div></div>
       <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${CAT_LABELS[e.cat] || e.cat}</span></div>
       <div style="font-size:11px;color:#4a6741">${e.brand}</div>
       <div style="font-size:13px;font-weight:600;color:#EF4444">-${fmtB(e.amount)}</div>
@@ -539,10 +569,6 @@ function renderExpenses(filter = '') {
 
 function filterExpenses(val) { renderExpenses(val || ''); }
 
-// #FIX — เดิม saveExpense() เรียก API.createExpense() แล้ว แต่ push local array ต่อ
-// ไม่ว่า API จะสำเร็จหรือ fail (optimistic UI ที่ไม่ตรวจผลจริง) — ตอนนี้รอผลจริงก่อน
-// และแก้ field ให้ตรงกับ createExpense() ใน รหัส.gs (date/category/description/amount/
-// brand_id/payment_method/note — เดิมส่ง 'ref' ที่ backend ไม่มีคอลัมน์รองรับเลย)
 async function saveExpense() {
   const desc = document.getElementById('exp-desc').value.trim();
   if (!desc) { UI.toast('Enter a description.', 'error'); return; }
