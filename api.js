@@ -11,7 +11,7 @@
  * เป๊ะๆ เสมอ — หลังดีพลอย Web App ใหม่ ก็อปปี้ URL เดียวมาแปะทั้งสองไฟล์นี้
  */
 
-const API_BASE = 'PASTE_NEW_WEB_APP_URL_HERE_AFTER_DEPLOY';
+const API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
 
 // ─── Identity (display-only, ไม่ gate การเข้าถึง) ──────────────────────────
 const Identity = {
