@@ -11,7 +11,7 @@
  * เป๊ะๆ เสมอ — หลังดีพลอย Web App ใหม่ ก็อปปี้ URL เดียวมาแปะทั้งสองไฟล์นี้
  */
 
-const API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+const API_BASE = 'PASTE_NEW_WEB_APP_URL_HERE_AFTER_DEPLOY';
 
 // ─── Identity (display-only, ไม่ gate การเข้าถึง) ──────────────────────────
 const Identity = {
@@ -92,7 +92,8 @@ const API = {
   // Inventory / Ingredients (แพ็กเกจจิ้งก็อยู่ในนี้ — ดู #INGCRUD ใน รหัส.gs)
   ingredients:     (p = {}) => apiGet('get_ingredients', p),
   inventoryStats:  ()       => apiGet('get_inventory_stats'),
-  adjustStock:     (data)   => apiPost('adjust_stock', data), // { ingredient_id, adjust_type: 'add'|'subtract'|'set', amount }
+  adjustStock:     (data)   => apiPost('adjust_stock', data), // { ingredient_id, adjust_type: 'add'|'subtract'|'set', amount } — ไม่แตะ unit_cost
+  receiveStock:    (data)   => apiPost('receive_stock', data), // #WAC — { ingredient_id, qty, unit_price, brand_id?, payment_method?, date? } — คำนวณ unit_cost ถัวเฉลี่ยใหม่ + log รายจ่ายอัตโนมัติ
   createIngredient:(data)   => apiPost('create_ingredient', data),
   updateIngredient:(data)   => apiPost('update_ingredient', data),
   deleteIngredient:(ingredient_id) => apiPost('delete_ingredient', { ingredient_id }),
