@@ -104,9 +104,11 @@ const API = {
   getRecipe:    notImplemented('ดึงสูตรรายตัว (ใช้ recipes() แล้ว find ฝั่ง client แทนได้)'),
   updateRecipe: notImplemented('แก้ไขสูตรรายตัวโดยตรง (ใช้ createRecipe() เพื่อ overwrite ทั้งสูตรแทน)'),
 
-  // Customers
+  // Customers (แทน members ที่ตัดทิ้งไปแล้ว)
   customers: (p = {}) => apiGet('get_customers', p),
-  createCustomer: notImplemented('เพิ่มลูกค้าใหม่ผ่านหน้าเว็บ (แก้ตรงใน Google Sheet ชีท customers เอง)'),
+  createCustomer: (data) => apiPost('create_customer', data), // { name, brand_id?, phone?, email?, notes? }
+  updateCustomer: (data) => apiPost('update_customer', data), // { customer_id, ...fields }
+  addCustomerPoints: (data) => apiPost('add_customer_points', data), // { customer_id, points?, amount }
   lookupCustomer: notImplemented('ค้นหาลูกค้าจากเบอร์โทร'),
   redeemPoints:   notImplemented('แลกแต้มสะสม'),
 
