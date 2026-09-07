@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRM / Members — BrewOS</title>
+<title>CRM / Customers — BrewOS</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -34,6 +34,9 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
 .topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
 .topbar-title { font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; }
+.brand-switch { display:flex; gap:4px; background:var(--card); padding:4px; border-radius:10px; border:1px solid var(--border); }
+.brand-tab { padding:7px 16px; border-radius:7px; font-size:12px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'Anuphan','Poppins',sans-serif; }
+.brand-tab.active { background:var(--green); color:#fff; }
 .topbar-actions { margin-left:auto; display:flex; gap:8px; }
 .btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
 .btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
@@ -91,6 +94,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .form-input:focus { border-color:var(--green2); }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.form-hint { font-size:10.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
 
 .detail-panel { position:fixed; right:0; top:0; bottom:0; width:360px; background:var(--card); border-left:1px solid var(--border); transform:translateX(100%); transition:transform 0.25s; z-index:150; display:flex; flex-direction:column; }
 .detail-panel.open { transform:translateX(0); }
@@ -107,19 +111,17 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 <body>
 <div class="app">
   <div class="sidebar">
-    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
     <div class="sidebar-logo-sub">Back Office</div>
     <div class="nav-section">
       <div class="nav-label" style="margin-top:14px">Main</div>
       <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span>Dashboard</a>
       <a href="pos.html" class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
       <div class="nav-label" style="margin-top:14px">Operations</div>
-      <a href="kitchen.html" class="nav-item"><span class="nav-icon">👨‍🍳</span>Kitchen</a>
-      <a href="orders.html" class="nav-item"><span class="nav-icon">📋</span>Orders</a>
-      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory</a>
+      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory / อุปกรณ์</a>
       <a href="recipe.html" class="nav-item"><span class="nav-icon">📝</span>Recipes</a>
       <div class="nav-label" style="margin-top:14px">Business</div>
-      <a href="crm.html" class="nav-item active"><span class="nav-icon">👥</span>CRM / Members</a>
+      <a href="crm.html" class="nav-item active"><span class="nav-icon">👥</span>CRM / ลูกค้า</a>
       <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
       <a href="reports.html" class="nav-item"><span class="nav-icon">📊</span>Reports</a>
       <div class="nav-label" style="margin-top:14px">Settings</div>
@@ -131,10 +133,15 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <div class="main">
     <div class="topbar">
       <div class="topbar-top">
-        <div class="topbar-title">CRM / Members</div>
+        <div class="topbar-title">CRM / Customers</div>
+        <div class="brand-switch">
+          <button class="brand-tab active" onclick="switchBrand('', this)">All</button>
+          <button class="brand-tab" onclick="switchBrand('BB', this)">Brain Brew</button>
+          <button class="brand-tab" onclick="switchBrand('HH', this)">Heng Heng</button>
+        </div>
         <div class="topbar-actions">
-          <button class="btn btn-ghost" onclick="loadMembers()">⟳ Refresh</button>
-          <button class="btn btn-primary" onclick="UI.openModal('add-modal')">+ Add Member</button>
+          <button class="btn btn-ghost" onclick="loadCustomers()">⟳ Refresh</button>
+          <button class="btn btn-primary" onclick="UI.openModal('add-modal')">+ Add Customer</button>
         </div>
       </div>
     </div>
@@ -142,17 +149,17 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
     <div class="content">
       <div class="kpi-row">
         <div class="kpi-card">
-          <div class="kpi-label">Total Members</div>
+          <div class="kpi-label">Total Customers</div>
           <div class="kpi-value" id="kpi-total">—</div>
           <div class="kpi-sub">Registered</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Gold Members</div>
+          <div class="kpi-label">Gold Customers</div>
           <div class="kpi-value" id="kpi-gold" style="color:var(--gold)">—</div>
           <div class="kpi-sub">≥ ฿2,000 spent</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Silver Members</div>
+          <div class="kpi-label">Silver Customers</div>
           <div class="kpi-value" id="kpi-silver" style="color:var(--silver)">—</div>
           <div class="kpi-sub">≥ ฿1,000 spent</div>
         </div>
@@ -166,7 +173,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <div class="filter-row">
         <div class="search-wrap">
           <svg class="search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#6b7d68" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
-          <input class="search-input" type="text" placeholder="Search members…" oninput="filterMembers(this.value)">
+          <input class="search-input" type="text" placeholder="Search customers…" oninput="filterCustomers(this.value)">
         </div>
         <select class="select-filter" onchange="filterByTier(this.value)">
           <option value="">All Tiers</option>
@@ -174,19 +181,19 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <option value="Silver">🥈 Silver</option>
           <option value="Bronze">🥉 Bronze</option>
         </select>
-        <span style="margin-left:auto;font-size:11.5px;color:var(--muted)" id="member-count">0 members</span>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--muted)" id="customer-count">0 customers</span>
       </div>
 
       <div class="table-card">
         <div class="table-header">
-          <div>Member</div>
+          <div>Customer</div>
           <div>Tier</div>
           <div>Points</div>
           <div>Total Spent</div>
           <div>Joined</div>
           <div style="text-align:right">Actions</div>
         </div>
-        <div id="member-body">
+        <div id="customer-body">
           <div class="empty-state">⏳ Loading…</div>
         </div>
       </div>
@@ -196,7 +203,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 <div class="detail-panel" id="detail-panel">
   <div class="detail-header">
-    <div style="font-size:14px;font-weight:600" id="detail-name">Member Detail</div>
+    <div style="font-size:14px;font-weight:600" id="detail-name">Customer Detail</div>
     <button class="detail-close" onclick="closeDetail()">×</button>
   </div>
   <div class="detail-body" id="detail-body"></div>
@@ -205,7 +212,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 <div class="modal-overlay" id="add-modal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Add New Member</div>
+      <div class="modal-title">Add New Customer</div>
       <button class="modal-close" onclick="UI.closeModal('add-modal')">×</button>
     </div>
     <div class="modal-body">
@@ -219,17 +226,25 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <input class="form-input" type="tel" id="add-phone" placeholder="0812345678">
         </div>
         <div class="form-group">
-          <label class="form-label">Email (optional)</label>
-          <input class="form-input" type="email" id="add-email" placeholder="email@example.com">
+          <label class="form-label">Brand</label>
+          <select class="form-input" id="add-brand">
+            <option value="SHARED">Shared / ใช้ร่วมกัน</option>
+            <option value="BB">Brain Brew</option>
+            <option value="HH">Heng Heng</option>
+          </select>
         </div>
       </div>
       <div class="form-group">
+        <label class="form-label">Email (optional)</label>
+        <input class="form-input" type="email" id="add-email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
         <label class="form-label">Notes (optional)</label>
-        <input class="form-input" type="text" id="add-notes" placeholder="e.g. ลูกค้าขาประจำ">
+        <input class="form-input" type="text" id="add-notes" placeholder="e.g. ลูกค้าขาประจำ, แพ้ถั่ว">
       </div>
       <div class="form-footer">
         <button class="btn btn-ghost" onclick="UI.closeModal('add-modal')">Cancel</button>
-        <button class="btn btn-primary" id="save-member-btn" onclick="saveMember()">Add Member</button>
+        <button class="btn btn-primary" id="save-customer-btn" onclick="saveCustomer()">Add Customer</button>
       </div>
     </div>
   </div>
@@ -238,18 +253,18 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 <script src="api.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
-// #FIX — เดิมไฟล์นี้ไม่ import api.js เลย ใช้ GAS_URL hardcode ซ้ำเอง (บังเอิญ action/field
-// name ตรงกับ รหัส.gs อยู่แล้วเลยใช้งานได้ แต่ถ้า deploy URL ใหม่ต้องมาแก้ที่นี่แยกต่างหาก)
-// เปลี่ยนมาใช้ API.members()/API.createMember()/API.addMemberPoints() จาก api.js แทน
-// และเปลี่ยน alert() เป็น UI.toast() ให้ UX สม่ำเสมอกับหน้าอื่นในระบบ
+// #CUSTFIX — เปลี่ยนจาก members (ตัดทิ้งไปแล้ว) มาใช้ customers แทน
+// API.members()/createMember()/addMemberPoints() ที่ไม่มีอยู่แล้วในระบบ ถูกเปลี่ยนเป็น
+// API.customers()/createCustomer()/addCustomerPoints() ทั้งหมด
+// ⚠️ customers เป็นข้อมูลแยกตามแบรนด์ (มี brand_id) ต่างจาก members เดิมที่เป็น global
+// เลยเพิ่มตัวเลือกแบรนด์เข้ามาในฟอร์มเพิ่มลูกค้า + แถบสลับแบรนด์ด้านบน
 // ═══════════════════════════════════════════════════════════
-let MEMBERS = [];
+let CUSTOMERS = [];
 let filterText = '';
 let filterTier = '';
+let activeBrand = '';
 
 document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
-
-const TIER_COLORS = { Gold:'#D97706', Silver:'#6B7280', Bronze:'#92400E' };
 
 function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
 
@@ -260,106 +275,116 @@ function avatarColor(name) {
   return colors[Math.abs(hash) % colors.length];
 }
 
-async function loadMembers() {
+async function loadCustomers() {
   try {
-    MEMBERS = await API.members();
+    CUSTOMERS = await API.customers(activeBrand ? { brand_id: activeBrand } : {});
   } catch(e) {
-    console.error('loadMembers:', e);
-    UI.toast('โหลดสมาชิกไม่สำเร็จ: ' + e.message, 'error');
-    MEMBERS = [];
+    console.error('loadCustomers:', e);
+    UI.toast('โหลดลูกค้าไม่สำเร็จ: ' + e.message, 'error');
+    CUSTOMERS = [];
   }
   renderKPIs();
-  renderMembers();
+  renderCustomers();
 }
 
-document.addEventListener('DOMContentLoaded', loadMembers);
+document.addEventListener('DOMContentLoaded', loadCustomers);
+
+function switchBrand(brand, btn) {
+  activeBrand = brand;
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadCustomers();
+}
 
 function renderKPIs() {
-  document.getElementById('kpi-total').textContent = MEMBERS.length;
-  document.getElementById('kpi-gold').textContent = MEMBERS.filter(m=>m.tier==='Gold').length;
-  document.getElementById('kpi-silver').textContent = MEMBERS.filter(m=>m.tier==='Silver').length;
-  document.getElementById('kpi-points').textContent = MEMBERS.reduce((s,m)=>s+Number(m.points||0),0).toLocaleString();
+  document.getElementById('kpi-total').textContent = CUSTOMERS.length;
+  document.getElementById('kpi-gold').textContent = CUSTOMERS.filter(c=>c.tier==='Gold').length;
+  document.getElementById('kpi-silver').textContent = CUSTOMERS.filter(c=>c.tier==='Silver').length;
+  document.getElementById('kpi-points').textContent = CUSTOMERS.reduce((s,c)=>s+Number(c.points||0),0).toLocaleString();
 }
 
 function getFiltered() {
-  return MEMBERS.filter(m => {
-    if (filterTier && m.tier !== filterTier) return false;
-    if (filterText && !(m.name||'').toLowerCase().includes(filterText) && !(m.phone||'').includes(filterText)) return false;
+  return CUSTOMERS.filter(c => {
+    if (filterTier && c.tier !== filterTier) return false;
+    if (filterText && !(c.name||'').toLowerCase().includes(filterText) && !(c.phone||'').includes(filterText)) return false;
     return true;
   });
 }
 
-function filterMembers(q) { filterText = q.toLowerCase(); renderMembers(); }
-function filterByTier(t)  { filterTier = t; renderMembers(); }
+function filterCustomers(q) { filterText = q.toLowerCase(); renderCustomers(); }
+function filterByTier(t)  { filterTier = t; renderCustomers(); }
 
-function renderMembers() {
+function renderCustomers() {
   const items = getFiltered();
-  document.getElementById('member-count').textContent = `${items.length} member${items.length!==1?'s':''}`;
+  document.getElementById('customer-count').textContent = `${items.length} customer${items.length!==1?'s':''}`;
 
-  const body = document.getElementById('member-body');
+  const body = document.getElementById('customer-body');
   if (!items.length) {
-    body.innerHTML = `<div class="empty-state">No members found</div>`;
+    body.innerHTML = `<div class="empty-state">No customers found</div>`;
     return;
   }
 
-  const maxPts = Math.max(...MEMBERS.map(m=>Number(m.points||0)), 1);
+  const maxPts = Math.max(...CUSTOMERS.map(c=>Number(c.points||0)), 1);
 
-  body.innerHTML = items.map(m => {
-    const initials = (m.name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
-    const color = avatarColor(m.name||'?');
-    const pct = Math.min(100, (Number(m.points||0)/maxPts)*100);
+  body.innerHTML = items.map(c => {
+    const initials = (c.name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
+    const color = avatarColor(c.name||'?');
+    const pct = Math.min(100, (Number(c.points||0)/maxPts)*100);
+    const tier = c.tier || 'Bronze';
 
     return `
       <div class="table-row">
         <div style="display:flex;align-items:center;gap:10px">
           <div class="member-avatar" style="background:${color}">${initials}</div>
           <div>
-            <div class="member-name">${m.name}</div>
-            <div class="member-id">${m.member_id}${m.phone ? ' · ' + m.phone : ''}</div>
+            <div class="member-name">${c.name}</div>
+            <div class="member-id">${c.customer_id}${c.phone ? ' · ' + c.phone : ''}${c.brand_id ? ' · ' + c.brand_id : ''}</div>
           </div>
         </div>
-        <div><span class="tier-badge tier-${m.tier}">${m.tier==='Gold'?'🥇':m.tier==='Silver'?'🥈':'🥉'} ${m.tier}</span></div>
+        <div><span class="tier-badge tier-${tier}">${tier==='Gold'?'🥇':tier==='Silver'?'🥈':'🥉'} ${tier}</span></div>
         <div>
-          <div style="font-size:13px;font-weight:600">${Number(m.points||0).toLocaleString()} pts</div>
+          <div style="font-size:13px;font-weight:600">${Number(c.points||0).toLocaleString()} pts</div>
           <div class="points-bar-wrap"><div class="points-bar" style="width:${pct}%"></div></div>
         </div>
-        <div style="font-size:13px;font-weight:500">${fmt(m.total_spent)}</div>
-        <div style="font-size:12px;color:var(--muted)">${m.join_date ? m.join_date.slice(0,10) : '—'}</div>
+        <div style="font-size:13px;font-weight:500">${fmt(c.total_spent)}</div>
+        <div style="font-size:12px;color:var(--muted)">${(c.join_date || c.created_at) ? String(c.join_date || c.created_at).slice(0,10) : '—'}</div>
         <div style="display:flex;gap:6px;justify-content:flex-end">
-          <button class="btn btn-ghost btn-sm" onclick="openDetail('${m.member_id}')">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openDetail('${c.customer_id}')">View</button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-function openDetail(memberId) {
-  const m = MEMBERS.find(x => x.member_id === memberId);
-  if (!m) return;
+function openDetail(customerId) {
+  const c = CUSTOMERS.find(x => x.customer_id === customerId);
+  if (!c) return;
+  const tier = c.tier || 'Bronze';
 
-  document.getElementById('detail-name').textContent = m.name;
+  document.getElementById('detail-name').textContent = c.name;
   document.getElementById('detail-panel').classList.add('open');
 
-  const nextTier = m.tier === 'Bronze' ? { name:'Silver', need:1000 } : m.tier === 'Silver' ? { name:'Gold', need:2000 } : null;
-  const progressPct = nextTier ? Math.min(100, (m.total_spent/nextTier.need)*100) : 100;
+  const nextTier = tier === 'Bronze' ? { name:'Silver', need:1000 } : tier === 'Silver' ? { name:'Gold', need:2000 } : null;
+  const totalSpent = Number(c.total_spent || 0);
+  const progressPct = nextTier ? Math.min(100, (totalSpent/nextTier.need)*100) : 100;
 
   document.getElementById('detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-      <div class="member-avatar" style="background:${avatarColor(m.name)};width:50px;height:50px;font-size:18px">${(m.name||'?').slice(0,2).toUpperCase()}</div>
+      <div class="member-avatar" style="background:${avatarColor(c.name)};width:50px;height:50px;font-size:18px">${(c.name||'?').slice(0,2).toUpperCase()}</div>
       <div>
-        <div style="font-size:16px;font-weight:700">${m.name}</div>
-        <div style="margin-top:4px"><span class="tier-badge tier-${m.tier}">${m.tier==='Gold'?'🥇':m.tier==='Silver'?'🥈':'🥉'} ${m.tier}</span></div>
+        <div style="font-size:16px;font-weight:700">${c.name}</div>
+        <div style="margin-top:4px"><span class="tier-badge tier-${tier}">${tier==='Gold'?'🥇':tier==='Silver'?'🥈':'🥉'} ${tier}</span></div>
       </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <div class="detail-stat">
         <div class="detail-stat-label">Points</div>
-        <div class="detail-stat-value">${Number(m.points||0).toLocaleString()}</div>
+        <div class="detail-stat-value">${Number(c.points||0).toLocaleString()}</div>
       </div>
       <div class="detail-stat">
         <div class="detail-stat-label">Total Spent</div>
-        <div class="detail-stat-value" style="font-size:15px">${fmt(m.total_spent)}</div>
+        <div class="detail-stat-value" style="font-size:15px">${fmt(totalSpent)}</div>
       </div>
     </div>
 
@@ -369,23 +394,25 @@ function openDetail(memberId) {
         <div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:6px">
           <div style="width:${progressPct}%;height:100%;border-radius:3px;background:var(--green2)"></div>
         </div>
-        <div style="font-size:11px;color:var(--muted)">${fmt(m.total_spent)} / ${fmt(nextTier.need)} — ${fmt(nextTier.need - m.total_spent)} more to ${nextTier.name}</div>
+        <div style="font-size:11px;color:var(--muted)">${fmt(totalSpent)} / ${fmt(nextTier.need)} — ${fmt(nextTier.need - totalSpent)} more to ${nextTier.name}</div>
       </div>
     ` : `
-      <div style="background:var(--gold-bg);border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--gold);font-weight:500">🥇 Gold member — highest tier!</div>
+      <div style="background:var(--gold-bg);border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--gold);font-weight:500">🥇 Gold customer — highest tier!</div>
     `}
 
-    ${m.phone ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">📞 ${m.phone}</div>` : ''}
-    ${m.email ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">✉️ ${m.email}</div>` : ''}
-    ${m.notes ? `<div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px;margin:10px 0">${m.notes}</div>` : ''}
-    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Joined: ${m.join_date ? m.join_date.slice(0,10) : '—'}</div>
+    ${c.phone ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">📞 ${c.phone}</div>` : ''}
+    ${c.email ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">✉️ ${c.email}</div>` : ''}
+    ${c.brand_id ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">🏷️ ${c.brand_id}</div>` : ''}
+    ${c.notes ? `<div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px;margin:10px 0">${c.notes}</div>` : ''}
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Joined: ${(c.join_date || c.created_at) ? String(c.join_date || c.created_at).slice(0,10) : '—'}</div>
 
-    <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Add Points</div>
+    <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Add Points / Purchase</div>
     <div class="points-input-row">
-      <input class="points-input" type="number" id="pts-input" placeholder="Points to add" min="1">
+      <input class="points-input" type="number" id="pts-input" placeholder="Points to add" min="0">
       <input class="points-input" type="number" id="pts-amount" placeholder="Purchase amount (฿)">
-      <button class="btn btn-primary btn-sm" id="give-points-btn" onclick="givePoints('${m.member_id}')">Add</button>
+      <button class="btn btn-primary btn-sm" id="give-points-btn" onclick="givePoints('${c.customer_id}')">Add</button>
     </div>
+    <div class="form-hint">กรอกยอดซื้อ (฿) เพื่ออัปเดต total spent + tier อัตโนมัติ ส่วนแต้มจะใส่หรือเว้นว่างไว้ก็ได้</div>
   `;
 }
 
@@ -393,18 +420,18 @@ function closeDetail() {
   document.getElementById('detail-panel').classList.remove('open');
 }
 
-async function givePoints(memberId) {
-  const pts = parseInt(document.getElementById('pts-input').value);
+async function givePoints(customerId) {
+  const pts = parseInt(document.getElementById('pts-input').value) || 0;
   const amount = parseFloat(document.getElementById('pts-amount').value) || 0;
-  if (!pts || pts < 1) { UI.toast('Please enter a valid point amount.', 'error'); return; }
+  if (!pts && !amount) { UI.toast('กรอกแต้มหรือยอดซื้ออย่างน้อย 1 อย่าง', 'error'); return; }
 
   const btn = document.getElementById('give-points-btn');
   UI.loading(btn, true);
   try {
-    await API.addMemberPoints({ member_id: memberId, points: pts, amount });
-    UI.toast('เพิ่มแต้มสำเร็จ');
-    await loadMembers();
-    openDetail(memberId);
+    await API.addCustomerPoints({ customer_id: customerId, points: pts, amount });
+    UI.toast('อัปเดตแล้ว');
+    await loadCustomers();
+    openDetail(customerId);
   } catch(e) {
     UI.toast('Failed: ' + e.message, 'error');
   } finally {
@@ -412,23 +439,24 @@ async function givePoints(memberId) {
   }
 }
 
-async function saveMember() {
+async function saveCustomer() {
   const name = document.getElementById('add-name').value.trim();
   if (!name) { UI.toast('Please enter a name.', 'error'); return; }
 
-  const btn = document.getElementById('save-member-btn');
+  const btn = document.getElementById('save-customer-btn');
   UI.loading(btn, true);
   try {
-    await API.createMember({
+    await API.createCustomer({
       name,
+      brand_id: document.getElementById('add-brand').value,
       phone: document.getElementById('add-phone').value.trim(),
       email: document.getElementById('add-email').value.trim(),
       notes: document.getElementById('add-notes').value.trim(),
     });
-    UI.toast('เพิ่มสมาชิกใหม่แล้ว');
+    UI.toast('เพิ่มลูกค้าใหม่แล้ว');
     UI.closeModal('add-modal');
     ['add-name','add-phone','add-email','add-notes'].forEach(id => { document.getElementById(id).value = ''; });
-    await loadMembers();
+    await loadCustomers();
   } catch(e) {
     UI.toast('Failed: ' + e.message, 'error');
   } finally {
