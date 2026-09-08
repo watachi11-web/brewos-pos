@@ -175,29 +175,19 @@
     <div class="nav-section">Operations</div>
     <a class="nav-item" href="inventory.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5l6-3 6 3M2 5v6l6 3 6-3V5M8 2v13"/></svg>
-      Inventory
+      Inventory / อุปกรณ์
       <span class="nav-badge" id="low-stock-badge">—</span>
     </a>
     <a class="nav-item" href="recipe.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2"/></svg>
       Recipe & Cost
     </a>
-    <a class="nav-item" href="production.html">
-      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12V6l5-4 5 4v6M6 12V9h4v3"/></svg>
-      Production
-    </a>
-
-    <div class="nav-section">People</div>
-    <a class="nav-item" href="crm.html">
-      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
-      CRM / Members
-    </a>
-    <a class="nav-item" href="staff.html">
-      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="5" cy="5" r="3"/><path d="M1 14c0-2.8 1.8-5 4-5M9 9l2 2 4-4"/></svg>
-      Staff
-    </a>
 
     <div class="nav-section">Business</div>
+    <a class="nav-item" href="crm.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+      CRM / ลูกค้า
+    </a>
     <a class="nav-item" href="finance.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M4 6h8M4 10h6"/></svg>
       Finance
@@ -337,6 +327,8 @@
 // #FIX — เดิมคำนวณ KPI/best-sellers/low-stock เองใหม่ทั้งหมดจาก raw orders โดยไม่ใช้
 // getDashboardSummary() ที่ รหัส.gs มีให้แล้ว (คำนวณกำไรจริงจากต้นทุน, category/customer
 // breakdown ครบ) ตอนนี้เปลี่ยนมาใช้ API.dashboardSummary() ตรงๆ แทนการ duplicate logic
+// #NAVFIX — เอาลิงก์ production.html/staff.html ออกจาก sidebar (ระบบพนักงาน/ผลิตแยก
+// ถูกลบทิ้งไปแล้วทั้งหมด) ย้าย CRM มารวมในหมวด Business แทนหมวด People เดิม
 // ═══════════════════════════════════════════════════════════
 let ACTIVE_BRAND = Identity.getBrand() || 'ALL';
 let PERIOD_DAYS = 7;
