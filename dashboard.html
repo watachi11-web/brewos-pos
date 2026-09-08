@@ -15,11 +15,11 @@
     --bb-light:   #52B788;
     --bb-cream:   #FDFDF5;
     --bb-accent:  #F26C21;
-    --hh-dark:    #143D2B;
-    --hh-mid:     #F26C21;
-    --hh-light:   #A7C48D;
-    --hh-cream:   #F7E9D6;
-    --hh-accent:  #EED29A;
+    --hh-dark:    #78350F;
+    --hh-mid:     #B45309;
+    --hh-light:   #FB923C;
+    --hh-cream:   #FFFBF0;
+    --hh-accent:  #1E5A3F;
     --sidebar-w:  240px;
   }
 
@@ -191,136 +191,6 @@
     .card, .kpi-card { border-radius:13px; }
   }
 
-
-  /* ===== HENG HENG PHANIT Theme ===== */
-  body {
-    background:
-      radial-gradient(circle at top right, rgba(238,210,154,.18), transparent 26rem),
-      #F4EFE5;
-  }
-
-  .sidebar {
-    background: #143D2B;
-  }
-
-  .sidebar-logo {
-    border-bottom-color: rgba(247,233,214,.12);
-  }
-
-  .sidebar-logo .sub,
-  .user-role {
-    color: #A7C48D;
-  }
-
-  .nav-section {
-    color: rgba(247,233,214,.38);
-  }
-
-  .nav-item {
-    color: rgba(247,233,214,.78);
-  }
-
-  .nav-item:hover {
-    background: rgba(247,233,214,.08);
-    color: #fff;
-  }
-
-  .nav-item.active {
-    background: rgba(242,108,33,.18);
-    color: #fff;
-    box-shadow: inset 3px 0 0 #F26C21;
-  }
-
-  .nav-badge {
-    background: #F26C21;
-  }
-
-  .avatar {
-    background: #F26C21;
-  }
-
-  .topbar {
-    background: rgba(247,233,214,.78);
-    border-bottom-color: rgba(20,61,43,.08);
-  }
-
-  .date-badge,
-  .period-badge {
-    background: rgba(167,196,141,.20);
-    color: #143D2B;
-  }
-
-  .alert-btn {
-    background: rgba(242,108,33,.12);
-  }
-
-  .alert-dot {
-    background: #F26C21;
-  }
-
-  .pos-btn {
-    background: #F26C21;
-  }
-
-  .pos-btn:hover {
-    background: #D95E1C;
-  }
-
-  .kpi-card,
-  .card {
-    border-color: rgba(20,61,43,.07);
-  }
-
-  .kpi-card:hover {
-    box-shadow: 0 8px 24px rgba(20,61,43,.08);
-  }
-
-  .kpi-label {
-    color: #7F7A70;
-  }
-
-  .kpi-value,
-  .card-title,
-  .seller-name,
-  .order-name,
-  .stock-name {
-    color: #143D2B;
-  }
-
-  .profit-chip {
-    background: rgba(167,196,141,.22);
-    color: #143D2B;
-  }
-
-  .seller-bar-wrap,
-  .brand-bar-wrap {
-    background: rgba(238,210,154,.30);
-  }
-
-  .stock-alert {
-    background: rgba(247,233,214,.68);
-    border-left-color: #F26C21;
-  }
-
-  .stock-level {
-    color: #F26C21;
-  }
-
-  .badge-take {
-    background: rgba(167,196,141,.25);
-    color: #143D2B;
-  }
-
-  .badge-dine {
-    background: rgba(238,210,154,.32);
-    color: #143D2B;
-  }
-
-  .badge-del {
-    background: rgba(242,108,33,.12);
-    color: #B84F17;
-  }
-
 </style>
 </head>
 <body>
@@ -329,8 +199,8 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <img src="logo-hh-icon.png" style="width:30px;height:30px;object-fit:contain;display:block;margin-bottom:8px">
-    <div class="brand-name">HENG HENG PHANIT</div>
-    <div class="sub">Heng Heng Phanit · Operating System</div>
+    <div class="brand-name">Brain Brew × Heng Heng</div>
+    <div class="sub">Operating System v1.0</div>
   </div>
 
   <nav style="flex:1;overflow-y:auto;padding:4px 0">
@@ -438,13 +308,13 @@
         </div>
         <div id="brand-compare">
           <div class="brand-compare-item">
-            <div class="brand-tag" style="background:#A7C48D;color:#143D2B">BB</div>
-            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#A7C48D" id="bb-bar"></div></div>
+            <div class="brand-tag" style="background:#143D2B;color:#fff">BB</div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#1E5A3F" id="bb-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="bb-revenue">฿—</div>
           </div>
           <div class="brand-compare-item">
-            <div class="brand-tag" style="background:#F26C21;color:#fff">HH</div>
-            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#F26C21" id="hh-bar"></div></div>
+            <div class="brand-tag" style="background:#78350F;color:#fff">HH</div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#B45309" id="hh-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="hh-revenue">฿—</div>
           </div>
           <div style="margin-top:20px;border-top:1px solid #F0EDE6;padding-top:16px">
@@ -580,7 +450,7 @@ function renderBestSellers(sellers) {
   if (!sellers || !sellers.length) { el.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูล 30 วันล่าสุด</div>'; return; }
 
   const max = Math.max(...sellers.map(s => s.revenue));
-  const colors = ['#143D2B','#F26C21','#A7C48D','#EED29A','#6F8E62','#D9854E','#C8B079'];
+  const colors = ['#143D2B','#1E5A3F','#52B788','#74C69D','#95D5B2','#B7E4C7','#D8F3DC'];
   const ranks  = ['🥇','🥈','🥉','4','5','6','7'];
 
   el.innerHTML = sellers.map((s, i) => `
@@ -669,7 +539,7 @@ function renderRevenueChart(labels, values, profitValues = []) {
     type: 'bar',
     label: 'ยอดขายสุทธิ',
     data: values,
-    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#A7C48D66'),
+    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#143D2B22'),
     borderRadius: 6,
     borderSkipped: false,
     order: 2
@@ -719,7 +589,7 @@ function renderDonutChart(bb, hh) {
   if (donutChart) donutChart.destroy();
   donutChart = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#A7C48D', '#F26C21'], borderWidth: 0, hoverOffset: 4 }] },
+    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#143D2B', '#78350F'], borderWidth: 0, hoverOffset: 4 }] },
     options: {
       responsive: true, cutout: '72%',
       plugins: {
