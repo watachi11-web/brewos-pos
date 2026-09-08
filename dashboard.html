@@ -12,19 +12,19 @@
   :root {
     --bb-dark:    #143D2B;
     --bb-mid:     #1E5A3F;
-    --bb-light:   #52B788;
-    --bb-cream:   #FDFDF5;
+    --bb-light:   #A7C48D;
+    --bb-cream:   #F7E9D6;
     --bb-accent:  #F26C21;
-    --hh-dark:    #143D2B;
-    --hh-mid:     #F26C21;
-    --hh-light:   #A7C48D;
+    --hh-dark:    #F26C21;
+    --hh-mid:     #D97A2B;
+    --hh-light:   #EED29A;
     --hh-cream:   #F7E9D6;
-    --hh-accent:  #EED29A;
+    --hh-accent:  #A7C48D;
     --sidebar-w:  240px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Anuphan','Poppins',sans-serif; background: #F0EDE6; color: #1a1a1a; }
+  body { font-family: 'Anuphan','Poppins',sans-serif; background: #F7E9D6; color: #1a1a1a; }
 
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
@@ -36,7 +36,7 @@
   }
   .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .sidebar-logo .brand-name { font-family: 'Poppins',sans-serif; font-size: 15px; color: #fff; font-weight: 600; line-height: 1.2; }
-  .sidebar-logo .sub { font-size: 11px; color: #4a6741; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+  .sidebar-logo .sub { font-size: 11px; color: #A7C48D; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
 
   .brand-switcher { margin: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; display: flex; gap: 2px; }
   .brand-btn { flex: 1; padding: 6px 8px; border-radius: 7px; border: none; font-family: 'Anuphan','Poppins',sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: #4a6741; background: transparent; letter-spacing: 0.02em; }
@@ -99,7 +99,7 @@
   .seller-bar { height: 100%; border-radius: 2px; }
   .seller-revenue { font-size: 12px; font-weight: 600; color: #111; min-width: 56px; text-align: right; }
 
-  .stock-alert { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #FFF7F0; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #F26C21; }
+  .stock-alert { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #FFF5EC; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #F26C21; }
   .stock-name { font-size: 12px; font-weight: 500; color: #111; }
   .stock-level { font-size: 11px; color: #F26C21; font-weight: 600; }
   .stock-par { font-size: 10px; color: #aaa; }
@@ -117,7 +117,7 @@
 
   .brand-compare-item { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .brand-tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; min-width: 32px; text-align: center; }
-  .brand-bar-wrap { flex: 1; height: 8px; background: #F0EDE6; border-radius: 4px; overflow: hidden; }
+  .brand-bar-wrap { flex: 1; height: 8px; background: #EFE6D8; border-radius: 4px; overflow: hidden; }
   .brand-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
 
   .skeleton { background: linear-gradient(90deg, #F0EDE6 25%, #E8E4DC 50%, #F0EDE6 75%); background-size: 200%; animation: shimmer 1.5s infinite; border-radius: 8px; }
@@ -191,136 +191,6 @@
     .card, .kpi-card { border-radius:13px; }
   }
 
-
-  /* ===== HENG HENG PHANIT Theme ===== */
-  body {
-    background:
-      radial-gradient(circle at top right, rgba(238,210,154,.18), transparent 26rem),
-      #F4EFE5;
-  }
-
-  .sidebar {
-    background: #143D2B;
-  }
-
-  .sidebar-logo {
-    border-bottom-color: rgba(247,233,214,.12);
-  }
-
-  .sidebar-logo .sub,
-  .user-role {
-    color: #A7C48D;
-  }
-
-  .nav-section {
-    color: rgba(247,233,214,.38);
-  }
-
-  .nav-item {
-    color: rgba(247,233,214,.78);
-  }
-
-  .nav-item:hover {
-    background: rgba(247,233,214,.08);
-    color: #fff;
-  }
-
-  .nav-item.active {
-    background: rgba(242,108,33,.18);
-    color: #fff;
-    box-shadow: inset 3px 0 0 #F26C21;
-  }
-
-  .nav-badge {
-    background: #F26C21;
-  }
-
-  .avatar {
-    background: #F26C21;
-  }
-
-  .topbar {
-    background: rgba(247,233,214,.78);
-    border-bottom-color: rgba(20,61,43,.08);
-  }
-
-  .date-badge,
-  .period-badge {
-    background: rgba(167,196,141,.20);
-    color: #143D2B;
-  }
-
-  .alert-btn {
-    background: rgba(242,108,33,.12);
-  }
-
-  .alert-dot {
-    background: #F26C21;
-  }
-
-  .pos-btn {
-    background: #F26C21;
-  }
-
-  .pos-btn:hover {
-    background: #D95E1C;
-  }
-
-  .kpi-card,
-  .card {
-    border-color: rgba(20,61,43,.07);
-  }
-
-  .kpi-card:hover {
-    box-shadow: 0 8px 24px rgba(20,61,43,.08);
-  }
-
-  .kpi-label {
-    color: #7F7A70;
-  }
-
-  .kpi-value,
-  .card-title,
-  .seller-name,
-  .order-name,
-  .stock-name {
-    color: #143D2B;
-  }
-
-  .profit-chip {
-    background: rgba(167,196,141,.22);
-    color: #143D2B;
-  }
-
-  .seller-bar-wrap,
-  .brand-bar-wrap {
-    background: rgba(238,210,154,.30);
-  }
-
-  .stock-alert {
-    background: rgba(247,233,214,.68);
-    border-left-color: #F26C21;
-  }
-
-  .stock-level {
-    color: #F26C21;
-  }
-
-  .badge-take {
-    background: rgba(167,196,141,.25);
-    color: #143D2B;
-  }
-
-  .badge-dine {
-    background: rgba(238,210,154,.32);
-    color: #143D2B;
-  }
-
-  .badge-del {
-    background: rgba(242,108,33,.12);
-    color: #B84F17;
-  }
-
 </style>
 </head>
 <body>
@@ -328,9 +198,9 @@
 <!-- ====== SIDEBAR ====== -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <img src="logo-hh-icon.png" style="width:30px;height:30px;object-fit:contain;display:block;margin-bottom:8px">
-    <div class="brand-name">HENG HENG PHANIT</div>
-    <div class="sub">Heng Heng Phanit · Operating System</div>
+    <img src="logo-hh-icon.png" style="width:34px;height:34px;object-fit:contain;display:block;margin-bottom:8px">
+    <div class="brand-name">Brain Brew × Heng Heng</div>
+    <div class="sub">HH Color Theme</div>
   </div>
 
   <nav style="flex:1;overflow-y:auto;padding:4px 0">
@@ -397,9 +267,8 @@
 <main class="main">
 
   <div class="topbar">
-    <div class="page-title">Dashboard · ภาพรวมร้าน</div>
+    <div class="page-title">Dashboard · ภาพรวมร้าน <span style="font-size:11px;color:#F26C21;font-weight:600">HH Theme</span></div>
     <div class="topbar-right">
-      <span id="connection-state" style="font-size:10px;color:#6b7280">Google Sheet</span>
       <span class="date-badge" id="today-date">—</span>
       <button class="alert-btn" onclick="scrollToAlerts()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#F26C21" stroke-width="1.5"><path d="M8 2a5 5 0 0 1 5 5v2l1 2H2l1-2V7a5 5 0 0 1 5-5zM6 13a2 2 0 0 0 4 0"/></svg>
@@ -439,8 +308,8 @@
         </div>
         <div id="brand-compare">
           <div class="brand-compare-item">
-            <div class="brand-tag" style="background:#A7C48D;color:#143D2B">BB</div>
-            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#A7C48D" id="bb-bar"></div></div>
+            <div class="brand-tag" style="background:#143D2B;color:#fff">BB</div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#143D2B" id="bb-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="bb-revenue">฿—</div>
           </div>
           <div class="brand-compare-item">
@@ -492,6 +361,7 @@
   </div>
 </main>
 
+<script src="api.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // #NOAUTH — ตัด Auth.getBrand()/Auth.getUser() ที่ไม่มีอยู่จริงแล้วออกทั้งหมด
@@ -502,76 +372,15 @@
 // #NAVFIX — เอาลิงก์ production.html/staff.html ออกจาก sidebar (ระบบพนักงาน/ผลิตแยก
 // ถูกลบทิ้งไปแล้วทั้งหมด) ย้าย CRM มารวมในหมวด Business แทนหมวด People เดิม
 // ═══════════════════════════════════════════════════════════
-const BREWOS_API = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+let ACTIVE_BRAND = Identity.getBrand() || 'ALL';
+let PERIOD_DAYS = 7;
 let ALL_ORDERS_RAW = [];
 
-document.getElementById('user-name').textContent = 'Staff';
-document.getElementById('avatar-initials').textContent = 'ST';
+document.getElementById('user-name').textContent = Identity.getName();
+document.getElementById('avatar-initials').textContent = Identity.getName().slice(0,2).toUpperCase();
 
-function fmtB(n) {
-  return '฿' + Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 2 });
-}
-function fmtCompact(n) {
-  const v = Number(n || 0);
-  if (Math.abs(v) < 1000) return fmtB(v);
-  if (Math.abs(v) < 1000000) return '฿' + (v / 1000).toFixed(v < 10000 ? 1 : 0) + 'K';
-  return '฿' + (v / 1000000).toFixed(1) + 'M';
-}
-function todayKeyBkk() {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).formatToParts(new Date());
-  const m = {};
-  parts.forEach(p => { if (p.type !== 'literal') m[p.type] = p.value; });
-  return `${m.year}-${m.month}-${m.day}`;
-}
-function dateKeyBkkFromAny(val) {
-  if (!val) return '';
-  const raw = String(val).trim();
-  const iso = raw.match(/^(\d{4}-\d{2}-\d{2})/);
-  if (iso) return iso[1];
-  const d = val instanceof Date ? val : new Date(val);
-  if (Number.isNaN(d.getTime())) return '';
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
-  }).formatToParts(d);
-  const m = {};
-  parts.forEach(p => { if (p.type !== 'literal') m[p.type] = p.value; });
-  return `${m.year}-${m.month}-${m.day}`;
-}
-function gasAvailable() {
-  return typeof google !== 'undefined' && google.script && google.script.run;
-}
-function gasCall(method, arg) {
-  return new Promise((resolve, reject) => {
-    let runner = google.script.run
-      .withSuccessHandler(resolve)
-      .withFailureHandler(reject);
-    if (typeof arg === 'undefined') runner[method]();
-    else runner[method](arg);
-  });
-}
-async function fetchAction(action, params = {}) {
-  const qs = new URLSearchParams({ action, ...params, _ts: Date.now() });
-  const r = await fetch(BREWOS_API + '?' + qs.toString(), { cache: 'no-store' });
-  if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const json = await r.json();
-  if (!json || json.success !== true) throw new Error((json && json.error) || `โหลด ${action} ไม่สำเร็จ`);
-  return json.data;
-}
-async function getDashboardSummaryDirect() {
-  if (gasAvailable()) return await gasCall('getDashboardSummary', {});
-  return await fetchAction('dashboard_summary');
-}
-async function getOrdersTodayDirect() {
-  const date = todayKeyBkk();
-  if (gasAvailable()) return await gasCall('getOrdersFromSheet', { date });
-  return await fetchAction('get_orders_sheet', { date });
-}
-async function getIngredientsDirect() {
-  if (gasAvailable()) return await gasCall('getIngredients', {});
-  return await fetchAction('get_ingredients');
-}
+function fmtK(n) { return '฿' + (Number(n||0)/1000).toFixed(0) + 'K'; }
+function fmtB(n) { return '฿' + Number(n||0).toLocaleString(); }
 
 // ============================================================
 // RENDER FUNCTIONS — ใช้ shape จริงจาก getDashboardSummary() ใน รหัส.gs:
@@ -600,25 +409,25 @@ function renderKPIs(data, prevDayRevenue) {
       label: 'ยอดขายวันนี้',
       value: fmtB(todayRev),
       note: `${todayOrders} ออเดอร์ · ${vsYesterday}`,
-      icon: '฿', color: '#DCFCE7'
+      icon: '฿', color: '#FBE3CF'
     },
     {
       label: 'กำไรขั้นต้นวันนี้',
       value: fmtB(todayProfit),
       note: `ยอดขายสุทธิ − COGS · GP ${gp(todayProfit, todayRev)}%`,
-      icon: 'GP', color: '#E8F3ED'
+      icon: 'GP', color: '#EEF3E4'
     },
     {
       label: 'Brain Brew วันนี้',
       value: fmtB(bbRev),
       note: `กำไรขั้นต้นประมาณ ${fmtB(bbProfit)} · GP ${gp(bbProfit, bbRev)}%`,
-      icon: 'BB', color: '#FEF3C7'
+      icon: 'BB', color: '#EEF3E4'
     },
     {
       label: 'Heng Heng วันนี้',
       value: fmtB(hhRev),
       note: `กำไรขั้นต้นประมาณ ${fmtB(hhProfit)} · GP ${gp(hhProfit, hhRev)}%`,
-      icon: 'HH', color: '#FFE7D6'
+      icon: 'HH', color: '#FBE3CF'
     },
   ];
 
@@ -641,7 +450,7 @@ function renderBestSellers(sellers) {
   if (!sellers || !sellers.length) { el.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูล 30 วันล่าสุด</div>'; return; }
 
   const max = Math.max(...sellers.map(s => s.revenue));
-  const colors = ['#143D2B','#F26C21','#A7C48D','#EED29A','#6F8E62','#D9854E','#C8B079'];
+  const colors = ['#143D2B','#F26C21','#A7C48D','#EED29A','#D97A2B','#7E9E67','#D9C39A'];
   const ranks  = ['🥇','🥈','🥉','4','5','6','7'];
 
   el.innerHTML = sellers.map((s, i) => `
@@ -654,7 +463,7 @@ function renderBestSellers(sellers) {
           <div class="seller-bar" style="width:${max>0?(s.revenue/max*100).toFixed(0):0}%;background:${colors[i]}"></div>
         </div>
       </div>
-      <div class="seller-revenue">${fmtCompact(s.revenue)}</div>
+      <div class="seller-revenue">${fmtK(s.revenue)}</div>
     </div>
   `).join('');
 }
@@ -665,7 +474,7 @@ function renderBestSellers(sellers) {
 // get_low_stock แยกต่างหาก)
 async function loadAndRenderLowStock() {
   try {
-    const ingredients = await getIngredientsDirect();
+    const ingredients = await API.ingredients();
     const lowItems = (ingredients || []).filter(i => i.is_low);
     document.getElementById('low-stock-subtitle').textContent = `${lowItems.length} items need reorder`;
     document.getElementById('low-stock-badge').textContent = lowItems.length;
@@ -723,26 +532,14 @@ let revenueChart = null;
 let donutChart   = null;
 
 function renderRevenueChart(labels, values, profitValues = []) {
-  const canvas = document.getElementById('revenue-chart');
-  if (typeof Chart === 'undefined') {
-    canvas.style.display = 'none';
-    if (!document.getElementById('chart-load-note')) {
-      const note = document.createElement('div');
-      note.id = 'chart-load-note';
-      note.className = 'empty-note';
-      note.textContent = 'กราฟโหลดไม่ได้ แต่ข้อมูลยอดขายยังใช้งานได้';
-      canvas.parentNode.appendChild(note);
-    }
-    return;
-  }
-  const ctx = canvas.getContext('2d');
+  const ctx = document.getElementById('revenue-chart').getContext('2d');
   if (revenueChart) revenueChart.destroy();
 
   const datasets = [{
     type: 'bar',
     label: 'ยอดขายสุทธิ',
     data: values,
-    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#A7C48D66'),
+    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#F26C21' : '#F26C2122'),
     borderRadius: 6,
     borderSkipped: false,
     order: 2
@@ -753,8 +550,8 @@ function renderRevenueChart(labels, values, profitValues = []) {
       type: 'line',
       label: 'กำไรขั้นต้น',
       data: profitValues,
-      borderColor: '#F26C21',
-      backgroundColor: '#F26C21',
+      borderColor: '#143D2B',
+      backgroundColor: '#143D2B',
       pointRadius: 3,
       pointHoverRadius: 5,
       borderWidth: 2,
@@ -788,23 +585,11 @@ function renderRevenueChart(labels, values, profitValues = []) {
 }
 
 function renderDonutChart(bb, hh) {
-  // อัปเดตตัวเลข/แถบก่อนเสมอ แม้ Chart.js โหลดไม่สำเร็จ
-  const total = bb + hh || 1;
-  document.getElementById('bb-revenue').textContent = fmtCompact(bb);
-  document.getElementById('hh-revenue').textContent = fmtCompact(hh);
-  document.getElementById('bb-bar').style.width = `${(bb/total*100).toFixed(0)}%`;
-  document.getElementById('hh-bar').style.width = `${(hh/total*100).toFixed(0)}%`;
-
-  const canvas = document.getElementById('donut-chart');
-  if (typeof Chart === 'undefined') {
-    canvas.style.display = 'none';
-    return;
-  }
-  const ctx = canvas.getContext('2d');
+  const ctx = document.getElementById('donut-chart').getContext('2d');
   if (donutChart) donutChart.destroy();
   donutChart = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#A7C48D', '#F26C21'], borderWidth: 0, hoverOffset: 4 }] },
+    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#143D2B', '#F26C21'], borderWidth: 0, hoverOffset: 4 }] },
     options: {
       responsive: true, cutout: '72%',
       plugins: {
@@ -814,6 +599,11 @@ function renderDonutChart(bb, hh) {
     },
   });
 
+  const total = bb + hh || 1;
+  document.getElementById('bb-revenue').textContent = fmtK(bb);
+  document.getElementById('hh-revenue').textContent = fmtK(hh);
+  document.getElementById('bb-bar').style.width = `${(bb/total*100).toFixed(0)}%`;
+  document.getElementById('hh-bar').style.width = `${(hh/total*100).toFixed(0)}%`;
 }
 
 // ============================================================
@@ -827,51 +617,38 @@ function scrollToAlerts() {
 // INIT / LOAD
 // ============================================================
 async function loadDashboard() {
-  // 1) Summary first — KPI/chart/best sellers must still show even if orders endpoint has a problem.
   try {
-    const summary = await getDashboardSummaryDirect();
-    const stateEl = document.getElementById('connection-state');
-    if (stateEl) { stateEl.textContent = '● Google Sheet'; stateEl.style.color = '#143D2B'; }
-    const safe = summary || {};
-    const trend = Array.isArray(safe.revenue_trend) ? safe.revenue_trend : [];
-    const labels = Array.isArray(safe.revenue_labels) ? safe.revenue_labels : [];
-    const profitTrend = Array.isArray(safe.profit_trend) ? safe.profit_trend : [];
+    const [summary, orders] = await Promise.all([
+      API.dashboardSummary(),
+      API.ordersToday(),
+    ]);
+
+    ALL_ORDERS_RAW = orders || [];
+
+    const trend = summary.revenue_trend || [];
+    const labels = summary.revenue_labels || [];
+    const profitTrend = summary.profit_trend || [];
     const prevDayRevenue = trend.length >= 2 ? Number(trend[trend.length - 2] || 0) : 0;
 
-    renderKPIs(safe, prevDayRevenue);
+    renderKPIs(summary, prevDayRevenue);
     renderRevenueChart(labels, trend, profitTrend);
-    renderBestSellers(safe.best_sellers || []);
-    renderDonutChart(
-      Number(safe.brand_bb?.revenue || 0),
-      Number(safe.brand_hh?.revenue || 0)
-    );
-  } catch (e) {
-    console.error('Dashboard summary load error:', e);
-    const stateEl = document.getElementById('connection-state');
-    if (stateEl) { stateEl.textContent = '● เชื่อมต่อไม่ได้'; stateEl.style.color = '#dc2626'; }
-    document.getElementById('kpi-grid').innerHTML =
-      `<div class="card" style="grid-column:1/-1">
-         <div class="card-title">เชื่อมต่อ Dashboard ไม่สำเร็จ</div>
-         <div class="card-subtitle" style="margin-top:6px">${e.message || e}</div>
-       </div>`;
-  }
+    renderBestSellers(summary.best_sellers || []);
+    renderDonutChart(Number(summary.brand_bb?.revenue || 0), Number(summary.brand_hh?.revenue || 0));
 
-  // 2) Recent orders — failure here must not clear KPI/dashboard.
-  try {
-    const orders = await getOrdersTodayDirect();
-    ALL_ORDERS_RAW = Array.isArray(orders) ? orders : [];
-    const key = todayKeyBkk();
-    const todayOrders = ALL_ORDERS_RAW
-      .filter(o => dateKeyBkkFromAny(o.created_at) === key)
+    // ordersToday() ควรคืนเฉพาะวันนี้อยู่แล้ว; ใช้ date key เป็น safety check
+    const today = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+    const todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    const todayOrders = (orders || [])
+      .filter(o => !o.created_at || String(o.created_at).indexOf(todayKey) === 0)
       .slice(0, 6);
+
     renderRecentOrders(todayOrders);
   } catch (e) {
-    console.error('Orders load error:', e);
-    document.getElementById('recent-orders').innerHTML =
-      `<div class="empty-note">โหลดออเดอร์ไม่สำเร็จ<br>${e.message || e}</div>`;
+    console.error('Dashboard load error:', e);
+    document.getElementById('kpi-grid').innerHTML =
+      '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
   }
 
-  // 3) Stock is independent as well.
   await loadAndRenderLowStock();
 }
 
@@ -884,7 +661,7 @@ function initUI() {
 document.addEventListener('DOMContentLoaded', () => {
   initUI();
   loadDashboard();
-  setInterval(() => { loadDashboard().catch(console.error); }, 60000);
+  setInterval(loadDashboard, 60000);
 });
 </script>
 </body>
