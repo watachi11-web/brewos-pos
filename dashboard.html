@@ -12,19 +12,19 @@
   :root {
     --bb-dark:    #143D2B;
     --bb-mid:     #1E5A3F;
-    --bb-light:   #A7C48D;
-    --bb-cream:   #F7E9D6;
+    --bb-light:   #52B788;
+    --bb-cream:   #FDFDF5;
     --bb-accent:  #F26C21;
-    --hh-dark:    #F26C21;
-    --hh-mid:     #D97A2B;
-    --hh-light:   #EED29A;
-    --hh-cream:   #F7E9D6;
-    --hh-accent:  #A7C48D;
+    --hh-dark:    #78350F;
+    --hh-mid:     #B45309;
+    --hh-light:   #FB923C;
+    --hh-cream:   #FFFBF0;
+    --hh-accent:  #1E5A3F;
     --sidebar-w:  240px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Anuphan','Poppins',sans-serif; background: #F7E9D6; color: #1a1a1a; }
+  body { font-family: 'Anuphan','Poppins',sans-serif; background: #F0EDE6; color: #1a1a1a; }
 
   .sidebar {
     position: fixed; left: 0; top: 0; bottom: 0;
@@ -36,7 +36,7 @@
   }
   .sidebar-logo { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .sidebar-logo .brand-name { font-family: 'Poppins',sans-serif; font-size: 15px; color: #fff; font-weight: 600; line-height: 1.2; }
-  .sidebar-logo .sub { font-size: 11px; color: #A7C48D; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+  .sidebar-logo .sub { font-size: 11px; color: #4a6741; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
 
   .brand-switcher { margin: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 4px; display: flex; gap: 2px; }
   .brand-btn { flex: 1; padding: 6px 8px; border-radius: 7px; border: none; font-family: 'Anuphan','Poppins',sans-serif; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.2s; color: #4a6741; background: transparent; letter-spacing: 0.02em; }
@@ -99,7 +99,7 @@
   .seller-bar { height: 100%; border-radius: 2px; }
   .seller-revenue { font-size: 12px; font-weight: 600; color: #111; min-width: 56px; text-align: right; }
 
-  .stock-alert { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #FFF5EC; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #F26C21; }
+  .stock-alert { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #FFF7F0; border-radius: 10px; margin-bottom: 8px; border-left: 3px solid #F26C21; }
   .stock-name { font-size: 12px; font-weight: 500; color: #111; }
   .stock-level { font-size: 11px; color: #F26C21; font-weight: 600; }
   .stock-par { font-size: 10px; color: #aaa; }
@@ -117,7 +117,7 @@
 
   .brand-compare-item { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .brand-tag { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; min-width: 32px; text-align: center; }
-  .brand-bar-wrap { flex: 1; height: 8px; background: #EFE6D8; border-radius: 4px; overflow: hidden; }
+  .brand-bar-wrap { flex: 1; height: 8px; background: #F0EDE6; border-radius: 4px; overflow: hidden; }
   .brand-bar { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
 
   .skeleton { background: linear-gradient(90deg, #F0EDE6 25%, #E8E4DC 50%, #F0EDE6 75%); background-size: 200%; animation: shimmer 1.5s infinite; border-radius: 8px; }
@@ -198,9 +198,9 @@
 <!-- ====== SIDEBAR ====== -->
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <img src="logo-hh-icon.png" style="width:34px;height:34px;object-fit:contain;display:block;margin-bottom:8px">
+    <img src="logo-hh-icon.png" style="width:30px;height:30px;object-fit:contain;display:block;margin-bottom:8px">
     <div class="brand-name">Brain Brew × Heng Heng</div>
-    <div class="sub">HH Color Theme</div>
+    <div class="sub">Operating System v1.0</div>
   </div>
 
   <nav style="flex:1;overflow-y:auto;padding:4px 0">
@@ -267,7 +267,7 @@
 <main class="main">
 
   <div class="topbar">
-    <div class="page-title">Dashboard · ภาพรวมร้าน <span style="font-size:11px;color:#F26C21;font-weight:600">HH Theme</span></div>
+    <div class="page-title">Dashboard · ภาพรวมร้าน</div>
     <div class="topbar-right">
       <span class="date-badge" id="today-date">—</span>
       <button class="alert-btn" onclick="scrollToAlerts()">
@@ -309,12 +309,12 @@
         <div id="brand-compare">
           <div class="brand-compare-item">
             <div class="brand-tag" style="background:#143D2B;color:#fff">BB</div>
-            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#143D2B" id="bb-bar"></div></div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#1E5A3F" id="bb-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="bb-revenue">฿—</div>
           </div>
           <div class="brand-compare-item">
-            <div class="brand-tag" style="background:#F26C21;color:#fff">HH</div>
-            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#F26C21" id="hh-bar"></div></div>
+            <div class="brand-tag" style="background:#78350F;color:#fff">HH</div>
+            <div class="brand-bar-wrap"><div class="brand-bar" style="width:50%;background:#B45309" id="hh-bar"></div></div>
             <div style="font-size:12px;font-weight:600;min-width:64px;text-align:right" id="hh-revenue">฿—</div>
           </div>
           <div style="margin-top:20px;border-top:1px solid #F0EDE6;padding-top:16px">
@@ -409,25 +409,25 @@ function renderKPIs(data, prevDayRevenue) {
       label: 'ยอดขายวันนี้',
       value: fmtB(todayRev),
       note: `${todayOrders} ออเดอร์ · ${vsYesterday}`,
-      icon: '฿', color: '#FBE3CF'
+      icon: '฿', color: '#DCFCE7'
     },
     {
       label: 'กำไรขั้นต้นวันนี้',
       value: fmtB(todayProfit),
       note: `ยอดขายสุทธิ − COGS · GP ${gp(todayProfit, todayRev)}%`,
-      icon: 'GP', color: '#EEF3E4'
+      icon: 'GP', color: '#E8F3ED'
     },
     {
       label: 'Brain Brew วันนี้',
       value: fmtB(bbRev),
       note: `กำไรขั้นต้นประมาณ ${fmtB(bbProfit)} · GP ${gp(bbProfit, bbRev)}%`,
-      icon: 'BB', color: '#EEF3E4'
+      icon: 'BB', color: '#FEF3C7'
     },
     {
       label: 'Heng Heng วันนี้',
       value: fmtB(hhRev),
       note: `กำไรขั้นต้นประมาณ ${fmtB(hhProfit)} · GP ${gp(hhProfit, hhRev)}%`,
-      icon: 'HH', color: '#FBE3CF'
+      icon: 'HH', color: '#FFE7D6'
     },
   ];
 
@@ -450,7 +450,7 @@ function renderBestSellers(sellers) {
   if (!sellers || !sellers.length) { el.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูล 30 วันล่าสุด</div>'; return; }
 
   const max = Math.max(...sellers.map(s => s.revenue));
-  const colors = ['#143D2B','#F26C21','#A7C48D','#EED29A','#D97A2B','#7E9E67','#D9C39A'];
+  const colors = ['#143D2B','#1E5A3F','#52B788','#74C69D','#95D5B2','#B7E4C7','#D8F3DC'];
   const ranks  = ['🥇','🥈','🥉','4','5','6','7'];
 
   el.innerHTML = sellers.map((s, i) => `
@@ -539,7 +539,7 @@ function renderRevenueChart(labels, values, profitValues = []) {
     type: 'bar',
     label: 'ยอดขายสุทธิ',
     data: values,
-    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#F26C21' : '#F26C2122'),
+    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#143D2B22'),
     borderRadius: 6,
     borderSkipped: false,
     order: 2
@@ -550,8 +550,8 @@ function renderRevenueChart(labels, values, profitValues = []) {
       type: 'line',
       label: 'กำไรขั้นต้น',
       data: profitValues,
-      borderColor: '#143D2B',
-      backgroundColor: '#143D2B',
+      borderColor: '#F26C21',
+      backgroundColor: '#F26C21',
       pointRadius: 3,
       pointHoverRadius: 5,
       borderWidth: 2,
@@ -589,7 +589,7 @@ function renderDonutChart(bb, hh) {
   if (donutChart) donutChart.destroy();
   donutChart = new Chart(ctx, {
     type: 'doughnut',
-    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#143D2B', '#F26C21'], borderWidth: 0, hoverOffset: 4 }] },
+    data: { labels: ['Brain Brew', 'Heng Heng'], datasets: [{ data: [bb, hh], backgroundColor: ['#143D2B', '#78350F'], borderWidth: 0, hoverOffset: 4 }] },
     options: {
       responsive: true, cutout: '72%',
       plugins: {
