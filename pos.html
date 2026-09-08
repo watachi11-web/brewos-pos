@@ -454,6 +454,8 @@ textarea.modal-inp{resize:none;}
 // #NOAUTH — ตัด Auth/login gate ทิ้งทั้งหมด (Auth object ไม่มีอยู่จริงแล้วใน api.js —
 // เดิมเรียก Auth.getUser()/Auth.clearSession() แล้ว ReferenceError ทำให้ทั้งหน้าใช้งานไม่ได้)
 // ใช้ Identity แบบเดียวกับหน้าอื่นๆ แทน — แสดงผลชื่อ staff เฉยๆ ไม่ gate การเข้าถึง
+// #CUSTFIX — เปลี่ยนจาก API.members() (ไม่มีอยู่แล้ว, ตัดทิ้งพร้อม members sheet) มาใช้
+// API.customers() แทน — field name เหมือนกัน (name/phone/points) เปลี่ยนแค่ตัวฟังก์ชันเรียก
 // ═══════════════════════════════════════════════════════════
 const cart={};
 let payMethod='cash', discType='pct', discValue=0, discReasonTxt='',
@@ -636,21 +638,17 @@ function clearDisc() { discValue = 0; discReasonTxt = ''; renderCart(); }
 function openNoteModal() { om('noteModal'); document.getElementById('noteInput').value = orderNote; }
 function applyNote() { orderNote = document.getElementById('noteInput').value.trim(); cm('noteModal'); renderCart(); if(orderNote) toast2('📝 บันทึกหมายเหตุแล้ว'); }
 
-// ── MEMBER ──
-// #FIX — เดิมเรียก API.customers({search:q}) แต่ในระบบจริงไม่มี sheet 'customers' เลย
-// (มีแต่ sheet 'members' ที่เป็น loyalty program ใช้จริงใน crm.html) เปลี่ยนมาใช้
-// API.members() แทน เพื่อให้ค้นหาสมาชิกเจอจริง และดึงทั้งหมดมา filter ฝั่ง client
-// (เพราะ getMembers() ไม่มี search param ให้ backend กรองเช่นกัน)
-let _membersCache = null;
+// ── MEMBER (ตอนนี้ใช้ customers แทน members ที่ตัดทิ้งไปแล้ว) ──
+let _customersCache = null;
 function openMemberModal() { om('memberModal'); document.getElementById('mSearch').value = ''; document.getElementById('mResults').innerHTML = ''; }
 async function searchMember(q) {
   if (!q.trim()) { document.getElementById('mResults').innerHTML = ''; return; }
   try {
-    if (!_membersCache) _membersCache = await API.members();
-    const hits = (_membersCache||[]).filter(m => (m.name||'').includes(q) || (m.phone||'').includes(q));
+    if (!_customersCache) _customersCache = await API.customers();
+    const hits = (_customersCache||[]).filter(c => (c.name||'').includes(q) || (c.phone||'').includes(q));
     document.getElementById('mResults').innerHTML = hits.length
-      ? hits.slice(0,5).map(m => `<div style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);" onclick='pickMember(${JSON.stringify(m)})'>${m.name}<div style="font-size:10px;color:var(--text-l)">📞 ${m.phone||'-'} · แต้ม ${m.points||0}</div></div>`).join('')
-      : '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ไม่พบสมาชิก</div>';
+      ? hits.slice(0,5).map(c => `<div style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);" onclick='pickMember(${JSON.stringify(c)})'>${c.name}<div style="font-size:10px;color:var(--text-l)">📞 ${c.phone||'-'} · แต้ม ${c.points||0}</div></div>`).join('')
+      : '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ไม่พบลูกค้า</div>';
   } catch(e) {
     document.getElementById('mResults').innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ค้นหาไม่สำเร็จ: ' + e.message + '</div>';
   }
@@ -671,15 +669,6 @@ function calcChange() {
 }
 
 // ── CHECKOUT ──
-// #FIX ทั้งหมดในฟังก์ชันนี้:
-//  1) เดิมเรียก API.submitOrderDirect() ที่ไม่มีอยู่จริงใน api.js เวอร์ชันใหม่ → เปลี่ยนเป็น
-//     API.submitOrder() พร้อม field name แบบ snake_case ที่ submitOrderDirect() ของ รหัส.gs อ่านจริง
-//  2) เดิมไม่เคยส่ง discount payload เลย → ส่งครบ {type,value,amount,reason} แล้ว
-//  3) เดิมส่ง payment_method ไม่ตรง field ไหนเลย (backend hardcode 'cash' อยู่ดี ตอนนี้แก้ backend
-//     ให้รับค่าจริงแล้วในขั้นตอนก่อนหน้า) → ส่ง payment_method ไปด้วย
-//  4) เดิม optimistic UI: backend fail ก็ยังโชว์ใบเสร็จว่าสำเร็จ → ตอนนี้แสดง error ชัดเจนแทน
-//     และไม่ล้างตะกร้าถ้าไม่สำเร็จ กันพนักงานเข้าใจผิดว่าออเดอร์ถูกบันทึกแล้ว
-//  5) ตัด brandId hardcode ทิ้ง (รหัส.gs ตรวจแบรนด์จาก products sheet เองต่อ item อยู่แล้ว)
 async function doCheckout() {
   const items = Object.values(cart);
   if (!items.length) { toast2('⚠️ กรุณาเลือกเมนูก่อน'); return; }
