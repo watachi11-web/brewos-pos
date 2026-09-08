@@ -119,15 +119,13 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
     <a class="nav-link active" href="orders.html"><span class="icon">🧾</span> Orders</a>
     <div class="nav-section">Operations</div>
     <a class="nav-link" href="kitchen.html"><span class="icon">👨‍🍳</span> Kitchen</a>
-    <a class="nav-link" href="inventory.html"><span class="icon">📦</span> Inventory</a>
+    <a class="nav-link" href="inventory.html"><span class="icon">📦</span> Inventory / อุปกรณ์</a>
     <a class="nav-link" href="recipe.html"><span class="icon">📋</span> Recipes</a>
-    <a class="nav-link" href="production.html"><span class="icon">🏭</span> Production</a>
     <div class="nav-section">Business</div>
-    <a class="nav-link" href="crm.html"><span class="icon">👥</span> CRM / Members</a>
+    <a class="nav-link" href="crm.html"><span class="icon">👥</span> CRM / ลูกค้า</a>
     <a class="nav-link" href="finance.html"><span class="icon">💰</span> Finance</a>
     <a class="nav-link" href="reports.html"><span class="icon">📈</span> Reports</a>
     <div class="nav-section">Admin</div>
-    <a class="nav-link" href="staff.html"><span class="icon">🧑‍🍳</span> Staff</a>
     <a class="nav-link" href="settings.html"><span class="icon">⚙️</span> Settings</a>
   </nav>
   <div class="sidebar-footer">
@@ -269,6 +267,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 <script src="api.js"></script>
 <script>
 // #NOAUTH — ไม่มี Auth gate อยู่แล้วในไฟล์นี้ (ดีอยู่แล้ว) เพิ่ม Identity แสดงชื่อ staff
+// #NAVFIX — เอาลิงก์ production.html/staff.html ออกจาก sidebar (ถูกลบทิ้งไปแล้วทั้งคู่)
 document.getElementById('staff-name').textContent = Identity.getName();
 document.getElementById('staff-avatar').textContent = Identity.getName()[0].toUpperCase();
 
