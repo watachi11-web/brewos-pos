@@ -1,274 +1,403 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finance — Brain Brew × Heng Heng</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root { --brand-dark:#1B4332; --brand-mid:#2D6A4F; --brand-light:#52B788; --brand-accent:#F97316; --brand-cream:#FDFDF5; }
-* { box-sizing:border-box; margin:0; padding:0; }
-html, body { height:100%; font-family:'DM Sans',sans-serif; background:#f5f0e8; color:#1a2e1a; overflow-x:hidden; }
-.app { display:flex; height:100vh; }
-.sidebar { width:220px; background:var(--brand-cream); border-right:1px solid rgba(30,58,30,0.08); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
-.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(30,58,30,0.08); }
-.sidebar-logo-brand { font-family:'Playfair Display',serif; font-size:13px; color:#1a2e1a; }
-.sidebar-logo-sub { font-size:10px; color:#4a6741; margin-top:2px; letter-spacing:0.05em; text-transform:uppercase; }
-.nav-section { padding:12px 12px 4px; }
-.nav-label { font-size:9px; color:rgba(0,0,0,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:4px; }
-.nav-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; font-size:12px; color:#4a6741; cursor:pointer; transition:all 0.15s; text-decoration:none; }
-.nav-item:hover { background:rgba(30,58,30,0.05); color:#1a2e1a; }
-.nav-item.active { background:var(--brand-dark); color:#ffffff; }
-.nav-icon { width:16px; text-align:center; font-size:13px; }
-.topbar { background:var(--brand-cream); border-bottom:1px solid rgba(30,58,30,0.08); padding:0 24px; height:56px; display:flex; align-items:center; gap:16px; flex-shrink:0; }
-.topbar-title { font-size:15px; font-weight:600; color:#1a2e1a; }
-.topbar-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
-.btn { padding:7px 16px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; border:none; font-family:'DM Sans',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
-.btn-ghost { background:rgba(30,58,30,0.06); color:#1a2e1a; border:1px solid rgba(30,58,30,0.1); }
-.btn-ghost:hover { background:rgba(30,58,30,0.12); color:#1a2e1a; }
-.btn-primary { background:var(--brand-dark); color: #fff; }
-.btn-primary:hover { background:var(--brand-mid); }
-.btn:disabled { opacity:.5; pointer-events:none; }
-.content { flex:1; overflow-y:auto; padding:24px; }
-.content::-webkit-scrollbar { width:4px; }
-.content::-webkit-scrollbar-thumb { background:rgba(30,58,30,0.15); border-radius:2px; }
-.month-selector { display:flex; align-items:center; gap:8px; background:rgba(30,58,30,0.05); padding:3px 12px 3px 3px; border-radius:10px; }
-.month-nav { width:28px; height:28px; border-radius:7px; background:transparent; border:none; color:#4a6741; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all 0.1s; }
-.month-nav:hover { background:rgba(30,58,30,0.1); color:#1a2e1a; }
-.month-label { font-size:12px; font-weight:500; color:#1a2e1a; min-width:100px; text-align:center; }
-.kpi-row { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
-.kpi-card { background:#ffffff; border:1px solid #e0d8cc; border-radius:14px; padding:16px 18px; }
-.kpi-label { font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
-.kpi-value { font-size:20px; font-weight:700; color:#1a2e1a; line-height:1; }
-.kpi-sub { font-size:10px; color:rgba(0,0,0,0.35); margin-top:4px; display:flex; align-items:center; gap:4px; }
-.kpi-up   { color:#10B981; }
-.kpi-down { color:#EF4444; }
-.kpi-profit { border-color:rgba(82,183,136,0.2); background:rgba(82,183,136,0.05); }
-.kpi-profit .kpi-value { color:var(--brand-light); }
-.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
-.card { background: #ffffff; border:1px solid rgba(30,58,30,0.08); border-radius:14px; overflow:hidden; }
-.card-header { padding:14px 18px; border-bottom:1px solid rgba(30,58,30,0.06); display:flex; align-items:center; justify-content:space-between; }
-.card-title { font-size:12px; font-weight:600; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; }
-.card-body { padding:16px 18px; }
-.tab-row { display:flex; gap:4px; margin-bottom:20px; background:rgba(30,58,30,0.04); padding:3px; border-radius:10px; width:fit-content; }
-.tab-btn { padding:7px 18px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; color:#4a6741; border:none; background:transparent; transition:all 0.15s; font-family:'DM Sans',sans-serif; }
-.tab-btn.active { background:#ffffff; color:#1a2e1a; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
-.pl-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(30,58,30,0.05); font-size:13px; }
-.pl-row:last-child { border-bottom:none; }
-.pl-row.total { font-weight:700; font-size:14px; border-top:1px solid #e0d8cc; margin-top:4px; padding-top:12px; }
-.pl-row.subtotal { color:#4a6741; font-size:12px; }
-.pl-label { color:#1a2e1a; }
-.pl-label.indent { padding-left:16px; font-size:12px; color:#4a6741; }
-.pl-value { font-weight:500; }
-.pl-positive { color:#10B981; }
-.pl-negative { color:#EF4444; }
-.pl-neutral  { color:#1a2e1a; }
-.pl-section-header { font-size:10px; color:rgba(0,0,0,0.35); text-transform:uppercase; letter-spacing:0.08em; padding:12px 0 4px; }
-.pl-note { font-size:10.5px; color:#4a6741; background:rgba(30,58,30,0.04); border-radius:8px; padding:8px 10px; margin:6px 0 4px; line-height:1.5; }
-.exp-grid { grid-template-columns:1.5fr 1fr 1fr 1fr 1fr; gap:12px; }
-.table-card { background:#ffffff; border:1px solid rgba(30,58,30,0.08); border-radius:14px; overflow:hidden; }
-.table-header { display:grid; padding:11px 16px; background:rgba(30,58,30,0.035); border-bottom:1px solid rgba(30,58,30,0.08); font-size:10px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
-.table-row { display:grid; padding:11px 16px; border-bottom:1px solid rgba(30,58,30,0.06); align-items:center; transition:background 0.1s; font-size:12px; }
-.table-row:last-child { border-bottom:none; }
-.table-row:hover { background:rgba(30,58,30,0.025); }
-.table-row.capex-row { background:rgba(249,115,22,0.04); }
-.exp-badge { display:inline-flex; padding:2px 9px; border-radius:10px; font-size:10px; font-weight:600; }
-.capex-tag { font-size:9px; font-weight:700; color:#F97316; background:rgba(249,115,22,0.12); border-radius:6px; padding:1px 6px; margin-left:6px; }
-.filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; }
-.search-wrap { position:relative; }
-.search-icon-abs { position:absolute; left:10px; top:50%; transform:translateY(-50%); opacity:0.4; }
-.search-input { background:#ffffff; border:1px solid rgba(30,58,30,0.15); border-radius:8px; padding:8px 12px 8px 32px; font-size:12px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; width:200px; }
-.search-input:focus { border-color:var(--brand-light); }
-.search-input::placeholder { color:rgba(0,0,0,0.35); }
-.select-filter { background:#ffffff; border:1px solid rgba(30,58,30,0.15); border-radius:8px; padding:8px 12px; font-size:12px; color:#1a2e1a;font-weight:500; font-family:'DM Sans',sans-serif; outline:none; cursor:pointer; }
-.select-filter option { background:#ffffff; }
-canvas { max-height:200px; }
-.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
-.modal-overlay.show { opacity:1; pointer-events:all; }
-.modal { background:#ffffff; border-radius:20px; width:480px; max-height:85vh; overflow-y:auto; border:1px solid rgba(30,58,30,0.08); }
-.modal-header { padding:20px 24px 16px; border-bottom:1px solid rgba(30,58,30,0.08); display:flex; align-items:center; justify-content:space-between; }
-.modal-title { font-size:15px; font-weight:600; color:#1a2e1a; }
-.modal-close { background:none; border:none; color:#4a6741; font-size:20px; cursor:pointer; }
-.modal-close:hover { color:#1a2e1a; }
-.modal-body { padding:20px 24px; }
-.form-group { margin-bottom:16px; }
-.form-label { font-size:11px; color:#4a6741; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; display:block; }
-.form-input { width:100%; background:#ffffff; border:1px solid rgba(30,58,30,0.15); border-radius:9px; padding:9px 12px; font-size:13px; color:#1a2e1a; font-family:'DM Sans',sans-serif; outline:none; }
-.form-input:focus { border-color:var(--brand-light); }
-.form-input::placeholder { color:rgba(0,0,0,0.35); }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
-.form-hint { font-size:10px; color:#4a6741; margin-top:4px; }
-.loading-text { text-align:center; padding:40px; color:#4a6741; font-size:13px; }
+:root{
+  --green:#143D2B;
+  --green-2:#1E5A3F;
+  --green-soft:#A7C48D;
+  --orange:#F26C21;
+  --orange-2:#C75A1B;
+  --cream:#F7E9D6;
+  --gold:#EBD29A;
+  --paper:#F4F0E8;
+  --card:#FFFFFF;
+  --text:#17211A;
+  --muted:#6D766F;
+  --muted-2:#9CA39E;
+  --border:rgba(20,61,43,.10);
+  --danger:#C2413B;
+  --success:#24875A;
+  --sidebar:240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:'Anuphan','Poppins',sans-serif;background:var(--paper);color:var(--text)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar);background:var(--green);color:white;display:flex;flex-direction:column;
+  position:fixed;inset:0 auto 0 0;z-index:50;overflow:hidden
+}
+.sidebar-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand-mark{display:flex;align-items:center;gap:10px}
+.mark-box{
+  width:34px;height:34px;border-radius:9px;background:var(--orange);display:grid;place-items:center;
+  font-family:'Poppins',sans-serif;font-weight:700;font-size:12px;letter-spacing:.03em
+}
+.sidebar-logo-brand{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;line-height:1.15}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+.nav{padding:10px 8px 16px;overflow:auto;flex:1}
+.nav-label{font-size:9px;color:rgba(255,255,255,.28);letter-spacing:.12em;text-transform:uppercase;padding:10px 10px 4px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 11px;margin:1px 0;border-radius:9px;
+  color:rgba(255,255,255,.70);text-decoration:none;font-size:12px;transition:.15s
+}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.10);color:#fff}
+.nav-item.active::before{content:"";width:3px;height:18px;border-radius:4px;background:var(--orange);margin-left:-11px}
+.nav-icon{width:16px;height:16px;display:grid;place-items:center;opacity:.9;flex:0 0 16px}
+.nav-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7}
+.sidebar-footer{padding:15px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.staff-chip{display:flex;align-items:center;gap:10px}
+.staff-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.10);display:grid;place-items:center;font-size:10px;font-weight:700}
+.staff-name{font-size:11px;color:rgba(255,255,255,.75)}
+.staff-role{font-size:9px;color:rgba(255,255,255,.35);margin-top:1px}
+
+/* Main */
+.main{margin-left:var(--sidebar);min-width:0;flex:1}
+.topbar{
+  height:58px;background:rgba(244,240,232,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;
+  position:sticky;top:0;z-index:30;gap:14px
+}
+.topbar-title{font-size:16px;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--muted-2);margin-left:4px}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:9px}
+.month-selector{display:flex;align-items:center;background:#fff;border:1px solid var(--border);border-radius:10px;padding:3px}
+.month-nav{width:30px;height:30px;border:0;background:transparent;border-radius:7px;color:var(--green);font-size:17px}
+.month-nav:hover{background:rgba(20,61,43,.06)}
+.month-label{min-width:100px;text-align:center;font-size:12px;font-weight:600}
+.btn{
+  border:0;border-radius:9px;padding:8px 14px;display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:600;transition:.15s
+}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green-2);transform:translateY(-1px)}
+.btn-ghost{background:#fff;color:var(--green);border:1px solid var(--border)}
+.btn-ghost:hover{background:rgba(20,61,43,.04)}
+.btn:disabled{opacity:.5;pointer-events:none}
+
+.content{padding:24px 28px 40px;max-width:1580px;margin:0 auto}
+.tab-row{display:flex;gap:4px;background:rgba(20,61,43,.05);padding:3px;border-radius:10px;width:max-content;margin-bottom:20px}
+.tab-btn{border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:8px;font-size:12px;font-weight:600}
+.tab-btn.active{background:#fff;color:var(--green);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:15px;padding:16px 17px;min-width:0}
+.kpi-card.emphasis{background:linear-gradient(145deg,#fff,#F6FBF7);border-color:rgba(36,135,90,.18)}
+.kpi-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.kpi-value{font-family:'Poppins',sans-serif;font-size:22px;line-height:1.1;font-weight:600;margin-top:7px;white-space:nowrap}
+.kpi-sub{font-size:10px;color:var(--muted-2);margin-top:5px;line-height:1.35}
+.good{color:var(--success)!important}
+.bad{color:var(--danger)!important}
+.accent{color:var(--orange)!important}
+
+.two-col{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:16px;margin-bottom:16px}
+.card{background:#fff;border:1px solid var(--border);border-radius:15px;overflow:hidden}
+.card-header{padding:14px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.card-title{font-size:12px;font-weight:700;color:var(--green)}
+.card-subtitle{font-size:10px;color:var(--muted-2);margin-top:2px}
+.card-body{padding:16px 17px}
+.stack{display:flex;flex-direction:column;gap:16px}
+
+.pl-section-header{font-size:9px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.10em;padding:13px 0 5px;font-weight:700}
+.pl-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:7px 0;border-bottom:1px solid rgba(20,61,43,.05);font-size:12px}
+.pl-row:last-child{border-bottom:0}
+.pl-row.subtotal{font-size:11px;color:var(--muted)}
+.pl-row.total{font-size:13px;font-weight:700;border-top:1px solid var(--border);margin-top:5px;padding-top:11px}
+.pl-label.indent{padding-left:14px}
+.pl-value{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;white-space:nowrap}
+.pl-note{font-size:10.5px;color:var(--muted);background:rgba(20,61,43,.045);border:1px solid rgba(20,61,43,.05);border-radius:9px;padding:9px 10px;margin-top:10px;line-height:1.55}
+
+.chart-wrap{height:185px}
+.donut-row{display:flex;align-items:center;gap:18px}
+.donut-box{width:132px;height:132px;flex:0 0 132px}
+.legend{flex:1;min-width:0;font-size:10.5px;display:flex;flex-direction:column;gap:7px}
+.legend-row{display:flex;align-items:center;gap:7px;min-width:0}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex:0 0 7px}
+.legend-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.legend-value{margin-left:auto;font-family:'Poppins',sans-serif;font-size:10px;font-weight:600}
+
+.brand-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.brand-card{border:1px solid var(--border);border-radius:12px;padding:14px;background:#FAFAF8}
+.brand-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.brand-dot{width:8px;height:8px;border-radius:50%}
+.brand-name{font-size:12px;font-weight:700}
+.brand-revenue{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600}
+.brand-share{font-size:10px;color:var(--muted);margin-top:5px}
+
+.filter-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.search-wrap{position:relative}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:1.7}
+.search-input,.select-filter,.form-input{
+  background:#fff;border:1px solid rgba(20,61,43,.14);border-radius:9px;padding:8px 11px;
+  font-size:12px;color:var(--text);outline:none
+}
+.search-input{padding-left:31px;width:220px}
+.search-input:focus,.select-filter:focus,.form-input:focus{border-color:var(--green-soft);box-shadow:0 0 0 3px rgba(167,196,141,.15)}
+.select-filter{font-weight:500}
+.total-label{margin-left:auto;font-size:11px;color:var(--muted);font-weight:600}
+
+.table-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.exp-grid{display:grid;grid-template-columns:1.6fr 1fr .8fr .9fr .9fr;gap:12px;align-items:center}
+.table-header{padding:10px 15px;background:rgba(20,61,43,.035);border-bottom:1px solid var(--border);font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.table-row{padding:11px 15px;border-bottom:1px solid rgba(20,61,43,.055);font-size:11px}
+.table-row:last-child{border-bottom:0}
+.table-row:hover{background:rgba(20,61,43,.025)}
+.table-row.capex-row{background:rgba(242,108,33,.035)}
+.exp-badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:9px;font-weight:700}
+.capex-tag{display:inline-flex;margin-left:6px;padding:2px 6px;border-radius:999px;font-size:8px;font-weight:700;color:var(--orange);background:rgba(242,108,33,.12)}
+.loading-text{text-align:center;padding:38px;color:var(--muted);font-size:12px}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,18,13,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:18px;opacity:0;pointer-events:none;transition:.18s}
+.modal-overlay.show{opacity:1;pointer-events:auto}
+.modal{width:min(480px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:17px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.modal-header{padding:17px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:14px;font-weight:700}
+.modal-close{border:0;background:transparent;color:var(--muted);font-size:20px}
+.modal-body{padding:18px 20px}
+.form-group{margin-bottom:13px}
+.form-label{display:block;font-size:10px;color:var(--muted);font-weight:600;margin-bottom:5px}
+.form-input{width:100%}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-hint{font-size:10px;color:var(--muted);line-height:1.5;background:rgba(20,61,43,.04);border-radius:8px;padding:8px 9px}
+.form-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
+@media(max-width:1180px){
+  :root{--sidebar:210px}
+  .content{padding:20px}
+  .kpi-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .two-col{grid-template-columns:1fr}
+}
+@media(max-width:860px){
+  :root{--sidebar:0px}
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .topbar{padding:10px 15px;height:auto;min-height:58px;flex-wrap:wrap}
+  .topbar-actions{width:100%;margin-left:0;justify-content:space-between}
+  .content{padding:14px}
+  .kpi-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .brand-grid{grid-template-columns:1fr}
+  .table-card{overflow-x:auto}
+  .exp-grid{min-width:760px}
+}
+@media(max-width:520px){
+  .kpi-row{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .month-label{min-width:84px}
+  .btn{padding:8px 10px}
+  .donut-row{align-items:flex-start}
+}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="sidebar">
-    <div class="sidebar-logo">
-      <div class="sidebar-logo-brand">Brain Brew × Heng Heng</div>
-      <div class="sidebar-logo-sub">Back Office</div>
-    </div>
-    <div class="nav-section" style="flex:1">
-      <div class="nav-label">Main</div>
-      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⬛</span>Dashboard</a>
-      <a href="pos.html"       class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
-      <div class="nav-label" style="margin-top:12px">Operations</div>
-      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory / อุปกรณ์</a>
-      <a href="recipe.html"    class="nav-item"><span class="nav-icon">🧪</span>Recipes</a>
-      <div class="nav-label" style="margin-top:12px">Business</div>
-      <a href="crm.html"       class="nav-item"><span class="nav-icon">👥</span>CRM / ลูกค้า</a>
-      <a href="finance.html"   class="nav-item active"><span class="nav-icon">💰</span>Finance</a>
-      <a href="reports.html"   class="nav-item"><span class="nav-icon">📊</span>Reports</a>
-      <div class="nav-label" style="margin-top:12px">Settings</div>
-      <a href="settings.html"  class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
-    </div>
-    <div style="padding:12px 20px;border-top:1px solid rgba(30,58,30,0.08);">
-      <div style="font-size:11px;color:rgba(0,0,0,0.35)" id="staff-name-label">Owner · All Brands</div>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand-mark">
+      <div class="mark-box">HH</div>
+      <div>
+        <div class="sidebar-logo-brand">Brain Brew × Heng Heng</div>
+        <div class="sidebar-logo-sub">BrewOS · Back Office</div>
+      </div>
     </div>
   </div>
 
-  <div class="main">
-    <div class="topbar">
-      <div class="topbar-title">Finance & Expenses</div>
-      <div class="topbar-actions">
-        <div class="month-selector">
-          <button class="month-nav" onclick="changeMonth(-1)">‹</button>
-          <span class="month-label" id="month-label">—</span>
-          <button class="month-nav" onclick="changeMonth(1)">›</button>
-        </div>
-        <button class="btn btn-primary" onclick="UI.openModal('add-expense-modal')">+ Add Expense</button>
+  <nav class="nav">
+    <div class="nav-label">Main</div>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Dashboard</a>
+    <a class="nav-item" href="pos.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg></span>POS System</a>
+    <a class="nav-item" href="orders.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg></span>Orders</a>
+
+    <div class="nav-label">Operations</div>
+    <a class="nav-item" href="inventory.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4zM4 7v10l8 4 8-4V7M12 11v10"/></svg></span>Inventory / อุปกรณ์</a>
+    <a class="nav-item" href="recipe.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg></span>Recipe & Cost</a>
+
+    <div class="nav-label">Business</div>
+    <a class="nav-item" href="crm.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 2.7-7 6-7s6 3 6 7M17 9a3 3 0 0 1 0 6M17 15c2.3.5 4 2.5 4 5"/></svg></span>CRM / ลูกค้า</a>
+    <a class="nav-item active" href="finance.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5A3.5 3.5 0 0 0 6 9.5v0A3.5 3.5 0 0 0 9.5 13h5A3.5 3.5 0 0 1 18 16.5v0A3.5 3.5 0 0 1 14.5 20H7"/></svg></span>Finance</a>
+    <a class="nav-item" href="suppliers.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16l1 6H3l1-6zM3 11v8h18v-8M8 15h8"/></svg></span>Suppliers</a>
+    <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19l5-6 4 3 7-10"/><path d="M16 6h4v4"/></svg></span>Reports</a>
+
+    <div class="nav-label">Settings</div>
+    <a class="nav-item" href="settings.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9L7 7M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></span>Settings</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="staff-chip">
+      <div class="staff-avatar" id="staff-avatar">S</div>
+      <div>
+        <div class="staff-name" id="staff-name-label">Owner</div>
+        <div class="staff-role">All Brands</div>
       </div>
     </div>
+  </div>
+</aside>
 
-    <div class="content">
-      <div class="tab-row">
-        <button class="tab-btn active" onclick="switchTab('overview', this)">P&L Overview</button>
-        <button class="tab-btn" onclick="switchTab('expenses', this)">Expenses</button>
+<main class="main">
+  <header class="topbar">
+    <div>
+      <span class="topbar-title">Finance & P&amp;L</span>
+      <span class="topbar-sub">รายรับ · ต้นทุน · รายจ่าย</span>
+    </div>
+    <div class="topbar-actions">
+      <div class="month-selector">
+        <button class="month-nav" type="button" onclick="changeMonth(-1)" aria-label="เดือนก่อน">‹</button>
+        <span class="month-label" id="month-label">—</span>
+        <button class="month-nav" type="button" onclick="changeMonth(1)" aria-label="เดือนถัดไป">›</button>
       </div>
+      <button class="btn btn-primary" type="button" onclick="UI.openModal('add-expense-modal')">＋ เพิ่มรายจ่าย</button>
+    </div>
+  </header>
 
-      <!-- ===== P&L OVERVIEW — โหลดจริงจาก API.financeSummary({month}) ===== -->
-      <div id="tab-overview">
-        <div id="overview-loading" class="loading-text">กำลังโหลดข้อมูล...</div>
-        <div id="overview-content" style="display:none">
-          <div class="kpi-row">
-            <div class="kpi-card">
-              <div class="kpi-label">Revenue</div>
-              <div class="kpi-value" id="kpi-rev">—</div>
-              <div class="kpi-sub" id="kpi-rev-count">—</div>
+  <div class="content">
+    <div class="tab-row">
+      <button class="tab-btn active" type="button" onclick="switchTab('overview',this)">P&amp;L Overview</button>
+      <button class="tab-btn" type="button" onclick="switchTab('expenses',this)">Expenses</button>
+    </div>
+
+    <section id="tab-overview">
+      <div id="overview-loading" class="loading-text">กำลังโหลดข้อมูล...</div>
+      <div id="overview-content" style="display:none">
+
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">Revenue</div>
+            <div class="kpi-value" id="kpi-rev">—</div>
+            <div class="kpi-sub" id="kpi-rev-count">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">COGS</div>
+            <div class="kpi-value" id="kpi-cogs">—</div>
+            <div class="kpi-sub" id="kpi-cogs-pct">—</div>
+          </div>
+          <div class="kpi-card emphasis">
+            <div class="kpi-label">Gross Profit</div>
+            <div class="kpi-value good" id="kpi-gp">—</div>
+            <div class="kpi-sub" id="kpi-gp-pct">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">OpEx + ค่าเสื่อม</div>
+            <div class="kpi-value" id="kpi-opex">—</div>
+            <div class="kpi-sub" id="kpi-opex-pct">—</div>
+          </div>
+          <div class="kpi-card emphasis">
+            <div class="kpi-label">Net Profit</div>
+            <div class="kpi-value" id="kpi-net">—</div>
+            <div class="kpi-sub" id="kpi-net-pct">—</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title" id="pl-statement-title">P&amp;L Statement</div>
+                <div class="card-subtitle">ยอดขายสุทธิ − ต้นทุน − ค่าใช้จ่าย − ค่าเสื่อม</div>
+              </div>
             </div>
-            <div class="kpi-card">
-              <div class="kpi-label">COGS</div>
-              <div class="kpi-value" id="kpi-cogs">—</div>
-              <div class="kpi-sub" id="kpi-cogs-pct">—</div>
-            </div>
-            <div class="kpi-card kpi-profit">
-              <div class="kpi-label">Gross Profit</div>
-              <div class="kpi-value" id="kpi-gp">—</div>
-              <div class="kpi-sub" id="kpi-gp-pct">—</div>
-            </div>
-            <div class="kpi-card">
-              <div class="kpi-label">Op. Expenses + ค่าเสื่อม</div>
-              <div class="kpi-value" id="kpi-opex">—</div>
-              <div class="kpi-sub" id="kpi-opex-pct">—</div>
-            </div>
-            <div class="kpi-card kpi-profit">
-              <div class="kpi-label">Net Profit</div>
-              <div class="kpi-value" id="kpi-net">—</div>
-              <div class="kpi-sub" id="kpi-net-pct">—</div>
-            </div>
+            <div class="card-body" id="pl-statement-body"></div>
           </div>
 
-          <div class="two-col">
+          <div class="stack">
             <div class="card">
-              <div class="card-header"><div class="card-title" id="pl-statement-title">P&L Statement</div></div>
-              <div class="card-body" id="pl-statement-body">
-                <!-- Injected by JS -->
-              </div>
-            </div>
-
-            <div style="display:flex;flex-direction:column;gap:16px">
-              <div class="card">
-                <div class="card-header"><div class="card-title">Brand Revenue Split</div></div>
-                <div class="card-body" style="padding:12px 18px">
-                  <canvas id="brand-chart"></canvas>
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Brand Revenue Split</div>
+                  <div class="card-subtitle">Brain Brew vs Heng Heng</div>
                 </div>
               </div>
-              <div class="card">
-                <div class="card-header"><div class="card-title">Expense Breakdown</div></div>
-                <div class="card-body" style="display:flex;align-items:center;gap:16px;padding:12px 18px">
-                  <div style="width:130px;height:130px;flex-shrink:0"><canvas id="exp-donut"></canvas></div>
-                  <div style="font-size:11px;display:flex;flex-direction:column;gap:5px" id="donut-legend"></div>
+              <div class="card-body">
+                <div class="chart-wrap"><canvas id="brand-chart"></canvas></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Expense Breakdown</div>
+                  <div class="card-subtitle">Operating expenses only</div>
                 </div>
+              </div>
+              <div class="card-body donut-row">
+                <div class="donut-box"><canvas id="exp-donut"></canvas></div>
+                <div class="legend" id="donut-legend"></div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-header"><div class="card-title">Brand Performance Comparison</div></div>
-            <div class="card-body" id="brand-comparison-body">
-              <!-- Injected by JS -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Brand Performance</div>
+              <div class="card-subtitle">Revenue share · ยังไม่รวม COGS แยกแบรนด์</div>
             </div>
           </div>
+          <div class="card-body" id="brand-comparison-body"></div>
         </div>
       </div>
+    </section>
 
-      <!-- ===== EXPENSES TAB ===== -->
-      <div id="tab-expenses" style="display:none">
-        <div class="filter-row">
-          <div class="search-wrap">
-            <svg class="search-icon-abs" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#4a6741" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
-            <input class="search-input" type="text" placeholder="Search expenses…" oninput="filterExpenses(this.value)">
-          </div>
-          <select class="select-filter" id="exp-cat-filter" onchange="filterExpenses()">
-            <option value="">All Categories</option>
-            <option value="cogs">COGS</option>
-            <option value="rent">Rent</option>
-            <option value="salary">Salary</option>
-            <option value="utility">Utilities</option>
-            <option value="marketing">Marketing</option>
-            <option value="equipment">Equipment (repair/rent)</option>
-            <option value="ingredient_purchase">Ingredient Purchase (สต๊อก — ไม่นับ OpEx)</option>
-            <option value="packaging_purchase">Packaging Purchase (สต๊อก — ไม่นับ OpEx)</option>
-            <option value="equipment_purchase">Equipment Purchase (สินทรัพย์ — ไม่นับ OpEx)</option>
-            <option value="other">Other</option>
-          </select>
-          <span style="margin-left:auto;font-size:11px;color:#4a6741" id="exp-total-label">Total: ฿0</span>
+    <section id="tab-expenses" style="display:none">
+      <div class="filter-row">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input class="search-input" id="exp-search" type="text" placeholder="ค้นหารายจ่าย..." oninput="renderExpenses()">
         </div>
-        <div class="pl-note" style="margin-bottom:12px">
-          🏷️ รายการที่มีป้าย <span class="capex-tag">CAPEX</span> คือเงินที่จ่ายซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์ —
-          แสดงไว้ให้เห็นกระแสเงินสดที่จ่ายจริง แต่ <strong>ไม่ถูกนับเป็น OpEx ในหน้า P&L</strong>
-          เพราะต้นทุนเหล่านี้จะถูกนับผ่าน COGS ตอนขายจริง (วัตถุดิบ/แพ็กเกจจิ้ง) หรือค่าเสื่อมราคารายเดือน (อุปกรณ์) แทน
-        </div>
-
-        <div class="table-card">
-          <div class="table-header exp-grid">
-            <div>Description</div>
-            <div>Category</div>
-            <div>Brand</div>
-            <div>Amount</div>
-            <div>Date</div>
-          </div>
-          <div id="expense-body"></div>
-        </div>
+        <select class="select-filter" id="exp-cat-filter" onchange="renderExpenses()">
+          <option value="">ทุกหมวด</option>
+          <option value="cogs">COGS</option>
+          <option value="rent">Rent</option>
+          <option value="salary">Salary</option>
+          <option value="utility">Utilities</option>
+          <option value="marketing">Marketing</option>
+          <option value="equipment">Equipment (repair/rent)</option>
+          <option value="ingredient_purchase">Ingredient Purchase · Stock</option>
+          <option value="packaging_purchase">Packaging Purchase · Stock</option>
+          <option value="equipment_purchase">Equipment Purchase · Asset</option>
+          <option value="other">Other</option>
+        </select>
+        <span class="total-label" id="exp-total-label">Total: ฿0</span>
       </div>
-    </div>
+
+      <div class="pl-note" style="margin-bottom:12px">
+        รายการ <span class="capex-tag">CAPEX</span> แสดงเพื่อให้เห็นเงินสดที่จ่ายจริง แต่ไม่หักเป็น OpEx ซ้ำใน P&amp;L —
+        วัตถุดิบ/แพ็กเกจจิ้งจะนับผ่าน COGS เมื่อขาย และอุปกรณ์จะนับผ่านค่าเสื่อมราคา
+      </div>
+
+      <div class="table-card">
+        <div class="table-header exp-grid">
+          <div>Description</div><div>Category</div><div>Brand</div><div>Amount</div><div>Date</div>
+        </div>
+        <div id="expense-body"></div>
+      </div>
+    </section>
   </div>
+</main>
 </div>
 
 <div class="modal-overlay" id="add-expense-modal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">Add Expense</div>
-      <button class="modal-close" onclick="UI.closeModal('add-expense-modal')">×</button>
+      <div class="modal-title">เพิ่มรายจ่าย</div>
+      <button class="modal-close" type="button" onclick="UI.closeModal('add-expense-modal')">×</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Description</label>
-        <input class="form-input" type="text" id="exp-desc" placeholder="e.g. Monthly rent">
+        <input class="form-input" type="text" id="exp-desc" placeholder="เช่น ค่าเช่าร้านประจำเดือน">
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -278,7 +407,7 @@ canvas { max-height:200px; }
             <option value="salary">Salary / Payroll</option>
             <option value="utility">Utilities</option>
             <option value="marketing">Marketing</option>
-            <option value="equipment">Equipment (ซ่อม/บำรุง — นับเป็น OpEx)</option>
+            <option value="equipment">Equipment · ซ่อม/บำรุง</option>
             <option value="other">Other</option>
           </select>
         </div>
@@ -294,7 +423,7 @@ canvas { max-height:200px; }
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Amount (฿)</label>
-          <input class="form-input" type="number" id="exp-amount" placeholder="0.00">
+          <input class="form-input" type="number" min="0" step="0.01" id="exp-amount" placeholder="0.00">
         </div>
         <div class="form-group">
           <label class="form-label">Date</label>
@@ -310,13 +439,16 @@ canvas { max-height:200px; }
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Note (optional)</label>
-        <input class="form-input" type="text" id="exp-note" placeholder="Optional">
+        <label class="form-label">Note</label>
+        <input class="form-input" type="text" id="exp-note" placeholder="ไม่บังคับ">
       </div>
-      <div class="form-hint">การซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์ใหม่ ให้บันทึกผ่านหน้า Inventory (Receive Stock / Add Asset) แทน — ระบบจะ log รายจ่ายให้อัตโนมัติและคำนวณต้นทุนถูกต้อง ไม่ต้องมาเพิ่มซ้ำที่นี่</div>
-      <div class="form-footer" style="margin-top:12px">
-        <button class="btn btn-ghost" onclick="UI.closeModal('add-expense-modal')">Cancel</button>
-        <button class="btn btn-primary" id="save-expense-btn" onclick="saveExpense()">Save Expense</button>
+      <div class="form-hint">
+        การซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์ใหม่ ให้บันทึกผ่าน Inventory (Receive Stock / Add Asset)
+        เพื่อให้ระบบลงต้นทุนและรายจ่ายอัตโนมัติ ไม่บันทึกซ้ำที่นี่
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" type="button" onclick="UI.closeModal('add-expense-modal')">ยกเลิก</button>
+        <button class="btn btn-primary" type="button" id="save-expense-btn" onclick="saveExpense()">บันทึกรายจ่าย</button>
       </div>
     </div>
   </div>
@@ -324,294 +456,307 @@ canvas { max-height:200px; }
 
 <script src="api.js"></script>
 <script>
-// ============================================================
-// #FIX (v2) — P&L ดึงจริงจาก API.financeSummary({month}) ซึ่งตอนนี้ตัดปัญหานับต้นทุนซ้ำ
-// (CapEx/สต๊อกที่ซื้อมาไม่ถูกนับเป็น OpEx อีกต่อไป — ดู #CAPEXFIX ใน รหัส.gs) และแสดงบรรทัด
-// ค่าเสื่อมราคาอุปกรณ์แยกให้เห็นชัดใน P&L Statement แล้ว (เดิมกำไรสุทธิหักค่าเสื่อมไปเงียบๆ
-// โดยไม่มีบรรทัดไหนอธิบายให้เห็นบนจอเลย ตัวเลขดูเหมือนไม่ตรงกัน)
-// ============================================================
 let currentMonth = new Date();
 let EXPENSES = [];
 let CURRENT_SUMMARY = null;
 
-document.getElementById('staff-name-label').textContent = Identity.getName() + ' · All Brands';
-
 const CAT_COLORS = {
-  cogs:'#52B788', rent:'#F97316', salary:'#818CF8', utility:'#22D3EE', marketing:'#FCD34D',
-  equipment:'#F87171', other:'#94A3B8',
-  ingredient_purchase:'#A78BFA', packaging_purchase:'#F0ABFC', equipment_purchase:'#FB923C',
+  cogs:'#52B788', rent:'#F26C21', salary:'#818CF8', utility:'#22D3EE', marketing:'#E8B84A',
+  equipment:'#D96C64', other:'#94A3B8',
+  ingredient_purchase:'#A78BFA', packaging_purchase:'#D98CD6', equipment_purchase:'#FB923C'
 };
 const CAT_LABELS = {
   cogs:'COGS', rent:'Rent', salary:'Salary', utility:'Utilities', marketing:'Marketing',
   equipment:'Equipment (repair)', other:'Other',
-  ingredient_purchase:'Ingredient Purchase', packaging_purchase:'Packaging Purchase', equipment_purchase:'Equipment Purchase',
+  ingredient_purchase:'Ingredient Purchase', packaging_purchase:'Packaging Purchase',
+  equipment_purchase:'Equipment Purchase'
 };
-const CAPEX_CATEGORIES = ['ingredient_purchase', 'packaging_purchase', 'equipment_purchase'];
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const CAPEX_CATEGORIES = ['ingredient_purchase','packaging_purchase','equipment_purchase'];
+const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 
-function monthKey(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); }
-function updateMonthLabel() { document.getElementById('month-label').textContent = MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear(); }
+function fmtB(n){ return '฿' + Math.round(Number(n||0)).toLocaleString('th-TH'); }
+function pctOf(a,b){ return Number(b)>0 ? (Math.round(Number(a)/Number(b)*1000)/10)+'%' : '—'; }
+function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function updateMonthLabel(){
+  document.getElementById('month-label').textContent = MONTHS[currentMonth.getMonth()]+' '+(currentMonth.getFullYear()+543);
+}
+function bkkDateKey(){
+  const parts = new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(new Date());
+  const obj={}; parts.forEach(p=>obj[p.type]=p.value);
+  return obj.year+'-'+obj.month+'-'+obj.day;
+}
+function monthRange(d){
+  const y=d.getFullYear(), m=d.getMonth();
+  const first = y+'-'+String(m+1).padStart(2,'0')+'-01';
+  const lastDay = new Date(y,m+1,0).getDate();
+  const last = y+'-'+String(m+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
+  return {first,last};
+}
 
-async function changeMonth(delta) {
-  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + delta, 1);
+async function changeMonth(delta){
+  currentMonth = new Date(currentMonth.getFullYear(),currentMonth.getMonth()+delta,1);
   updateMonthLabel();
   await loadOverview();
-  if (document.getElementById('tab-expenses').style.display !== 'none') await loadExpenses();
+  if(document.getElementById('tab-expenses').style.display!=='none') await loadExpenses();
 }
 
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('tab-overview').style.display = tab==='overview' ? 'block' : 'none';
-  document.getElementById('tab-expenses').style.display = tab==='expenses' ? 'block' : 'none';
-  if (tab === 'expenses') loadExpenses();
+  document.getElementById('tab-overview').style.display = tab==='overview'?'block':'none';
+  document.getElementById('tab-expenses').style.display = tab==='expenses'?'block':'none';
+  if(tab==='expenses') loadExpenses();
 }
 
-function fmtB(n) { return '฿' + Math.round(n || 0).toLocaleString(); }
-function pctOf(a, b) { return b > 0 ? (Math.round(a/b*1000)/10) + '%' : '—'; }
-
-// ============================================================
-// LOAD OVERVIEW (P&L) — real data
-// ============================================================
-async function loadOverview() {
-  document.getElementById('overview-loading').style.display = 'block';
-  document.getElementById('overview-content').style.display = 'none';
-
-  try {
-    const month = monthKey(currentMonth);
-    const summary = await API.financeSummary({ month });
-    CURRENT_SUMMARY = summary;
-    renderOverview(summary);
-    document.getElementById('overview-loading').style.display = 'none';
-    document.getElementById('overview-content').style.display = 'block';
-  } catch (e) {
-    console.error('❌ loadOverview failed:', e);
-    document.getElementById('overview-loading').textContent = 'โหลดข้อมูลไม่สำเร็จ: ' + e.message;
-    UI.toast('โหลด P&L ไม่สำเร็จ: ' + e.message, 'error');
+async function loadOverview(){
+  const loading=document.getElementById('overview-loading');
+  loading.style.display='block';
+  loading.textContent='กำลังโหลดข้อมูล...';
+  document.getElementById('overview-content').style.display='none';
+  try{
+    const s=await API.financeSummary({month:monthKey(currentMonth)});
+    CURRENT_SUMMARY=s;
+    renderOverview(s);
+    loading.style.display='none';
+    document.getElementById('overview-content').style.display='block';
+  }catch(e){
+    console.error('loadOverview failed',e);
+    loading.textContent='โหลดข้อมูลไม่สำเร็จ: '+e.message;
+    if(window.UI?.toast) UI.toast('โหลด P&L ไม่สำเร็จ: '+e.message,'error');
   }
 }
 
-function renderOverview(s) {
-  const rev = s.revenue?.total || 0;
-  const cogs = s.cogs || 0;
-  const gp = s.gross_profit || 0;
-  const opex = s.total_expenses || 0;
-  const dep = s.depreciation || 0;
-  const capex = s.capex_and_inventory_spend || 0;
-  const net = s.net_profit || 0;
+function renderOverview(s){
+  const rev=Number(s.revenue?.total||0);
+  const cogs=Number(s.cogs||0);
+  const gp=Number(s.gross_profit||0);
+  const opex=Number(s.total_expenses||0);
+  const dep=Number(s.depreciation||0);
+  const capex=Number(s.capex_and_inventory_spend||0);
+  const net=Number(s.net_profit||0);
 
-  document.getElementById('kpi-rev').textContent = fmtB(rev);
-  document.getElementById('kpi-rev-count').textContent = (s.order_count || 0) + ' orders';
-  document.getElementById('kpi-cogs').textContent = fmtB(cogs);
-  document.getElementById('kpi-cogs-pct').textContent = pctOf(cogs, rev) + ' of revenue';
-  document.getElementById('kpi-gp').textContent = fmtB(gp);
-  document.getElementById('kpi-gp-pct').textContent = 'GP ' + (s.gross_margin_pct ?? 0) + '%';
-  // #FIX — KPI การ์ดนี้ตอนนี้รวม OpEx + ค่าเสื่อมราคาเข้าด้วยกัน (ตัวเลขเดียวกับที่ถูกหักจริง
-  // ออกจากกำไรสุทธิ) แทนที่จะโชว์แค่ OpEx เฉยๆ ซึ่งทำให้ตัวเลขดูไม่ตรงกับ Net Profit ที่แสดง
-  document.getElementById('kpi-opex').textContent = fmtB(opex + dep);
-  document.getElementById('kpi-opex-pct').textContent = 'OpEx ' + fmtB(opex) + ' + ค่าเสื่อม ' + fmtB(dep);
-  document.getElementById('kpi-net').textContent = fmtB(net);
-  document.getElementById('kpi-net-pct').textContent = 'NP ' + (s.net_margin_pct ?? 0) + '%';
+  document.getElementById('kpi-rev').textContent=fmtB(rev);
+  document.getElementById('kpi-rev-count').textContent=(s.order_count||0)+' ออเดอร์';
+  document.getElementById('kpi-cogs').textContent=fmtB(cogs);
+  document.getElementById('kpi-cogs-pct').textContent=pctOf(cogs,rev)+' ของยอดขาย';
+  document.getElementById('kpi-gp').textContent=fmtB(gp);
+  document.getElementById('kpi-gp-pct').textContent='GP '+Number(s.gross_margin_pct||0).toFixed(1)+'%';
+  document.getElementById('kpi-opex').textContent=fmtB(opex+dep);
+  document.getElementById('kpi-opex-pct').textContent='OpEx '+fmtB(opex)+' · ค่าเสื่อม '+fmtB(dep);
 
-  document.getElementById('pl-statement-title').textContent = 'P&L Statement — ' + MONTHS[currentMonth.getMonth()] + ' ' + currentMonth.getFullYear();
+  const netEl=document.getElementById('kpi-net');
+  netEl.textContent=fmtB(net);
+  netEl.classList.toggle('good',net>=0);
+  netEl.classList.toggle('bad',net<0);
+  const netPct=document.getElementById('kpi-net-pct');
+  netPct.textContent='NP '+Number(s.net_margin_pct||0).toFixed(1)+'%';
 
-  const expByCat = s.expenses_by_category || {};
-  let plHtml = `
+  document.getElementById('pl-statement-title').textContent='P&L Statement — '+MONTHS[currentMonth.getMonth()]+' '+(currentMonth.getFullYear()+543);
+
+  const expByCat=s.expenses_by_category||{};
+  const expRows=Object.keys(expByCat).length
+    ? Object.entries(expByCat).map(([cat,amt])=>`
+      <div class="pl-row subtotal">
+        <span class="pl-label indent">${CAT_LABELS[cat]||cat}</span>
+        <span class="pl-value bad">-${fmtB(amt)}</span>
+      </div>`).join('')
+    : `<div class="pl-row subtotal"><span class="pl-label indent">ไม่มี Operating Expense ที่บันทึกในเดือนนี้</span></div>`;
+
+  document.getElementById('pl-statement-body').innerHTML=`
     <div class="pl-section-header">Revenue</div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew Coffee</span><span class="pl-value pl-positive">${fmtB(s.revenue?.bb)}</span></div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng Phanit</span><span class="pl-value pl-positive">${fmtB(s.revenue?.hh)}</span></div>
-    <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value pl-positive">${fmtB(rev)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew Coffee</span><span class="pl-value good">${fmtB(s.revenue?.bb)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng Phanit</span><span class="pl-value good">${fmtB(s.revenue?.hh)}</span></div>
+    <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value good">${fmtB(rev)}</span></div>
 
     <div class="pl-section-header">Cost of Goods Sold</div>
-    <div class="pl-row"><span class="pl-label">Total COGS (วัตถุดิบ+แพ็กเกจจิ้งที่ใช้จริง)</span><span class="pl-value pl-negative">-${fmtB(cogs)}</span></div>
-
-    <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Gross Profit</span><span class="pl-value pl-positive">${fmtB(gp)}</span></div>
+    <div class="pl-row"><span class="pl-label">COGS · วัตถุดิบและแพ็กเกจจิ้งที่ใช้จริง</span><span class="pl-value bad">-${fmtB(cogs)}</span></div>
+    <div class="pl-row total"><span class="pl-label">Gross Profit</span><span class="pl-value good">${fmtB(gp)}</span></div>
 
     <div class="pl-section-header">Operating Expenses</div>
-    ${Object.keys(expByCat).length ? Object.entries(expByCat).map(([cat, amt]) =>
-      `<div class="pl-row subtotal"><span class="pl-label indent">${CAT_LABELS[cat] || cat}</span><span class="pl-value pl-negative">-${fmtB(amt)}</span></div>`
-    ).join('') : '<div class="pl-row subtotal"><span class="pl-label indent">No operating expenses recorded this month</span></div>'}
-    <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value pl-negative">-${fmtB(opex)}</span></div>
+    ${expRows}
+    <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value bad">-${fmtB(opex)}</span></div>
 
     <div class="pl-section-header">Depreciation</div>
-    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์ (รายเดือน)</span><span class="pl-value pl-negative">-${fmtB(dep)}</span></div>
+    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์</span><span class="pl-value bad">-${fmtB(dep)}</span></div>
 
-    <div class="pl-row total"><span class="pl-label" style="color:#1a2e1a;font-weight:700">Net Profit</span><span class="pl-value pl-positive" style="font-size:16px">${fmtB(net)}</span></div>
+    <div class="pl-row total">
+      <span class="pl-label">Net Profit</span>
+      <span class="pl-value ${net>=0?'good':'bad'}" style="font-size:14px">${fmtB(net)}</span>
+    </div>
 
-    ${capex > 0 ? `<div class="pl-note">💵 เดือนนี้จ่ายเงินสดซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่ได้ถูกหักในหน้า P&L นี้ตรงๆ (จะทยอยนับผ่าน COGS ตอนขายจริง หรือค่าเสื่อมราคารายเดือน) ดูรายละเอียดได้ในแท็บ Expenses</div>` : ''}
+    ${capex>0?`<div class="pl-note">เดือนนี้มีเงินสดจ่ายซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่ถูกหักซ้ำใน P&L โดยตรง เพราะระบบทยอยนับผ่าน COGS หรือค่าเสื่อมราคา</div>`:''}
   `;
-  document.getElementById('pl-statement-body').innerHTML = plHtml;
 
-  renderBrandChart(s.revenue?.bb || 0, s.revenue?.hh || 0);
+  renderBrandChart(Number(s.revenue?.bb||0),Number(s.revenue?.hh||0));
   renderExpenseDonut(expByCat);
   renderBrandComparison(s);
 }
 
-function renderBrandChart(bb, hh) {
-  const ctx = document.getElementById('brand-chart')?.getContext('2d');
-  if (!ctx) return;
-  if (window._brandChart) window._brandChart.destroy();
-  window._brandChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['Brain Brew', 'Heng Heng'],
-      datasets: [{ label: 'Revenue', data: [bb, hh], backgroundColor: ['rgba(82,183,136,0.7)', 'rgba(251,146,60,0.7)'], borderRadius: 4 }]
+function renderBrandChart(bb,hh){
+  const ctx=document.getElementById('brand-chart')?.getContext('2d');
+  if(!ctx) return;
+  if(window._brandChart) window._brandChart.destroy();
+  window._brandChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['Brain Brew','Heng Heng'],
+      datasets:[{data:[bb,hh],backgroundColor:['#143D2B','#F26C21'],borderRadius:7,borderSkipped:false,barThickness:34}]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: 'rgba(0,0,0,0.5)', font: { size: 10 } }, grid: { display: false } },
-        y: { ticks: { color: 'rgba(0,0,0,0.4)', font: { size: 10 }, callback: v => '฿' + (v/1000) + 'k' }, grid: { color: 'rgba(0,0,0,0.04)' } }
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>fmtB(c.raw)},backgroundColor:'#17211A',padding:9,cornerRadius:7}
+      },
+      scales:{
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#6D766F',font:{size:10,family:'Anuphan'}}},
+        y:{beginAtZero:true,grid:{color:'rgba(20,61,43,.06)'},border:{display:false},ticks:{color:'#9CA39E',font:{size:10},callback:v=>'฿'+Number(v).toLocaleString('th-TH')}}
       }
     }
   });
 }
 
-function renderExpenseDonut(expByCat) {
-  const ctx = document.getElementById('exp-donut')?.getContext('2d');
-  const legend = document.getElementById('donut-legend');
-  if (!ctx) return;
-  const cats = Object.keys(expByCat);
-  if (!cats.length) {
-    if (window._donutChart) window._donutChart.destroy();
-    legend.innerHTML = '<div style="color:#4a6741">No expenses this month</div>';
+function renderExpenseDonut(expByCat){
+  const ctx=document.getElementById('exp-donut')?.getContext('2d');
+  const legend=document.getElementById('donut-legend');
+  if(!ctx||!legend) return;
+  const cats=Object.keys(expByCat);
+  if(window._donutChart) window._donutChart.destroy();
+  if(!cats.length){
+    legend.innerHTML='<div style="color:var(--muted)">ไม่มี OpEx ในเดือนนี้</div>';
     return;
   }
-  const vals = cats.map(c => expByCat[c]);
-  const colors = cats.map(c => CAT_COLORS[c] || '#94A3B8');
-  if (window._donutChart) window._donutChart.destroy();
-  window._donutChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels: cats.map(c => CAT_LABELS[c] || c), datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0, hoverOffset: 4 }] },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
+  const vals=cats.map(c=>Number(expByCat[c]||0));
+  const colors=cats.map(c=>CAT_COLORS[c]||'#94A3B8');
+  window._donutChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:cats.map(c=>CAT_LABELS[c]||c),datasets:[{data:vals,backgroundColor:colors,borderWidth:0,hoverOffset:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}
   });
-  legend.innerHTML = cats.map((c, i) => `
-    <div style="display:flex;align-items:center;gap:5px">
-      <div style="width:7px;height:7px;border-radius:50%;background:${colors[i]}"></div>
-      <span style="color:#4a6741">${CAT_LABELS[c] || c}</span>
-      <span style="margin-left:auto;color:#1a2e1a;font-weight:500">${fmtB(vals[i])}</span>
+  legend.innerHTML=cats.map((c,i)=>`
+    <div class="legend-row">
+      <span class="legend-dot" style="background:${colors[i]}"></span>
+      <span class="legend-name">${CAT_LABELS[c]||c}</span>
+      <span class="legend-value">${fmtB(vals[i])}</span>
     </div>`).join('');
 }
 
-function renderBrandComparison(s) {
-  const bbRev = s.revenue?.bb || 0;
-  const hhRev = s.revenue?.hh || 0;
-  // #NOTE — getFinanceSummary() ของ รหัส.gs ยังไม่แยก COGS ต่อแบรนด์ (คำนวณ COGS รวมทั้งบิลเท่านั้น)
-  // จึงยังไม่มี gross profit ต่อแบรนด์ที่แม่นยำ แสดงเฉพาะ revenue split ไปก่อน
-  const body = document.getElementById('brand-comparison-body');
-  body.innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-      ${[['BB', bbRev, 'Brain Brew Coffee', '#52B788'], ['HH', hhRev, 'Heng Heng Phanit', '#FB923C']].map(([code, rev, name, color]) => `
-        <div style="background:rgba(0,0,0,0.02);border-radius:12px;padding:16px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-            <div style="width:8px;height:8px;border-radius:50%;background:${color}"></div>
-            <div style="font-size:13px;font-weight:600;color:#1a2e1a">${name}</div>
-          </div>
-          <div><div style="font-size:10px;color:#4a6741">Revenue</div><div style="font-size:18px;font-weight:700;color:#1a2e1a">${fmtB(rev)}</div></div>
-          <div style="margin-top:10px;font-size:10px;color:#4a6741">Revenue share: ${pctOf(rev, bbRev+hhRev)}</div>
-        </div>`).join('')}
+function renderBrandComparison(s){
+  const bb=Number(s.revenue?.bb||0),hh=Number(s.revenue?.hh||0),total=bb+hh;
+  document.getElementById('brand-comparison-body').innerHTML=`
+    <div class="brand-grid">
+      <div class="brand-card">
+        <div class="brand-head"><span class="brand-dot" style="background:#143D2B"></span><span class="brand-name">Brain Brew Coffee</span></div>
+        <div class="brand-revenue">${fmtB(bb)}</div>
+        <div class="brand-share">Revenue share · ${pctOf(bb,total)}</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-head"><span class="brand-dot" style="background:#F26C21"></span><span class="brand-name">Heng Heng Phanit</span></div>
+        <div class="brand-revenue">${fmtB(hh)}</div>
+        <div class="brand-share">Revenue share · ${pctOf(hh,total)}</div>
+      </div>
     </div>
-    <div style="font-size:10px;color:#4a6741;margin-top:12px">
-      หมายเหตุ: ยังไม่มีการแยกต้นทุน (COGS) ต่อแบรนด์จาก backend — กำไรขั้นต้นแยกแบรนด์ต้องเพิ่ม logic ใน getFinanceSummary() ก่อน
-    </div>
+    <div class="pl-note">กำไรขั้นต้นแยกแบรนด์ยังไม่แสดงในหน้านี้จนกว่า <code>financeSummary()</code> จะส่ง COGS/GP แยก BB และ HH มาโดยตรง เพื่อไม่เดาตัวเลขฝั่งหน้าเว็บ</div>
   `;
 }
 
-// ============================================================
-// EXPENSES TAB — โหลดจริงจาก API.expenses()
-// ============================================================
-async function loadExpenses() {
-  const body = document.getElementById('expense-body');
-  body.innerHTML = '<div class="loading-text">กำลังโหลด...</div>';
-  try {
-    const month = monthKey(currentMonth);
-    const data = await API.expenses({ date_from: month + '-01', date_to: month + '-31' });
-    EXPENSES = (data || []).map(e => ({
-      id: e.expense_id, desc: e.description, cat: e.category, brand: e.brand_id,
-      amount: e.amount, date: e.date,
-      is_capex: CAPEX_CATEGORIES.indexOf(String(e.category||'')) !== -1,
+async function loadExpenses(){
+  const body=document.getElementById('expense-body');
+  body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
+  try{
+    const range=monthRange(currentMonth);
+    const data=await API.expenses({date_from:range.first,date_to:range.last});
+    EXPENSES=(data||[]).map(e=>({
+      id:e.expense_id,desc:e.description,cat:e.category,brand:e.brand_id,
+      amount:Number(e.amount||0),date:e.date,
+      is_capex:CAPEX_CATEGORIES.includes(String(e.category||''))
     }));
     renderExpenses();
-  } catch (e) {
-    console.error('❌ loadExpenses failed:', e);
-    body.innerHTML = '<div class="loading-text">โหลดไม่สำเร็จ: ' + e.message + '</div>';
-    UI.toast('โหลดรายจ่ายไม่สำเร็จ: ' + e.message, 'error');
+  }catch(e){
+    console.error('loadExpenses failed',e);
+    body.innerHTML='<div class="loading-text">โหลดไม่สำเร็จ: '+e.message+'</div>';
+    if(window.UI?.toast) UI.toast('โหลดรายจ่ายไม่สำเร็จ: '+e.message,'error');
   }
 }
 
-function renderExpenses(filter = '') {
-  const body = document.getElementById('expense-body');
-  const catFilter = document.getElementById('exp-cat-filter')?.value || '';
-  let exps = [...EXPENSES].sort((a,b) => (b.date||'').localeCompare(a.date||''));
-  if (catFilter) exps = exps.filter(e => e.cat === catFilter);
-  if (filter) {
-    const q = filter.toLowerCase();
-    exps = exps.filter(e => (e.desc||'').toLowerCase().includes(q) || (CAT_LABELS[e.cat]||'').toLowerCase().includes(q));
-  }
-  const total = exps.reduce((s,e) => s+Number(e.amount||0), 0);
-  document.getElementById('exp-total-label').textContent = `Total (ทุกหมวดรวม CAPEX): ${fmtB(total)}`;
+function renderExpenses(){
+  const body=document.getElementById('expense-body');
+  const catFilter=document.getElementById('exp-cat-filter')?.value||'';
+  const q=(document.getElementById('exp-search')?.value||'').trim().toLowerCase();
 
-  if (!exps.length) {
-    body.innerHTML = '<div class="loading-text">No expenses found for this month</div>';
+  let exps=[...EXPENSES].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+  if(catFilter) exps=exps.filter(e=>e.cat===catFilter);
+  if(q) exps=exps.filter(e=>(e.desc||'').toLowerCase().includes(q)||(CAT_LABELS[e.cat]||'').toLowerCase().includes(q));
+
+  const total=exps.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('exp-total-label').textContent='รวมรายการที่แสดง: '+fmtB(total);
+
+  if(!exps.length){
+    body.innerHTML='<div class="loading-text">ไม่พบรายจ่ายในช่วงนี้</div>';
     return;
   }
 
-  body.innerHTML = exps.map(e => `
-    <div class="table-row exp-grid ${e.is_capex ? 'capex-row' : ''}">
-      <div><div style="font-size:12px;font-weight:500;color:#1a2e1a">${e.desc || '—'}${e.is_capex ? '<span class="capex-tag">CAPEX</span>' : ''}</div></div>
-      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${CAT_LABELS[e.cat] || e.cat}</span></div>
-      <div style="font-size:11px;color:#4a6741">${e.brand}</div>
-      <div style="font-size:13px;font-weight:600;color:#EF4444">-${fmtB(e.amount)}</div>
-      <div style="font-size:11px;color:#4a6741">${e.date}</div>
+  body.innerHTML=exps.map(e=>`
+    <div class="table-row exp-grid ${e.is_capex?'capex-row':''}">
+      <div style="font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+        ${e.desc||'—'}${e.is_capex?'<span class="capex-tag">CAPEX</span>':''}
+      </div>
+      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${CAT_LABELS[e.cat]||e.cat}</span></div>
+      <div style="color:var(--muted)">${e.brand||'—'}</div>
+      <div class="bad" style="font-family:'Poppins',sans-serif;font-weight:600">-${fmtB(e.amount)}</div>
+      <div style="color:var(--muted)">${e.date||'—'}</div>
     </div>`).join('');
 }
 
-function filterExpenses(val) { renderExpenses(val || ''); }
+async function saveExpense(){
+  const desc=document.getElementById('exp-desc').value.trim();
+  const amount=Number(document.getElementById('exp-amount').value||0);
+  const date=document.getElementById('exp-date').value;
 
-async function saveExpense() {
-  const desc = document.getElementById('exp-desc').value.trim();
-  if (!desc) { UI.toast('Enter a description.', 'error'); return; }
+  if(!desc){ if(window.UI?.toast) UI.toast('กรุณากรอกรายละเอียดรายจ่าย','error'); return; }
+  if(!(amount>0)){ if(window.UI?.toast) UI.toast('จำนวนเงินต้องมากกว่า 0','error'); return; }
+  if(!date){ if(window.UI?.toast) UI.toast('กรุณาเลือกวันที่','error'); return; }
 
-  const btn = document.getElementById('save-expense-btn');
-  UI.loading(btn, true);
-  try {
-    const payload = {
-      date: document.getElementById('exp-date').value || monthKey(currentMonth) + '-01',
-      category: document.getElementById('exp-cat').value,
-      description: desc,
-      amount: parseFloat(document.getElementById('exp-amount').value) || 0,
-      brand_id: document.getElementById('exp-brand').value,
-      payment_method: document.getElementById('exp-payment').value,
-      note: document.getElementById('exp-note').value || '',
-    };
-    const res = await API.createExpense(payload);
-    UI.toast('บันทึกรายจ่ายแล้ว: ' + res.expense_id);
-    UI.closeModal('add-expense-modal');
-    document.getElementById('exp-desc').value = '';
-    document.getElementById('exp-amount').value = '';
-    document.getElementById('exp-note').value = '';
-    await loadExpenses();
-    await loadOverview(); // รายจ่ายใหม่กระทบ P&L ด้วย ต้อง refresh
-  } catch (e) {
-    console.error('❌ saveExpense failed:', e);
-    UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
-  } finally {
-    UI.loading(btn, false);
+  const btn=document.getElementById('save-expense-btn');
+  if(window.UI?.loading) UI.loading(btn,true); else btn.disabled=true;
+
+  try{
+    const res=await API.createExpense({
+      date,
+      category:document.getElementById('exp-cat').value,
+      description:desc,
+      amount,
+      brand_id:document.getElementById('exp-brand').value,
+      payment_method:document.getElementById('exp-payment').value,
+      note:document.getElementById('exp-note').value.trim()
+    });
+    if(window.UI?.toast) UI.toast('บันทึกรายจ่ายแล้ว: '+(res?.expense_id||'สำเร็จ'));
+    if(window.UI?.closeModal) UI.closeModal('add-expense-modal');
+    document.getElementById('exp-desc').value='';
+    document.getElementById('exp-amount').value='';
+    document.getElementById('exp-note').value='';
+    await Promise.all([loadExpenses(),loadOverview()]);
+  }catch(e){
+    console.error('saveExpense failed',e);
+    if(window.UI?.toast) UI.toast('บันทึกไม่สำเร็จ: '+e.message,'error');
+  }finally{
+    if(window.UI?.loading) UI.loading(btn,false); else btn.disabled=false;
   }
 }
 
-// ============================================================
-// INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', async () => {
-  document.getElementById('exp-date').value = new Date().toISOString().slice(0,10);
+document.addEventListener('DOMContentLoaded',async()=>{
+  const name = window.Identity?.getName ? Identity.getName() : 'Owner';
+  document.getElementById('staff-name-label').textContent=name;
+  document.getElementById('staff-avatar').textContent=String(name||'S').slice(0,2).toUpperCase();
+  document.getElementById('exp-date').value=bkkDateKey();
   updateMonthLabel();
   await loadOverview();
 
-  document.querySelectorAll('.modal-overlay').forEach(el =>
-    el.addEventListener('click', e => { if (e.target === el) el.classList.remove('show'); })
-  );
+  document.querySelectorAll('.modal-overlay').forEach(el=>{
+    el.addEventListener('click',e=>{ if(e.target===el && window.UI?.closeModal) UI.closeModal(el.id); });
+  });
 });
 </script>
 </body>
