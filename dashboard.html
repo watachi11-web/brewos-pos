@@ -140,57 +140,6 @@
     .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .content { padding: 16px; }
   }
-
-  /* ===== BrewOS Dashboard Polish v1.1 ===== */
-  .kpi-card { min-width:0; }
-  .kpi-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-  .kpi-note { margin-top:8px; font-size:11px; color:#8a8a8a; line-height:1.45; }
-  .kpi-note strong { color:#444; font-weight:600; }
-  .period-badge {
-    display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
-    border-radius:999px; background:#F5F3EF; color:#777; font-size:11px; font-weight:600;
-    white-space:nowrap;
-  }
-  .section-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  .profit-chip {
-    display:inline-flex; align-items:center; gap:4px; padding:3px 7px;
-    border-radius:999px; background:#EEF7F1; color:#1E5A3F; font-size:10px; font-weight:600;
-  }
-  .topbar { gap:16px; }
-  .topbar-right { min-width:0; }
-  .content { max-width:1600px; margin:0 auto; }
-  .seller-name, .order-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .stock-alert { min-width:0; }
-  .stock-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-  @media (max-width: 1050px) {
-    :root { --sidebar-w: 210px; }
-    .content { padding:22px 22px; }
-    .topbar { padding:0 22px; }
-    .kpi-value { font-size:25px; }
-    .card { padding:18px 18px; }
-  }
-
-  @media (max-width: 860px) {
-    .sidebar { transform:translateX(-100%); }
-    .main { margin-left:0; }
-    .content { padding:16px; }
-    .topbar { padding:0 16px; }
-    .kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .charts-row, .bottom-row { grid-template-columns:1fr; }
-    .pos-btn { padding:9px 12px; }
-    .date-badge { display:none; }
-  }
-
-  @media (max-width: 520px) {
-    .kpi-grid { grid-template-columns:1fr; }
-    .topbar { height:auto; min-height:56px; padding-top:10px; padding-bottom:10px; }
-    .topbar-right { gap:8px; }
-    .pos-btn { font-size:12px; }
-    .content { padding:12px; }
-    .card, .kpi-card { border-radius:13px; }
-  }
-
 </style>
 </head>
 <body>
@@ -201,6 +150,11 @@
     <img src="logo-hh-icon.png" style="width:30px;height:30px;object-fit:contain;display:block;margin-bottom:8px">
     <div class="brand-name">Brain Brew × Heng Heng</div>
     <div class="sub">Operating System v1.0</div>
+  </div>
+
+  <div class="brand-switcher">
+    <button class="brand-btn bb active" onclick="switchBrand('BB', this)">Brain Brew</button>
+    <button class="brand-btn hh" onclick="switchBrand('HH', this)">Heng Heng</button>
   </div>
 
   <nav style="flex:1;overflow-y:auto;padding:4px 0">
@@ -267,7 +221,7 @@
 <main class="main">
 
   <div class="topbar">
-    <div class="page-title">Dashboard · ภาพรวมร้าน</div>
+    <div class="page-title">Dashboard</div>
     <div class="topbar-right">
       <span class="date-badge" id="today-date">—</span>
       <button class="alert-btn" onclick="scrollToAlerts()">
@@ -276,7 +230,7 @@
       </button>
       <button class="pos-btn" onclick="location.href='pos.html'">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M2 6h12M6 2v4"/></svg>
-        เปิด POS
+        Open POS
       </button>
     </div>
   </div>
@@ -291,10 +245,14 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">ยอดขายย้อนหลัง</div>
-            <div class="card-subtitle" id="revenue-period-label">7 วันล่าสุด</div>
+            <div class="card-title">Revenue Overview</div>
+            <div class="card-subtitle" id="revenue-period-label">Last 7 days</div>
           </div>
-          <span class="period-badge">7 วันล่าสุด</span>
+          <div class="period-selector" id="period-selector">
+            <button class="period-tab active" onclick="setPeriod(7,this)">7D</button>
+            <button class="period-tab" onclick="setPeriod(30,this)">30D</button>
+            <button class="period-tab" onclick="setPeriod(90,this)">90D</button>
+          </div>
         </div>
         <canvas id="revenue-chart" height="220"></canvas>
       </div>
@@ -302,8 +260,8 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">ยอดขายแยกแบรนด์</div>
-            <div class="card-subtitle">วันนี้</div>
+            <div class="card-title">Brand Comparison</div>
+            <div class="card-subtitle">Today</div>
           </div>
         </div>
         <div id="brand-compare">
@@ -329,8 +287,8 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">เมนูขายดี</div>
-            <div class="card-subtitle">30 วันล่าสุด</div>
+            <div class="card-title">Best Sellers</div>
+            <div class="card-subtitle">Last 30 days</div>
           </div>
         </div>
         <div id="best-sellers"></div>
@@ -339,7 +297,7 @@
       <div class="card" id="stock-alerts-card">
         <div class="card-header">
           <div>
-            <div class="card-title">สต็อกใกล้หมด</div>
+            <div class="card-title">⚠️ Low Stock</div>
             <div class="card-subtitle" id="low-stock-subtitle">Needs reorder</div>
           </div>
           <span style="font-size:11px;color:#F26C21;cursor:pointer" onclick="location.href='inventory.html'">Manage →</span>
@@ -350,8 +308,8 @@
       <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-title">ออเดอร์ล่าสุด</div>
-            <div class="card-subtitle">วันนี้</div>
+            <div class="card-title">Recent Orders</div>
+            <div class="card-subtitle">Today</div>
           </div>
         </div>
         <div id="recent-orders"></div>
@@ -389,58 +347,47 @@ function fmtB(n) { return '฿' + Number(n||0).toLocaleString(); }
 //   category_breakdown:[...], top_customers:[...] }
 // ============================================================
 function renderKPIs(data, prevDayRevenue) {
-  const todayRev = Number(data.today?.revenue || 0);
-  const todayProfit = Number(data.today?.profit || 0);
-  const todayOrders = Number(data.today?.orders || 0);
-  const bbRev = Number(data.brand_bb?.revenue || 0);
-  const bbProfit = Number(data.brand_bb?.profit || 0);
-  const hhRev = Number(data.brand_hh?.revenue || 0);
-  const hhProfit = Number(data.brand_hh?.profit || 0);
-
-  const gp = (profit, revenue) => revenue > 0 ? (profit / revenue * 100).toFixed(1) : '0.0';
+  const todayRev = data.today?.revenue || 0;
+  const todayProfit = data.today?.profit || 0;
+  // #FIX — เทียบกับยอดเมื่อวานจริงจาก revenue_trend (index สุดท้าย = วันนี้, รองสุดท้าย = เมื่อวาน)
+  // แทนการเดา +12% คงที่แบบเดิม
   const diff = prevDayRevenue > 0 ? todayRev - prevDayRevenue : null;
-  const diffPct = prevDayRevenue > 0 ? (diff / prevDayRevenue * 100).toFixed(1) : null;
-  const vsYesterday = diff === null
-    ? 'ยังไม่มีข้อมูลเมื่อวาน'
-    : `${diff >= 0 ? '+' : ''}${fmtB(diff)} (${diff >= 0 ? '+' : ''}${diffPct}%) จากเมื่อวาน`;
+  const diffPct = prevDayRevenue > 0 ? Math.round((diff / prevDayRevenue) * 1000) / 10 : null;
 
   const kpis = [
     {
-      label: 'ยอดขายวันนี้',
+      label: "Today's Revenue",
       value: fmtB(todayRev),
-      note: `${todayOrders} ออเดอร์ · ${vsYesterday}`,
-      icon: '฿', color: '#DCFCE7'
+      change: diff === null ? 'No data for yesterday' : `${diff >= 0 ? '+' : ''}${fmtB(diff)} (${diffPct}%) vs yesterday`,
+      dir: (diff === null || diff >= 0) ? 'up' : 'down',
+      icon: '💰', color: '#DCFCE7',
     },
     {
-      label: 'กำไรขั้นต้นวันนี้',
-      value: fmtB(todayProfit),
-      note: `ยอดขายสุทธิ − COGS · GP ${gp(todayProfit, todayRev)}%`,
-      icon: 'GP', color: '#E8F3ED'
+      label: 'Orders Today',
+      value: data.today?.orders || 0,
+      change: `Profit: ${fmtB(todayProfit)}`,
+      dir: 'up', icon: '📋', color: '#DBEAFE',
     },
     {
-      label: 'Brain Brew วันนี้',
-      value: fmtB(bbRev),
-      note: `กำไรขั้นต้นประมาณ ${fmtB(bbProfit)} · GP ${gp(bbProfit, bbRev)}%`,
-      icon: 'BB', color: '#FEF3C7'
+      label: 'Brain Brew Today',
+      value: fmtB(data.brand_bb?.revenue || 0),
+      change: `Profit: ${fmtB(data.brand_bb?.profit || 0)}`,
+      dir: 'up', icon: '☕', color: '#FEF3C7',
     },
     {
-      label: 'Heng Heng วันนี้',
-      value: fmtB(hhRev),
-      note: `กำไรขั้นต้นประมาณ ${fmtB(hhProfit)} · GP ${gp(hhProfit, hhRev)}%`,
-      icon: 'HH', color: '#FFE7D6'
+      label: 'Heng Heng Today',
+      value: fmtB(data.brand_hh?.revenue || 0),
+      change: `Profit: ${fmtB(data.brand_hh?.profit || 0)}`,
+      dir: 'up', icon: '🌸', color: '#FFE4E6',
     },
   ];
 
   document.getElementById('kpi-grid').innerHTML = kpis.map(k => `
     <div class="kpi-card">
-      <div class="kpi-top">
-        <div>
-          <div class="kpi-label">${k.label}</div>
-          <div class="kpi-value">${k.value}</div>
-        </div>
-        <div class="kpi-icon" style="background:${k.color};margin-bottom:0;font-size:11px;font-weight:700">${k.icon}</div>
-      </div>
-      <div class="kpi-note">${k.note}</div>
+      <div class="kpi-icon" style="background:${k.color}">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-change ${k.dir}">${k.dir === 'up' ? '↑' : '↓'} ${k.change}</div>
     </div>
   `).join('');
 }
@@ -531,56 +478,31 @@ function renderRecentOrders(orders) {
 let revenueChart = null;
 let donutChart   = null;
 
-function renderRevenueChart(labels, values, profitValues = []) {
+function renderRevenueChart(labels, values) {
   const ctx = document.getElementById('revenue-chart').getContext('2d');
   if (revenueChart) revenueChart.destroy();
-
-  const datasets = [{
-    type: 'bar',
-    label: 'ยอดขายสุทธิ',
-    data: values,
-    backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#143D2B22'),
-    borderRadius: 6,
-    borderSkipped: false,
-    order: 2
-  }];
-
-  if (Array.isArray(profitValues) && profitValues.length === values.length) {
-    datasets.push({
-      type: 'line',
-      label: 'กำไรขั้นต้น',
-      data: profitValues,
-      borderColor: '#F26C21',
-      backgroundColor: '#F26C21',
-      pointRadius: 3,
-      pointHoverRadius: 5,
-      borderWidth: 2,
-      tension: .3,
-      order: 1
-    });
-  }
-
   revenueChart = new Chart(ctx, {
-    data: { labels, datasets },
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Revenue',
+        data: values,
+        backgroundColor: values.map((_, i) => i === values.length - 1 ? '#143D2B' : '#143D2B22'),
+        borderRadius: 6, borderSkipped: false,
+      }]
+    },
     options: {
       responsive: true,
-      interaction: { mode:'index', intersect:false },
       plugins: {
-        legend: {
-          display: datasets.length > 1,
-          labels: { usePointStyle:true, boxWidth:7, color:'#666', font:{ size:11, family:'Anuphan' } }
-        },
-        tooltip: {
-          callbacks: { label: ctx => `${ctx.dataset.label}: ฿${Number(ctx.raw||0).toLocaleString()}` },
-          backgroundColor:'#111', titleColor:'#fff', bodyColor:'#ddd', padding:10, cornerRadius:8
-        }
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `฿${ctx.raw.toLocaleString()}` }, backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', padding: 10, cornerRadius: 8 },
       },
       scales: {
-        x: { grid:{display:false}, border:{display:false}, ticks:{color:'#999',font:{size:11}} },
-        y: { grid:{color:'#F0EDE6'}, border:{display:false}, beginAtZero:true,
-             ticks:{color:'#999',font:{size:11},callback:v=>`฿${Number(v).toLocaleString()}`} }
-      }
-    }
+        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#999', font: { size: 11 } } },
+        y: { grid: { color: '#F0EDE6' }, border: { display: false }, ticks: { color: '#999', font: { size: 11 }, callback: v => `฿${(v/1000).toFixed(0)}K` } },
+      },
+    },
   });
 }
 
@@ -607,10 +529,80 @@ function renderDonutChart(bb, hh) {
 }
 
 // ============================================================
-// NAVIGATION
+// BRAND SWITCHER — #NOTE: getDashboardSummary() ของ รหัส.gs ยังไม่รับ brand_id
+// เป็น filter parameter (คืนข้อมูลทุกแบรนด์เสมอ) ปุ่มสลับแบรนด์นี้จึงเป็นแค่ UI state
+// ที่ยังไม่มีผลกรองข้อมูลจริง — ถ้าต้องการฟีเจอร์นี้จริง ต้องเพิ่ม logic ฝั่ง backend ก่อน
 // ============================================================
+function switchBrand(brand, btn) {
+  ACTIVE_BRAND = brand;
+  Identity.setBrand(brand);
+  document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
 function scrollToAlerts() {
   document.getElementById('stock-alerts-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ============================================================
+// PERIOD SELECTOR — #FIX เดิมไม่มีตัวเลือกช่วงข้อมูลเลย กราฟ/เมนูขายดีตายตัวที่ค่า
+// จาก getDashboardSummary() (7 วัน/30 วัน คงที่จาก backend) ตอนนี้คำนวณกราฟ+เมนูขายดี
+// ใหม่ฝั่ง client จาก orders ดิบตามช่วงที่เลือกได้ (7D/30D/90D) เหมือน reports.html
+// ส่วน KPI การ์ดบนสุด (ยอดวันนี้ ฯลฯ) ยังคงอิง "วันนี้" เสมอ ไม่ผูกกับตัวเลือกนี้
+// ============================================================
+function dateKeyBkkLocal(val) {
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return '';
+  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+  return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
+}
+
+function setPeriod(days, btn) {
+  PERIOD_DAYS = days;
+  document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('revenue-period-label').textContent = `Last ${days} days`;
+  recomputeForPeriod();
+}
+
+function recomputeForPeriod() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - PERIOD_DAYS);
+  const cutoffStr = dateKeyBkkLocal(cutoff);
+
+  const periodOrders = ALL_ORDERS_RAW.filter(o => o.order_status !== 'cancelled' && dateKeyBkkLocal(o.created_at) >= cutoffStr);
+
+  const dayMap = {};
+  periodOrders.forEach(o => {
+    const k = dateKeyBkkLocal(o.created_at);
+    if (!k) return;
+    dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount||0);
+  });
+  const labels = [], values = [];
+  for (let i = PERIOD_DAYS - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = dateKeyBkkLocal(d);
+    labels.push(`${String(d.getDate()).padStart(2,'0')}/${d.getMonth()+1}`);
+    values.push(dayMap[key] || 0);
+  }
+  renderRevenueChart(labels, values);
+
+  const itemMap = {};
+  periodOrders.forEach(o => {
+    (o.items||[]).forEach(i => {
+      if (!itemMap[i.name]) itemMap[i.name] = { name: i.name, revenue: 0, qty: 0 };
+      itemMap[i.name].revenue += Number(i.total||0) || Number(i.price||0)*Number(i.qty||1);
+      itemMap[i.name].qty += Number(i.qty||1);
+    });
+  });
+  const bestSellers = Object.values(itemMap).sort((a,b) => b.revenue - a.revenue).slice(0, 7)
+    .map(i => ({ name: i.name, cat: '', revenue: Math.round(i.revenue), gp: null }));
+  renderBestSellers(bestSellers);
+
+  const bbRev = periodOrders.filter(o => o.brand_id === 'BB').reduce((s,o) => s + Number(o.total_amount||0), 0);
+  const hhRev = periodOrders.filter(o => o.brand_id === 'HH').reduce((s,o) => s + Number(o.total_amount||0), 0);
+  renderDonutChart(bbRev, hhRev);
 }
 
 // ============================================================
@@ -625,36 +617,30 @@ async function loadDashboard() {
 
     ALL_ORDERS_RAW = orders || [];
 
+    // ยอดเมื่อวาน = index รองสุดท้ายของ revenue_trend (7 วันล่าสุด รวมวันนี้)
     const trend = summary.revenue_trend || [];
-    const labels = summary.revenue_labels || [];
-    const profitTrend = summary.profit_trend || [];
-    const prevDayRevenue = trend.length >= 2 ? Number(trend[trend.length - 2] || 0) : 0;
+    const prevDayRevenue = trend.length >= 2 ? trend[trend.length - 2] : 0;
 
     renderKPIs(summary, prevDayRevenue);
-    renderRevenueChart(labels, trend, profitTrend);
-    renderBestSellers(summary.best_sellers || []);
-    renderDonutChart(Number(summary.brand_bb?.revenue || 0), Number(summary.brand_hh?.revenue || 0));
+    recomputeForPeriod(); // #FIX — กราฟ/เมนูขายดี/โดนัท คำนวณตามช่วงที่เลือกไว้เสมอ (ไม่ใช่ค่าคงที่จาก backend)
 
-    // ordersToday() ควรคืนเฉพาะวันนี้อยู่แล้ว; ใช้ date key เป็น safety check
+    // Recent orders — เอาแค่วันนี้ เรียงล่าสุดก่อน (ordersToday คืนย้อนกลับมาแล้วจาก backend)
     const today = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
     const todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const todayOrders = (orders || [])
-      .filter(o => !o.created_at || String(o.created_at).indexOf(todayKey) === 0)
-      .slice(0, 6);
-
+    const todayOrders = (orders || []).filter(o => String(o.created_at||'').indexOf(todayKey) === 0).slice(0, 6);
     renderRecentOrders(todayOrders);
+
   } catch (e) {
     console.error('Dashboard load error:', e);
-    document.getElementById('kpi-grid').innerHTML =
-      '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
+    document.getElementById('kpi-grid').innerHTML = '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
   }
 
   await loadAndRenderLowStock();
 }
 
 function initUI() {
-  document.getElementById('today-date').textContent = new Date().toLocaleDateString('th-TH', {
-    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone:'Asia/Bangkok'
+  document.getElementById('today-date').textContent = new Date().toLocaleDateString('en', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
 }
 
