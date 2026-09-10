@@ -200,7 +200,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 <script src="api.js"></script>
 <script>
-// #FIX — เดิม hardcode GAS_URL/fetch เอง เปลี่ยนมาใช้ API.ordersToday() จาก api.js
+// #DATAFIX v5.5.2 — Reports ดึงตาม date range จาก backend และรับ canonical created_at
 // (field name ที่ใช้ตรงกับ getOrdersFromSheet() อยู่แล้ว ไม่มี logic bug ต้องแก้)
 // #NAVFIX — เอาลิงก์ staff.html ออกจาก sidebar (ระบบพนักงานถูกลบทิ้งไปแล้ว)
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -215,41 +215,146 @@ document.getElementById('staff-footer').textContent = Identity.getName() + ' · 
 function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
 
 function dateKeyBkk(val) {
+  if (val === null || val === undefined || val === '') return '';
+
+  const raw = String(val).trim();
+
+  const direct = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (direct) return direct[1];
+
   const d = new Date(val);
   if (isNaN(d.getTime())) return '';
-  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
-  return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Asia/Bangkok',
+    year:'numeric',
+    month:'2-digit',
+    day:'2-digit'
+  }).formatToParts(d);
+
+  const map = {};
+  parts.forEach(p => {
+    if (p.type !== 'literal') map[p.type] = p.value;
+  });
+
+  return `${map.year}-${map.month}-${map.day}`;
+}
+
+
+function todayKeyBkkReport() {
+  return dateKeyBkk(new Date());
+}
+
+function addDaysToKey(key, delta) {
+  const [y,m,d] = key.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + delta);
+  return [
+    dt.getUTCFullYear(),
+    String(dt.getUTCMonth()+1).padStart(2,'0'),
+    String(dt.getUTCDate()).padStart(2,'0')
+  ].join('-');
+}
+
+function reportQueryParams() {
+  if (PERIOD_DAYS === 0) return { limit: 5000 };
+
+  const dateTo = todayKeyBkkReport();
+  const dateFrom = addDaysToKey(dateTo, -(PERIOD_DAYS - 1));
+
+  return {
+    date_from: dateFrom,
+    date_to: dateTo,
+    limit: 5000
+  };
+}
+
+function setReportLoadState(message) {
+  const els = [
+    document.getElementById('top-menu-body'),
+    document.getElementById('brand-compare'),
+    document.getElementById('daily-body')
+  ].filter(Boolean);
+
+  els.forEach(el => {
+    el.innerHTML = `<div class="loading-text">${message}</div>`;
+  });
 }
 
 async function loadReportData() {
+  setReportLoadState('กำลังโหลดข้อมูลจริงจาก Google Sheet…');
+
   try {
-    ALL_ORDERS = await API.ordersToday();
+    const params = reportQueryParams();
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      ALL_ORDERS = await new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .getOrdersFromSheet(params);
+      });
+    } else if (typeof API !== 'undefined' && API.ordersToday) {
+      ALL_ORDERS = await API.ordersToday(params);
+    } else {
+      throw new Error('ไม่พบ API.ordersToday / google.script.run');
+    }
+
+    if (!Array.isArray(ALL_ORDERS)) ALL_ORDERS = [];
+    renderAll();
+
   } catch(e) {
     console.error('loadReportData:', e);
-    UI.toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, 'error');
     ALL_ORDERS = [];
+
+    setReportLoadState('โหลดข้อมูลไม่สำเร็จ — ' + (e.message || 'Unknown error'));
+
+    document.getElementById('r-revenue').textContent = '—';
+    document.getElementById('r-orders').textContent = '—';
+    document.getElementById('r-avg').textContent = '—';
+    document.getElementById('r-top').textContent = '—';
+
+    if (window.UI && UI.toast) {
+      UI.toast('โหลดข้อมูลไม่สำเร็จ: ' + e.message, 'error');
+    }
   }
-  renderAll();
 }
 document.addEventListener('DOMContentLoaded', loadReportData);
 
 function setPeriod(days, btn) {
   PERIOD_DAYS = days;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderAll();
+
+  document.querySelectorAll('.period-btn').forEach(b => {
+    b.classList.remove('active');
+  });
+
+  if (btn) btn.classList.add('active');
+
+  loadReportData();
 }
 
 function getFilteredOrders() {
-  if (PERIOD_DAYS === 0) return ALL_ORDERS;
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - PERIOD_DAYS);
-  const cutoffStr = dateKeyBkk(cutoff);
-  return ALL_ORDERS.filter(o => dateKeyBkk(o.created_at) >= cutoffStr);
+  let rows = Array.isArray(ALL_ORDERS) ? ALL_ORDERS : [];
+
+  if (PERIOD_DAYS !== 0) {
+    const dateTo = todayKeyBkkReport();
+    const dateFrom = addDaysToKey(dateTo, -(PERIOD_DAYS - 1));
+
+    rows = rows.filter(o => {
+      const key = o.date_key || dateKeyBkk(o.created_at);
+      return key && key >= dateFrom && key <= dateTo;
+    });
+  }
+
+  return rows;
 }
 
 function renderAll() {
-  const orders = getFilteredOrders().filter(o => o.order_status !== 'cancelled');
+  const orders = getFilteredOrders().filter(o =>
+    String(o.order_status || '').toLowerCase() !== 'cancelled' &&
+    String(o.payment_status || 'paid').toLowerCase() === 'paid'
+  );
+
   renderKPIs(orders);
   renderRevenueChart(orders);
   renderBrandDonut(orders);
@@ -294,33 +399,81 @@ function renderKPIs(orders) {
 
 function renderRevenueChart(orders) {
   const dayMap = {};
+
   orders.forEach(o => {
-    const k = dateKeyBkk(o.created_at);
+    const k = o.date_key || dateKeyBkk(o.created_at);
     if (!k) return;
-    dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount||0);
+    dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount || 0);
   });
 
-  const displayDays = Math.min(PERIOD_DAYS === 0 ? 60 : PERIOD_DAYS, 60);
-  const labels = [], data = [];
-  for (let i = displayDays - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const key = dateKeyBkk(d);
-    labels.push(`${String(d.getDate()).padStart(2,'0')} ${MONTHS[d.getMonth()]}`);
-    data.push(dayMap[key] || 0);
+  let labels = [];
+  let data = [];
+
+  if (PERIOD_DAYS === 0) {
+    const keys = Object.keys(dayMap).sort();
+    const visible = keys.slice(-60);
+
+    labels = visible.map(key => {
+      const [y,m,d] = key.split('-');
+      return `${d} ${MONTHS[Number(m)-1]}`;
+    });
+    data = visible.map(key => dayMap[key] || 0);
+
+  } else {
+    const dateTo = todayKeyBkkReport();
+    const displayDays = Math.min(PERIOD_DAYS, 60);
+    const firstKey = addDaysToKey(dateTo, -(displayDays - 1));
+
+    for (let i = 0; i < displayDays; i++) {
+      const key = addDaysToKey(firstKey, i);
+      const [y,m,d] = key.split('-');
+      labels.push(`${d} ${MONTHS[Number(m)-1]}`);
+      data.push(dayMap[key] || 0);
+    }
   }
 
   const ctx = document.getElementById('revenue-chart').getContext('2d');
   if (revenueChart) revenueChart.destroy();
+
   revenueChart = new Chart(ctx, {
-    type: 'bar',
-    data: { labels, datasets:[{ data, backgroundColor: labels.map((_,i) => i === labels.length-1 ? '#143D2B' : '#52B788aa'), borderRadius:5, borderSkipped:false }] },
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data,
+        backgroundColor:labels.map((_,i) =>
+          i === labels.length - 1 ? '#F26C21' : '#143D2B33'
+        ),
+        borderColor:labels.map((_,i) =>
+          i === labels.length - 1 ? '#F26C21' : '#143D2B'
+        ),
+        borderWidth:1,
+        borderRadius:5,
+        borderSkipped:false
+      }]
+    },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
       scales:{
-        x:{ grid:{display:false}, ticks:{ color:'#6b7d68', font:{size:10}, callback(v) { return labels[v].slice(0,6); }, maxTicksLimit: displayDays > 30 ? 10 : 14 }},
-        y:{ grid:{color:'rgba(0,0,0,0.04)'}, ticks:{ color:'#6b7d68', font:{size:10}, callback: v => '฿'+(v/1000).toFixed(0)+'k' }}
+        x:{
+          grid:{display:false},
+          ticks:{
+            color:'#6b7d68',
+            font:{size:10},
+            maxTicksLimit:labels.length > 30 ? 10 : 14
+          }
+        },
+        y:{
+          beginAtZero:true,
+          grid:{color:'rgba(0,0,0,.04)'},
+          ticks:{
+            color:'#6b7d68',
+            font:{size:10},
+            callback:v=>'฿'+Number(v).toLocaleString('en-US')
+          }
+        }
       }
     }
   });
