@@ -249,13 +249,13 @@ button{cursor:pointer}
   <header class="topbar">
     <div>
       <span class="topbar-title">Finance & P&amp;L</span>
-      <span class="topbar-sub">รายรับ · ต้นทุน · รายจ่าย</span>
+      <span class="topbar-sub" id="period-label">—</span>
     </div>
     <div class="topbar-actions">
       <div class="month-selector">
         <button class="month-nav" type="button" onclick="changeMonth(-1)" aria-label="เดือนก่อน">‹</button>
         <span class="month-label" id="month-label">—</span>
-        <button class="month-nav" type="button" onclick="changeMonth(1)" aria-label="เดือนถัดไป">›</button>
+        <button class="month-nav" id="next-month-btn" type="button" onclick="changeMonth(1)" aria-label="เดือนถัดไป">›</button>
       </div>
       <button class="btn btn-primary" type="button" onclick="UI.openModal('add-expense-modal')">＋ เพิ่มรายจ่าย</button>
     </div>
@@ -288,7 +288,7 @@ button{cursor:pointer}
             <div class="kpi-sub" id="kpi-gp-pct">—</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-label">OpEx + ค่าเสื่อม</div>
+            <div class="kpi-label">OpEx + ค่าเสื่อม (ช่วงนี้)</div>
             <div class="kpi-value" id="kpi-opex">—</div>
             <div class="kpi-sub" id="kpi-opex-pct">—</div>
           </div>
@@ -476,30 +476,98 @@ const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','�
 
 function fmtB(n){ return '฿' + Math.round(Number(n||0)).toLocaleString('th-TH'); }
 function pctOf(a,b){ return Number(b)>0 ? (Math.round(Number(a)/Number(b)*1000)/10)+'%' : '—'; }
-function monthKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-function updateMonthLabel(){
-  document.getElementById('month-label').textContent = MONTHS[currentMonth.getMonth()]+' '+(currentMonth.getFullYear()+543);
+function monthKey(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
 }
+
 function bkkDateKey(){
-  const parts = new Intl.DateTimeFormat('en-CA',{
-    timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'
+  const parts=new Intl.DateTimeFormat('en-CA',{
+    timeZone:'Asia/Bangkok',
+    year:'numeric',
+    month:'2-digit',
+    day:'2-digit'
   }).formatToParts(new Date());
-  const obj={}; parts.forEach(p=>obj[p.type]=p.value);
+  const obj={};
+  parts.forEach(p=>obj[p.type]=p.value);
   return obj.year+'-'+obj.month+'-'+obj.day;
 }
-function monthRange(d){
-  const y=d.getFullYear(), m=d.getMonth();
-  const first = y+'-'+String(m+1).padStart(2,'0')+'-01';
-  const lastDay = new Date(y,m+1,0).getDate();
-  const last = y+'-'+String(m+1).padStart(2,'0')+'-'+String(lastDay).padStart(2,'0');
-  return {first,last};
+
+function financePeriod(d){
+  const y=d.getFullYear();
+  const m=d.getMonth();
+  const selectedMonth=y+'-'+String(m+1).padStart(2,'0');
+  const first=selectedMonth+'-01';
+
+  const lastDay=new Date(y,m+1,0).getDate();
+  const fullLast=selectedMonth+'-'+String(lastDay).padStart(2,'0');
+
+  const today=bkkDateKey();
+  const currentMonthKey=today.slice(0,7);
+
+  // Future month is never a valid Finance period.
+  if(selectedMonth>currentMonthKey){
+    return {
+      first:currentMonthKey+'-01',
+      last:today,
+      mode:'MTD'
+    };
+  }
+
+  if(selectedMonth===currentMonthKey){
+    return {
+      first,
+      last:today,
+      mode:'MTD'
+    };
+  }
+
+  return {
+    first,
+    last:fullLast,
+    mode:'FULL_MONTH'
+  };
+}
+
+function periodLabel(range){
+  const y=Number(range.first.slice(0,4));
+  const m=Number(range.first.slice(5,7))-1;
+  const d1=Number(range.first.slice(8,10));
+  const d2=Number(range.last.slice(8,10));
+
+  return d1+'–'+d2+' '+MONTHS[m]+' '+(y+543)+' · '+
+    (range.mode==='MTD'?'Month-to-Date':'เต็มเดือน');
+}
+
+function updateMonthLabel(){
+  document.getElementById('month-label').textContent=
+    MONTHS[currentMonth.getMonth()]+' '+(currentMonth.getFullYear()+543);
+
+  const range=financePeriod(currentMonth);
+  const periodEl=document.getElementById('period-label');
+  if(periodEl) periodEl.textContent=periodLabel(range);
+
+  const nextBtn=document.getElementById('next-month-btn');
+  if(nextBtn){
+    nextBtn.disabled=monthKey(currentMonth)>=bkkDateKey().slice(0,7);
+  }
 }
 
 async function changeMonth(delta){
-  currentMonth = new Date(currentMonth.getFullYear(),currentMonth.getMonth()+delta,1);
+  const candidate=new Date(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth()+delta,
+    1
+  );
+
+  if(monthKey(candidate)>bkkDateKey().slice(0,7)) return;
+
+  currentMonth=candidate;
   updateMonthLabel();
   await loadOverview();
-  if(document.getElementById('tab-expenses').style.display!=='none') await loadExpenses();
+
+  if(document.getElementById('tab-expenses').style.display!=='none'){
+    await loadExpenses();
+  }
 }
 
 function switchTab(tab,btn){
@@ -553,7 +621,8 @@ function renderOverview(s){
   const netPct=document.getElementById('kpi-net-pct');
   netPct.textContent='NP '+Number(s.net_margin_pct||0).toFixed(1)+'%';
 
-  document.getElementById('pl-statement-title').textContent='P&L Statement — '+MONTHS[currentMonth.getMonth()]+' '+(currentMonth.getFullYear()+543);
+  const pRange=financePeriod(currentMonth);
+  document.getElementById('pl-statement-title').textContent='P&L Statement — '+periodLabel(pRange);
 
   const expByCat=s.expenses_by_category||{};
   const expRows=Object.keys(expByCat).length
@@ -666,7 +735,7 @@ async function loadExpenses(){
   const body=document.getElementById('expense-body');
   body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
   try{
-    const range=monthRange(currentMonth);
+    const range=financePeriod(currentMonth);
     const data=await API.expenses({date_from:range.first,date_to:range.last});
     EXPENSES=(data||[]).map(e=>({
       id:e.expense_id,desc:e.description,cat:e.category,brand:e.brand_id,
