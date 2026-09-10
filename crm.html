@@ -306,7 +306,7 @@ function renderKPIs() {
 function getFiltered() {
   return CUSTOMERS.filter(c => {
     if (filterTier && c.tier !== filterTier) return false;
-    if (filterText && !(c.name||'').toLowerCase().includes(filterText) && !(c.phone||'').includes(filterText)) return false;
+    if (filterText && !(c.full_name||'').toLowerCase().includes(filterText) && !(c.phone||'').includes(filterText)) return false;
     return true;
   });
 }
@@ -327,8 +327,8 @@ function renderCustomers() {
   const maxPts = Math.max(...CUSTOMERS.map(c=>Number(c.points||0)), 1);
 
   body.innerHTML = items.map(c => {
-    const initials = (c.name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
-    const color = avatarColor(c.name||'?');
+    const initials = (c.full_name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
+    const color = avatarColor(c.full_name||'?');
     const pct = Math.min(100, (Number(c.points||0)/maxPts)*100);
     const tier = c.tier || 'Bronze';
 
@@ -337,7 +337,7 @@ function renderCustomers() {
         <div style="display:flex;align-items:center;gap:10px">
           <div class="member-avatar" style="background:${color}">${initials}</div>
           <div>
-            <div class="member-name">${c.name}</div>
+            <div class="member-name">${c.full_name}</div>
             <div class="member-id">${c.customer_id}${c.phone ? ' · ' + c.phone : ''}${c.brand_id ? ' · ' + c.brand_id : ''}</div>
           </div>
         </div>
@@ -361,7 +361,7 @@ function openDetail(customerId) {
   if (!c) return;
   const tier = c.tier || 'Bronze';
 
-  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-name').textContent = c.full_name;
   document.getElementById('detail-panel').classList.add('open');
 
   const nextTier = tier === 'Bronze' ? { name:'Silver', need:1000 } : tier === 'Silver' ? { name:'Gold', need:2000 } : null;
@@ -370,9 +370,9 @@ function openDetail(customerId) {
 
   document.getElementById('detail-body').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
-      <div class="member-avatar" style="background:${avatarColor(c.name)};width:50px;height:50px;font-size:18px">${(c.name||'?').slice(0,2).toUpperCase()}</div>
+      <div class="member-avatar" style="background:${avatarColor(c.full_name)};width:50px;height:50px;font-size:18px">${(c.full_name||'?').slice(0,2).toUpperCase()}</div>
       <div>
-        <div style="font-size:16px;font-weight:700">${c.name}</div>
+        <div style="font-size:16px;font-weight:700">${c.full_name}</div>
         <div style="margin-top:4px"><span class="tier-badge tier-${tier}">${tier==='Gold'?'🥇':tier==='Silver'?'🥈':'🥉'} ${tier}</span></div>
       </div>
     </div>
