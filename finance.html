@@ -726,6 +726,12 @@ button{cursor:pointer}
 .table-row:last-child{border-bottom:0}
 .table-row:hover{background:rgba(247,233,214,.25)}
 .table-row.capex-row{background:rgba(242,108,33,.035)}
+
+.asset-grid{display:grid;grid-template-columns:1.55fr .95fr .8fr .85fr .8fr .8fr;gap:12px;align-items:center}
+.asset-tag{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:8.5px;font-weight:700;background:rgba(20,61,43,.08);color:var(--green)}
+.asset-tag.small{background:rgba(148,163,184,.14);color:#64748b}
+.action-link{border:0;background:transparent;color:var(--orange);font-size:9px;font-weight:700;cursor:pointer;padding:0}
+
 .exp-badge{
   display:inline-flex;
   padding:3px 8px;
@@ -905,7 +911,7 @@ button{cursor:pointer}
         </svg>
       </div>
       <div>
-        <span class="topbar-title">Finance &amp; P&amp;L</span>
+        <span class="topbar-title">Finance · Expenses · Assets</span>
         <span class="topbar-sub" id="period-label">—</span>
       </div>
     </div>
@@ -915,6 +921,7 @@ button{cursor:pointer}
         <span class="month-label" id="month-label">—</span>
         <button class="month-nav" id="next-month-btn" type="button" onclick="changeMonth(1)" aria-label="เดือนถัดไป">›</button>
       </div>
+      <button class="btn btn-ghost" type="button" onclick="UI.openModal('add-asset-modal')">＋ เพิ่มอุปกรณ์</button>
       <button class="btn btn-primary" type="button" onclick="UI.openModal('add-expense-modal')">＋ เพิ่มรายจ่าย</button>
     </div>
   </header>
@@ -938,6 +945,7 @@ button{cursor:pointer}
     <div class="tab-row">
       <button class="tab-btn active" type="button" onclick="switchTab('overview',this)">P&amp;L Overview</button>
       <button class="tab-btn" type="button" onclick="switchTab('expenses',this)">Expenses</button>
+      <button class="tab-btn" type="button" onclick="switchTab('assets',this)">Assets</button>
     </div>
 
     <section id="tab-overview">
@@ -1031,16 +1039,7 @@ button{cursor:pointer}
         </div>
         <select class="select-filter" id="exp-cat-filter" onchange="renderExpenses()">
           <option value="">ทุกหมวด</option>
-          <option value="cogs">COGS</option>
-          <option value="rent">Rent</option>
-          <option value="salary">Salary</option>
-          <option value="utility">Utilities</option>
-          <option value="marketing">Marketing</option>
-          <option value="equipment">Equipment (repair/rent)</option>
-          <option value="ingredient_purchase">Ingredient Purchase · Stock</option>
-          <option value="packaging_purchase">Packaging Purchase · Stock</option>
-          <option value="equipment_purchase">Equipment Purchase · Asset</option>
-          <option value="other">Other</option>
+<option value="">โหลดหมวดรายจ่ายจากระบบ...</option>
         </select>
         <span class="total-label" id="exp-total-label">Total: ฿0</span>
       </div>
@@ -1055,6 +1054,21 @@ button{cursor:pointer}
           <div>Description</div><div>Category</div><div>Brand</div><div>Amount</div><div>Date</div>
         </div>
         <div id="expense-body"></div>
+      </div>
+    </section>
+
+    <section id="tab-assets" style="display:none">
+      <div id="asset-summary" class="kpi-row" style="margin-bottom:14px"></div>
+      <div class="pl-note" style="margin-bottom:12px">
+        เกณฑ์ทุนปัจจุบัน <strong id="asset-threshold">฿1,000</strong> — รายการต่ำกว่าเกณฑ์ยังเก็บในทะเบียนอุปกรณ์ แต่ไม่คิดค่าเสื่อมและของซื้อใหม่จะรับรู้เป็น Small Equipment OpEx ทันที
+      </div>
+      <div class="filter-row">
+        <div class="search-wrap"><input class="search-input" id="asset-search" type="text" placeholder="ค้นหาอุปกรณ์..." oninput="renderAssets()"></div>
+        <select class="select-filter" id="asset-status-filter" onchange="renderAssets()"><option value="active">ใช้งานอยู่</option><option value="">ทั้งหมด</option><option value="retired">Retired</option></select>
+      </div>
+      <div class="table-card">
+        <div class="table-header asset-grid"><div>Asset</div><div>Category</div><div>Cost</div><div>Depreciation</div><div>Status</div><div>Action</div></div>
+        <div id="asset-body"></div>
       </div>
     </section>
   </div>
@@ -1127,31 +1141,47 @@ button{cursor:pointer}
   </div>
 </div>
 
+
+<div class="modal-overlay" id="add-asset-modal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">เพิ่มอุปกรณ์ / สินทรัพย์</div><button class="modal-close" type="button" onclick="UI.closeModal('add-asset-modal')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">ชื่ออุปกรณ์</label><input class="form-input" id="asset-name" placeholder="เช่น เครื่องบดกาแฟ"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">ราคาซื้อรวม (฿)</label><input class="form-input" type="number" min="0" step="0.01" id="asset-price"></div>
+        <div class="form-group"><label class="form-label">วันที่ซื้อ</label><input class="form-input" type="date" id="asset-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="asset-brand"><option value="SHARED">Shared</option><option value="BB">Brain Brew</option><option value="HH">Heng Heng</option></select></div>
+        <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="asset-category"><option value="coffee_equipment">Coffee Equipment</option><option value="tea_equipment">Tea / Matcha</option><option value="kitchen_equipment">Kitchen</option><option value="prep_equipment">Prep / Packaging</option><option value="content_equipment">Content</option><option value="other_equipment">Other</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">อายุใช้งาน (เดือน)</label><input class="form-input" type="number" min="1" id="asset-life" value="36"><div class="form-hint">ระบบจะใช้ค่าเสื่อมเฉพาะรายการที่ถึงเกณฑ์ทุน</div></div>
+        <div class="form-group"><label class="form-label">Payment</label><select class="form-input" id="asset-payment"><option value="cash">Cash</option><option value="transfer">Transfer</option><option value="card">Card</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Vendor / ร้านที่ซื้อ</label><input class="form-input" id="asset-vendor" placeholder="ไม่บังคับ"></div>
+      <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="asset-note" placeholder="ไม่บังคับ"></div>
+      <div class="form-footer"><button class="btn btn-ghost" type="button" onclick="UI.closeModal('add-asset-modal')">ยกเลิก</button><button class="btn btn-primary" id="save-asset-btn" onclick="saveAsset()">บันทึกอุปกรณ์</button></div>
+    </div>
+  </div>
+</div>
+
 <script src="api.js"></script>
 <script>
 let currentMonth = new Date();
 let EXPENSES = [];
+let EXPENSE_CATEGORIES = [];
+let ASSETS = [];
+let ASSET_SUMMARY = null;
 let CURRENT_SUMMARY = null;
 
 const CAT_COLORS = {
-  cogs:'#52B788', rent:'#F26C21', salary:'#818CF8', utility:'#22D3EE', marketing:'#E8B84A',
-  equipment:'#D96C64', other:'#94A3B8',
-  ingredient_purchase:'#A78BFA', packaging_purchase:'#D98CD6', equipment_purchase:'#FB923C'
+  rent:'#F26C21', salary:'#818CF8', utility:'#22D3EE', marketing:'#E8B84A', platform_fee:'#A78BFA',
+  shipping_delivery:'#0EA5E9', repair_maintenance:'#D96C64', small_equipment:'#FB923C', office_misc:'#94A3B8', other:'#94A3B8',
+  ingredient_purchase:'#52B788', packaging_purchase:'#A7C48D', inventory_purchase:'#2D6A4F', equipment_purchase:'#B45309'
 };
-const CAT_LABELS = {
-  cogs:'COGS', rent:'Rent', salary:'Salary', utility:'Utilities', marketing:'Marketing',
-  equipment:'Equipment (repair)', other:'Other',
-  ingredient_purchase:'Ingredient Purchase', packaging_purchase:'Packaging Purchase',
-  equipment_purchase:'Equipment Purchase'
-};
-const CAPEX_CATEGORIES = ['ingredient_purchase','packaging_purchase','equipment_purchase'];
-const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-
-function fmtB(n){ return '฿' + Math.round(Number(n||0)).toLocaleString('th-TH'); }
-function pctOf(a,b){ return Number(b)>0 ? (Math.round(Number(a)/Number(b)*1000)/10)+'%' : '—'; }
-function monthKey(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-}
+const CAT_LABELS = {};
+function categoryLabel(cat){ return CAT_LABELS[cat] || cat || 'Other'; }
 
 function bkkDateKey(){
   const parts=new Intl.DateTimeFormat('en-CA',{
@@ -1238,9 +1268,8 @@ async function changeMonth(delta){
   updateMonthLabel();
   await loadOverview();
 
-  if(document.getElementById('tab-expenses').style.display!=='none'){
-    await loadExpenses();
-  }
+  if(document.getElementById('tab-expenses').style.display!=='none') await loadExpenses();
+  if(document.getElementById('tab-assets').style.display!=='none') await loadAssets();
 }
 
 function switchTab(tab,btn){
@@ -1248,7 +1277,9 @@ function switchTab(tab,btn){
   btn.classList.add('active');
   document.getElementById('tab-overview').style.display = tab==='overview'?'block':'none';
   document.getElementById('tab-expenses').style.display = tab==='expenses'?'block':'none';
+  document.getElementById('tab-assets').style.display = tab==='assets'?'block':'none';
   if(tab==='expenses') loadExpenses();
+  if(tab==='assets') loadAssets();
 }
 
 async function loadOverview(){
@@ -1309,7 +1340,7 @@ function renderOverview(s){
   const expRows=Object.keys(expByCat).length
     ? Object.entries(expByCat).map(([cat,amt])=>`
       <div class="pl-row subtotal">
-        <span class="pl-label indent">${CAT_LABELS[cat]||cat}</span>
+        <span class="pl-label indent">${categoryLabel(cat)}</span>
         <span class="pl-value bad">-${fmtB(amt)}</span>
       </div>`).join('')
     : `<div class="pl-row subtotal"><span class="pl-label indent">ไม่มี Operating Expense ที่บันทึกในเดือนนี้</span></div>`;
@@ -1425,6 +1456,16 @@ function renderBrandComparison(s){
   `;
 }
 
+async function loadExpenseCategories(){
+  try{
+    EXPENSE_CATEGORIES=await API.expenseCategories();
+    EXPENSE_CATEGORIES.forEach(c=>CAT_LABELS[c.category_id]=c.label_th||c.label_en||c.category_id);
+    const opts='<option value="">ทุกหมวด</option>'+EXPENSE_CATEGORIES.map(c=>`<option value="${c.category_id}">${c.label_th||c.label_en}</option>`).join('');
+    const filter=document.getElementById('exp-cat-filter'); if(filter) filter.innerHTML=opts;
+    const create=document.getElementById('exp-cat'); if(create) create.innerHTML=EXPENSE_CATEGORIES.filter(c=>String(c.expense_type)==='OPEX').map(c=>`<option value="${c.category_id}">${c.label_th||c.label_en}</option>`).join('');
+  }catch(e){ console.warn('expense categories',e); }
+}
+
 async function loadExpenses(){
   const body=document.getElementById('expense-body');
   body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
@@ -1434,7 +1475,8 @@ async function loadExpenses(){
     EXPENSES=(data||[]).map(e=>({
       id:e.expense_id,desc:e.description,cat:e.category,brand:e.brand_id,
       amount:Number(e.amount||0),date:e.date,
-      is_capex:CAPEX_CATEGORIES.includes(String(e.category||''))
+      expense_type:String(e.expense_type||'OPEX'),
+      is_capex:Boolean(e.is_capex), is_inventory_spend:Boolean(e.is_inventory_spend), is_opex:Boolean(e.is_opex)
     }));
     renderExpenses();
   }catch(e){
@@ -1451,7 +1493,7 @@ function renderExpenses(){
 
   let exps=[...EXPENSES].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   if(catFilter) exps=exps.filter(e=>e.cat===catFilter);
-  if(q) exps=exps.filter(e=>(e.desc||'').toLowerCase().includes(q)||(CAT_LABELS[e.cat]||'').toLowerCase().includes(q));
+  if(q) exps=exps.filter(e=>(e.desc||'').toLowerCase().includes(q)||categoryLabel(e.cat).toLowerCase().includes(q));
 
   const total=exps.reduce((s,e)=>s+e.amount,0);
   document.getElementById('exp-total-label').textContent='รวมรายการที่แสดง: '+fmtB(total);
@@ -1464,14 +1506,51 @@ function renderExpenses(){
   body.innerHTML=exps.map(e=>`
     <div class="table-row exp-grid ${e.is_capex?'capex-row':''}">
       <div style="font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        ${e.desc||'—'}${e.is_capex?'<span class="capex-tag">CAPEX</span>':''}
+        ${e.desc||'—'}${e.expense_type!=='OPEX'?'<span class="capex-tag">'+e.expense_type+'</span>':''}
       </div>
-      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${CAT_LABELS[e.cat]||e.cat}</span></div>
+      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${categoryLabel(e.cat)}</span></div>
       <div style="color:var(--muted)">${e.brand||'—'}</div>
       <div class="bad" style="font-family:'Poppins',sans-serif;font-weight:600">-${fmtB(e.amount)}</div>
       <div style="color:var(--muted)">${e.date||'—'}</div>
     </div>`).join('');
 }
+
+async function loadAssets(){
+  const body=document.getElementById('asset-body'); body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
+  try{
+    const [rows,sum]=await Promise.all([API.assets({}),API.assetSummary({})]); ASSETS=rows||[]; ASSET_SUMMARY=sum||{};
+    document.getElementById('asset-threshold').textContent=fmtB(ASSET_SUMMARY.capitalization_threshold||1000);
+    document.getElementById('asset-summary').innerHTML=`
+      <div class="kpi-card"><div class="kpi-label">Registered Equipment</div><div class="kpi-value">${ASSET_SUMMARY.asset_count||0}</div><div class="kpi-sub">รายการในทะเบียน</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total Registered Cost</div><div class="kpi-value">${fmtB(ASSET_SUMMARY.total_registered_cost||0)}</div><div class="kpi-sub">รวมสินทรัพย์ + small equipment</div></div>
+      <div class="kpi-card"><div class="kpi-label">Capitalized Cost</div><div class="kpi-value">${fmtB(ASSET_SUMMARY.capitalized_cost||0)}</div><div class="kpi-sub">ฐานค่าเสื่อม</div></div>
+      <div class="kpi-card emphasis"><div class="kpi-label">Monthly Depreciation</div><div class="kpi-value">${fmtB(ASSET_SUMMARY.monthly_depreciation||0)}</div><div class="kpi-sub">Straight-line</div></div>`;
+    renderAssets();
+  }catch(e){ body.innerHTML='<div class="loading-text">โหลดไม่สำเร็จ: '+e.message+'</div>'; }
+}
+function renderAssets(){
+  const body=document.getElementById('asset-body'), q=(document.getElementById('asset-search')?.value||'').toLowerCase(), st=document.getElementById('asset-status-filter')?.value||'';
+  let rows=[...ASSETS]; if(st)rows=rows.filter(a=>a.status===st); if(q)rows=rows.filter(a=>(a.name||'').toLowerCase().includes(q)||(a.category||'').toLowerCase().includes(q));
+  if(!rows.length){body.innerHTML='<div class="loading-text">ไม่พบอุปกรณ์</div>';return;}
+  body.innerHTML=rows.map(a=>`<div class="table-row asset-grid">
+    <div><strong>${a.name}</strong><div style="font-size:9px;color:var(--muted)">${a.asset_id}${a.source_ref?' · '+a.source_ref:''}</div></div>
+    <div><span class="asset-tag ${a.is_depreciable?'':'small'}">${a.category}</span></div>
+    <div style="font-family:Poppins,sans-serif;font-weight:600">${fmtB(a.price)}</div>
+    <div>${a.is_depreciable?fmtB(a.monthly_depreciation)+'/mo':'—'}</div>
+    <div>${a.status||'active'}</div>
+    <div>${a.status==='active'?`<button class="action-link" onclick="retireAsset('${a.asset_id}')">Retire</button>`:'—'}</div>
+  </div>`).join('');
+}
+async function saveAsset(){
+  const name=document.getElementById('asset-name').value.trim(), price=Number(document.getElementById('asset-price').value||0), date=document.getElementById('asset-date').value;
+  if(!name||!(price>0)||!date){UI.toast('กรอกชื่อ ราคา และวันที่ซื้อให้ครบ','error');return;}
+  const btn=document.getElementById('save-asset-btn'); UI.loading(btn,true);
+  try{
+    const r=await API.createAsset({name,price,purchase_date:date,brand_id:document.getElementById('asset-brand').value,category:document.getElementById('asset-category').value,lifespan_months:Number(document.getElementById('asset-life').value||36),payment_method:document.getElementById('asset-payment').value,vendor:document.getElementById('asset-vendor').value.trim(),notes:document.getElementById('asset-note').value.trim()});
+    UI.toast(r.is_depreciable?'บันทึกเป็นสินทรัพย์และเริ่มค่าเสื่อมแล้ว':'บันทึกเป็น Small Equipment OpEx แล้ว'); UI.closeModal('add-asset-modal'); await Promise.all([loadAssets(),loadOverview()]);
+  }catch(e){UI.toast('บันทึกไม่สำเร็จ: '+e.message,'error');}finally{UI.loading(btn,false);}
+}
+async function retireAsset(id){ if(!confirm('ยืนยันเลิกใช้อุปกรณ์ '+id+'?'))return; try{await API.deleteAsset(id);UI.toast('ปรับสถานะเป็น retired แล้ว');await Promise.all([loadAssets(),loadOverview()]);}catch(e){UI.toast(e.message,'error');} }
 
 async function saveExpense(){
   const desc=document.getElementById('exp-desc').value.trim();
@@ -1514,6 +1593,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
   document.getElementById('staff-name-label').textContent=name;
   document.getElementById('staff-avatar').textContent=String(name||'S').slice(0,2).toUpperCase();
   document.getElementById('exp-date').value=bkkDateKey();
+  document.getElementById('asset-date').value=bkkDateKey();
+  await loadExpenseCategories();
   updateMonthLabel();
   await loadOverview();
 
