@@ -1167,7 +1167,7 @@ button{cursor:pointer}
 
 
 <script>
-// v5.8.6 FINANCE HTTP BRIDGE — self-contained static-page transport.
+// v5.8.7 FINANCE HELPERS HOTFIX — restores monthKey/MONTHS/pctOf; HTTP bridge unchanged.
 // This Finance file is navigated as finance.html, so it is NOT guaranteed to be
 // running inside Apps Script HtmlService. Therefore google.script.run is not used.
 const FINANCE_API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
@@ -1195,6 +1195,17 @@ const UI = {
 function fmtB(value){
   const n=Number(value??0), safe=Number.isFinite(n)?n:0;
   return '฿'+safe.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// v5.8.7 HOTFIX: restore Finance date/format helpers omitted during HTTP-bridge refactor.
+const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function monthKey(value){
+  const d = value instanceof Date && !Number.isNaN(value.getTime()) ? value : new Date(value || Date.now());
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function pctOf(part,total){
+  const p=Number(part||0), t=Number(total||0);
+  return t>0 ? (p/t*100).toFixed(1)+'%' : '0.0%';
 }
 
 async function financeFetch(action, params={}, method='GET', timeoutMs=30000){
