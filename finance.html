@@ -1168,6 +1168,13 @@ button{cursor:pointer}
 
 <script src="api.js"></script>
 <script>
+// v5.8.1 HOTFIX — currency formatter used by Finance renderers
+function fmtB(value){
+  const n = Number(value ?? 0);
+  const safe = Number.isFinite(n) ? n : 0;
+  return '฿' + safe.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
 let currentMonth = new Date();
 let EXPENSES = [];
 let EXPENSE_CATEGORIES = [];
