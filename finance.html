@@ -1167,7 +1167,7 @@ button{cursor:pointer}
 
 
 <script>
-// v5.8.7 FINANCE HELPERS HOTFIX — restores monthKey/MONTHS/pctOf; HTTP bridge unchanged.
+// v5.8.8 RECOVERY STABLE — direct standard HTTP endpoints; no finance_bootstrap; no google.script.run.
 // This Finance file is navigated as finance.html, so it is NOT guaranteed to be
 // running inside Apps Script HtmlService. Therefore google.script.run is not used.
 const FINANCE_API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
@@ -1233,21 +1233,8 @@ async function financeFetch(action, params={}, method='GET', timeoutMs=30000){
   }finally{clearTimeout(timer);}
 }
 
-const BOOT_CACHE=new Map();
-const BOOT_PENDING=new Map();
-function financeBootstrap(month,force=false){
-  month=month || monthKey(currentMonth);
-  if(force){BOOT_CACHE.delete(month);BOOT_PENDING.delete(month);}
-  if(BOOT_CACHE.has(month)) return Promise.resolve(BOOT_CACHE.get(month));
-  if(BOOT_PENDING.has(month)) return BOOT_PENDING.get(month);
-  const p=financeFetch('finance_bootstrap',{month},'GET',35000).then(data=>{
-    if(!data || !data.summary) throw new Error('finance_bootstrap ไม่มี summary');
-    BOOT_CACHE.set(month,data); BOOT_PENDING.delete(month); return data;
-  }).catch(err=>{BOOT_PENDING.delete(month);throw err;});
-  BOOT_PENDING.set(month,p); return p;
-}
-function invalidateFinanceCache(){BOOT_CACHE.clear();BOOT_PENDING.clear();}
-
+// v5.8.8 RECOVERY: use only the long-standing standard backend routes.
+// This deliberately avoids finance_bootstrap and google.script.run.
 async function backendDiagnostic(){
   try{
     const p=await financeFetch('ping',{},'GET',10000);
@@ -1256,29 +1243,23 @@ async function backendDiagnostic(){
 }
 
 async function financeSummaryTransport(params){
-  const month=(params&&params.month)||monthKey(currentMonth);
-  const boot=await financeBootstrap(month);
-  return boot.summary;
+  return await financeFetch('get_finance_summary', params||{}, 'GET', 30000);
 }
 
 async function financeDirect(serverFunction, fallbackApiMethod, payload, mode){
   payload=payload||{};
-  if(serverFunction==='getExpenseCategories') return (await financeBootstrap(monthKey(currentMonth))).expense_categories||[];
-  if(serverFunction==='getExpensesList'){
-    const m=String(payload.date_from||'').slice(0,7)||monthKey(currentMonth);
-    return (await financeBootstrap(m)).expenses||[];
-  }
-  if(serverFunction==='getAssets') return (await financeBootstrap(monthKey(currentMonth))).assets||[];
-  if(serverFunction==='getAssetSummary') return (await financeBootstrap(monthKey(currentMonth))).asset_summary||{};
-  if(serverFunction==='createExpense'){
-    const r=await financeFetch('create_expense',payload,'POST',30000); invalidateFinanceCache(); return r;
-  }
-  if(serverFunction==='createAsset'){
-    const r=await financeFetch('create_asset',payload,'POST',30000); invalidateFinanceCache(); return r;
-  }
+  const getMap={
+    getExpenseCategories:'get_expense_categories',
+    getExpensesList:'get_expenses',
+    getAssets:'get_assets',
+    getAssetSummary:'get_asset_summary'
+  };
+  if(getMap[serverFunction]) return await financeFetch(getMap[serverFunction],payload,'GET',30000);
+  if(serverFunction==='createExpense') return await financeFetch('create_expense',payload,'POST',30000);
+  if(serverFunction==='createAsset') return await financeFetch('create_asset',payload,'POST',30000);
   if(serverFunction==='deleteAsset'){
     const body=(mode==='deleteAsset')?{asset_id:payload}:payload;
-    const r=await financeFetch('delete_asset',body,'POST',30000); invalidateFinanceCache(); return r;
+    return await financeFetch('delete_asset',body,'POST',30000);
   }
   throw new Error('Unsupported Finance action: '+serverFunction);
 }
