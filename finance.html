@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finance & P&L — HENG HENG PHANIT · BrewOS</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -725,12 +726,6 @@ button{cursor:pointer}
 .table-row:last-child{border-bottom:0}
 .table-row:hover{background:rgba(247,233,214,.25)}
 .table-row.capex-row{background:rgba(242,108,33,.035)}
-
-.asset-grid{display:grid;grid-template-columns:1.55fr .95fr .8fr .85fr .8fr .8fr;gap:12px;align-items:center}
-.asset-tag{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:8.5px;font-weight:700;background:rgba(20,61,43,.08);color:var(--green)}
-.asset-tag.small{background:rgba(148,163,184,.14);color:#64748b}
-.action-link{border:0;background:transparent;color:var(--orange);font-size:9px;font-weight:700;cursor:pointer;padding:0}
-
 .exp-badge{
   display:inline-flex;
   padding:3px 8px;
@@ -839,10 +834,6 @@ button{cursor:pointer}
   .donut-row{align-items:flex-start}
   .topbar-flower{display:none}
 }
-
-.brand-metric{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid rgba(20,61,43,.08);font-size:11.5px;color:var(--muted)}
-.brand-metric strong{font-family:'Poppins','Anuphan',sans-serif;color:var(--text);font-weight:600}
-
 </style>
 
 </head>
@@ -874,6 +865,7 @@ button{cursor:pointer}
     <div class="nav-label">Business</div>
     <a class="nav-item" href="crm.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 2.7-7 6-7s6 3 6 7M17 9a3 3 0 0 1 0 6M17 15c2.3.5 4 2.5 4 5"/></svg></span>CRM / ลูกค้า</a>
     <a class="nav-item active" href="finance.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5A3.5 3.5 0 0 0 6 9.5v0A3.5 3.5 0 0 0 9.5 13h5A3.5 3.5 0 0 1 18 16.5v0A3.5 3.5 0 0 1 14.5 20H7"/></svg></span>Finance</a>
+    <a class="nav-item" href="daily_close.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12l3 3 5-6"/></svg></span>Daily Close</a>
     <a class="nav-item" href="suppliers.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16l1 6H3l1-6zM3 11v8h18v-8M8 15h8"/></svg></span>Suppliers</a>
     <a class="nav-item" href="reports.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M4 19l5-6 4 3 7-10"/><path d="M16 6h4v4"/></svg></span>Reports</a>
 
@@ -910,7 +902,7 @@ button{cursor:pointer}
         </svg>
       </div>
       <div>
-        <span class="topbar-title">Finance · Expenses · Assets</span>
+        <span class="topbar-title">Finance &amp; P&amp;L</span>
         <span class="topbar-sub" id="period-label">—</span>
       </div>
     </div>
@@ -920,7 +912,6 @@ button{cursor:pointer}
         <span class="month-label" id="month-label">—</span>
         <button class="month-nav" id="next-month-btn" type="button" onclick="changeMonth(1)" aria-label="เดือนถัดไป">›</button>
       </div>
-      <button class="btn btn-ghost" type="button" onclick="UI.openModal('add-asset-modal')">＋ เพิ่มอุปกรณ์</button>
       <button class="btn btn-primary" type="button" onclick="UI.openModal('add-expense-modal')">＋ เพิ่มรายจ่าย</button>
     </div>
   </header>
@@ -944,7 +935,6 @@ button{cursor:pointer}
     <div class="tab-row">
       <button class="tab-btn active" type="button" onclick="switchTab('overview',this)">P&amp;L Overview</button>
       <button class="tab-btn" type="button" onclick="switchTab('expenses',this)">Expenses</button>
-      <button class="tab-btn" type="button" onclick="switchTab('assets',this)">Assets</button>
     </div>
 
     <section id="tab-overview">
@@ -1022,7 +1012,7 @@ button{cursor:pointer}
           <div class="card-header">
             <div>
               <div class="card-title">Brand Performance</div>
-              <div class="card-subtitle">Net Sales · COGS · Gross Profit จาก backend</div>
+              <div class="card-subtitle">Revenue share · ยังไม่รวม COGS แยกแบรนด์</div>
             </div>
           </div>
           <div class="card-body" id="brand-comparison-body"></div>
@@ -1038,7 +1028,16 @@ button{cursor:pointer}
         </div>
         <select class="select-filter" id="exp-cat-filter" onchange="renderExpenses()">
           <option value="">ทุกหมวด</option>
-<option value="">โหลดหมวดรายจ่ายจากระบบ...</option>
+          <option value="cogs">COGS</option>
+          <option value="rent">Rent</option>
+          <option value="salary">Salary</option>
+          <option value="utility">Utilities</option>
+          <option value="marketing">Marketing</option>
+          <option value="equipment">Equipment (repair/rent)</option>
+          <option value="ingredient_purchase">Ingredient Purchase · Stock</option>
+          <option value="packaging_purchase">Packaging Purchase · Stock</option>
+          <option value="equipment_purchase">Equipment Purchase · Asset</option>
+          <option value="other">Other</option>
         </select>
         <span class="total-label" id="exp-total-label">Total: ฿0</span>
       </div>
@@ -1053,21 +1052,6 @@ button{cursor:pointer}
           <div>Description</div><div>Category</div><div>Brand</div><div>Amount</div><div>Date</div>
         </div>
         <div id="expense-body"></div>
-      </div>
-    </section>
-
-    <section id="tab-assets" style="display:none">
-      <div id="asset-summary" class="kpi-row" style="margin-bottom:14px"></div>
-      <div class="pl-note" style="margin-bottom:12px">
-        เกณฑ์ทุนปัจจุบัน <strong id="asset-threshold">฿1,000</strong> — รายการต่ำกว่าเกณฑ์ยังเก็บในทะเบียนอุปกรณ์ แต่ไม่คิดค่าเสื่อมและของซื้อใหม่จะรับรู้เป็น Small Equipment OpEx ทันที
-      </div>
-      <div class="filter-row">
-        <div class="search-wrap"><input class="search-input" id="asset-search" type="text" placeholder="ค้นหาอุปกรณ์..." oninput="renderAssets()"></div>
-        <select class="select-filter" id="asset-status-filter" onchange="renderAssets()"><option value="active">ใช้งานอยู่</option><option value="">ทั้งหมด</option><option value="retired">Retired</option></select>
-      </div>
-      <div class="table-card">
-        <div class="table-header asset-grid"><div>Asset</div><div>Category</div><div>Cost</div><div>Depreciation</div><div>Status</div><div>Action</div></div>
-        <div id="asset-body"></div>
       </div>
     </section>
   </div>
@@ -1140,144 +1124,31 @@ button{cursor:pointer}
   </div>
 </div>
 
-
-<div class="modal-overlay" id="add-asset-modal">
-  <div class="modal">
-    <div class="modal-header"><div class="modal-title">เพิ่มอุปกรณ์ / สินทรัพย์</div><button class="modal-close" type="button" onclick="UI.closeModal('add-asset-modal')">×</button></div>
-    <div class="modal-body">
-      <div class="form-group"><label class="form-label">ชื่ออุปกรณ์</label><input class="form-input" id="asset-name" placeholder="เช่น เครื่องบดกาแฟ"></div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">ราคาซื้อรวม (฿)</label><input class="form-input" type="number" min="0" step="0.01" id="asset-price"></div>
-        <div class="form-group"><label class="form-label">วันที่ซื้อ</label><input class="form-input" type="date" id="asset-date"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">Brand</label><select class="form-input" id="asset-brand"><option value="SHARED">Shared</option><option value="BB">Brain Brew</option><option value="HH">Heng Heng</option></select></div>
-        <div class="form-group"><label class="form-label">Category</label><select class="form-input" id="asset-category"><option value="coffee_equipment">Coffee Equipment</option><option value="tea_equipment">Tea / Matcha</option><option value="kitchen_equipment">Kitchen</option><option value="prep_equipment">Prep / Packaging</option><option value="content_equipment">Content</option><option value="other_equipment">Other</option></select></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">อายุใช้งาน (เดือน)</label><input class="form-input" type="number" min="1" id="asset-life" value="36"><div class="form-hint">ระบบจะใช้ค่าเสื่อมเฉพาะรายการที่ถึงเกณฑ์ทุน</div></div>
-        <div class="form-group"><label class="form-label">Payment</label><select class="form-input" id="asset-payment"><option value="cash">Cash</option><option value="transfer">Transfer</option><option value="card">Card</option></select></div>
-      </div>
-      <div class="form-group"><label class="form-label">Vendor / ร้านที่ซื้อ</label><input class="form-input" id="asset-vendor" placeholder="ไม่บังคับ"></div>
-      <div class="form-group"><label class="form-label">Note</label><input class="form-input" id="asset-note" placeholder="ไม่บังคับ"></div>
-      <div class="form-footer"><button class="btn btn-ghost" type="button" onclick="UI.closeModal('add-asset-modal')">ยกเลิก</button><button class="btn btn-primary" id="save-asset-btn" onclick="saveAsset()">บันทึกอุปกรณ์</button></div>
-    </div>
-  </div>
-</div>
-
-
+<script src="api.js"></script>
 <script>
-// v5.8.8 RECOVERY STABLE — direct standard HTTP endpoints; no finance_bootstrap; no google.script.run.
-// This Finance file is navigated as finance.html, so it is NOT guaranteed to be
-// running inside Apps Script HtmlService. Therefore google.script.run is not used.
-const FINANCE_API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
-
-const Identity = {
-  getName(){
-    const p=new URLSearchParams(window.location.search);
-    const raw=p.get('staff') || sessionStorage.getItem('brewos_user');
-    if(!raw) return 'Owner';
-    try{return JSON.parse(raw).name || raw;}catch(e){return raw;}
-  }
-};
-const UI = {
-  toast(msg,type='success'){
-    const colors={success:'#143D2B',error:'#dc2626',warning:'#d97706',info:'#2563eb'};
-    const t=document.createElement('div'); t.textContent=msg;
-    t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${colors[type]||colors.success};color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.2)`;
-    document.body.appendChild(t); setTimeout(()=>t.remove(),3200);
-  },
-  loading(el,on){if(!el)return;if(on){el.dataset.originalText=el.textContent;el.disabled=true;el.textContent='Loading…';}else{el.disabled=false;el.textContent=el.dataset.originalText||el.textContent;}},
-  openModal(id){const el=document.getElementById(id);if(el){el.classList.add('open');el.classList.add('show');}},
-  closeModal(id){const el=document.getElementById(id);if(el){el.classList.remove('open');el.classList.remove('show');}}
-};
-
-function fmtB(value){
-  const n=Number(value??0), safe=Number.isFinite(n)?n:0;
-  return '฿'+safe.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-
-// v5.8.7 HOTFIX: restore Finance date/format helpers omitted during HTTP-bridge refactor.
-const MONTHS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-function monthKey(value){
-  const d = value instanceof Date && !Number.isNaN(value.getTime()) ? value : new Date(value || Date.now());
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-}
-function pctOf(part,total){
-  const p=Number(part||0), t=Number(total||0);
-  return t>0 ? (p/t*100).toFixed(1)+'%' : '0.0%';
-}
-
-async function financeFetch(action, params={}, method='GET', timeoutMs=30000){
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),timeoutMs);
-  try{
-    let url=FINANCE_API_BASE, options={method,cache:'no-store',signal:controller.signal,redirect:'follow'};
-    if(method==='GET'){
-      const u=new URL(url); u.searchParams.set('action',action);
-      Object.entries(params||{}).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')u.searchParams.set(k,v);});
-      u.searchParams.set('_ts',Date.now()); url=u.toString();
-    }else{
-      options.headers={'Content-Type':'text/plain;charset=utf-8'};
-      options.body=JSON.stringify({...params,action});
-    }
-    const res=await fetch(url,options);
-    const text=await res.text();
-    if(!res.ok) throw new Error(`HTTP ${res.status} · ${action}`);
-    let json; try{json=JSON.parse(text);}catch(e){throw new Error(`Backend ตอบกลับไม่ใช่ JSON · ${action}`);}
-    if(!json.success) throw new Error(json.error || `API error · ${action}`);
-    return json.data;
-  }catch(e){
-    if(e && e.name==='AbortError') throw new Error(`Backend ใช้เวลานานเกิน ${Math.round(timeoutMs/1000)} วินาที · ${action}`);
-    throw e;
-  }finally{clearTimeout(timer);}
-}
-
-// v5.8.8 RECOVERY: use only the long-standing standard backend routes.
-// This deliberately avoids finance_bootstrap and google.script.run.
-async function backendDiagnostic(){
-  try{
-    const p=await financeFetch('ping',{},'GET',10000);
-    return `Backend ${p?.version||'unknown'}`;
-  }catch(e){return `Ping ไม่สำเร็จ: ${e.message}`;}
-}
-
-async function financeSummaryTransport(params){
-  return await financeFetch('get_finance_summary', params||{}, 'GET', 30000);
-}
-
-async function financeDirect(serverFunction, fallbackApiMethod, payload, mode){
-  payload=payload||{};
-  const getMap={
-    getExpenseCategories:'get_expense_categories',
-    getExpensesList:'get_expenses',
-    getAssets:'get_assets',
-    getAssetSummary:'get_asset_summary'
-  };
-  if(getMap[serverFunction]) return await financeFetch(getMap[serverFunction],payload,'GET',30000);
-  if(serverFunction==='createExpense') return await financeFetch('create_expense',payload,'POST',30000);
-  if(serverFunction==='createAsset') return await financeFetch('create_asset',payload,'POST',30000);
-  if(serverFunction==='deleteAsset'){
-    const body=(mode==='deleteAsset')?{asset_id:payload}:payload;
-    return await financeFetch('delete_asset',body,'POST',30000);
-  }
-  throw new Error('Unsupported Finance action: '+serverFunction);
-}
-
 let currentMonth = new Date();
 let EXPENSES = [];
-let EXPENSE_CATEGORIES = [];
-let ASSETS = [];
-let ASSET_SUMMARY = null;
 let CURRENT_SUMMARY = null;
 
 const CAT_COLORS = {
-  rent:'#F26C21', salary:'#818CF8', utility:'#22D3EE', marketing:'#E8B84A', platform_fee:'#A78BFA',
-  shipping_delivery:'#0EA5E9', repair_maintenance:'#D96C64', small_equipment:'#FB923C', office_misc:'#94A3B8', other:'#94A3B8',
-  ingredient_purchase:'#52B788', packaging_purchase:'#A7C48D', inventory_purchase:'#2D6A4F', equipment_purchase:'#B45309'
+  cogs:'#52B788', rent:'#F26C21', salary:'#818CF8', utility:'#22D3EE', marketing:'#E8B84A',
+  equipment:'#D96C64', other:'#94A3B8',
+  ingredient_purchase:'#A78BFA', packaging_purchase:'#D98CD6', equipment_purchase:'#FB923C'
 };
-const CAT_LABELS = {};
-function categoryLabel(cat){ return CAT_LABELS[cat] || cat || 'Other'; }
+const CAT_LABELS = {
+  cogs:'COGS', rent:'Rent', salary:'Salary', utility:'Utilities', marketing:'Marketing',
+  equipment:'Equipment (repair)', other:'Other',
+  ingredient_purchase:'Ingredient Purchase', packaging_purchase:'Packaging Purchase',
+  equipment_purchase:'Equipment Purchase'
+};
+const CAPEX_CATEGORIES = ['ingredient_purchase','packaging_purchase','equipment_purchase'];
+const MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+function fmtB(n){ return '฿' + Math.round(Number(n||0)).toLocaleString('th-TH'); }
+function pctOf(a,b){ return Number(b)>0 ? (Math.round(Number(a)/Number(b)*1000)/10)+'%' : '—'; }
+function monthKey(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
 
 function bkkDateKey(){
   const parts=new Intl.DateTimeFormat('en-CA',{
@@ -1364,8 +1235,9 @@ async function changeMonth(delta){
   updateMonthLabel();
   await loadOverview();
 
-  if(document.getElementById('tab-expenses').style.display!=='none') await loadExpenses();
-  if(document.getElementById('tab-assets').style.display!=='none') await loadAssets();
+  if(document.getElementById('tab-expenses').style.display!=='none'){
+    await loadExpenses();
+  }
 }
 
 function switchTab(tab,btn){
@@ -1373,9 +1245,7 @@ function switchTab(tab,btn){
   btn.classList.add('active');
   document.getElementById('tab-overview').style.display = tab==='overview'?'block':'none';
   document.getElementById('tab-expenses').style.display = tab==='expenses'?'block':'none';
-  document.getElementById('tab-assets').style.display = tab==='assets'?'block':'none';
   if(tab==='expenses') loadExpenses();
-  if(tab==='assets') loadAssets();
 }
 
 async function loadOverview(){
@@ -1384,52 +1254,42 @@ async function loadOverview(){
   loading.textContent='กำลังโหลดข้อมูล...';
   document.getElementById('overview-content').style.display='none';
   try{
-    const s=await financeSummaryTransport({month:monthKey(currentMonth)});
-    if(!s || s.error) throw new Error((s && s.error) || 'ไม่ได้รับข้อมูล P&L จาก server');
+    const s=await API.financeSummary({month:monthKey(currentMonth)});
     CURRENT_SUMMARY=s;
     renderOverview(s);
     loading.style.display='none';
     document.getElementById('overview-content').style.display='block';
   }catch(e){
     console.error('loadOverview failed',e);
-    const diag=await backendDiagnostic();
-    loading.innerHTML='โหลดข้อมูลไม่สำเร็จ: '+e.message+'<br><span style="display:inline-block;margin-top:8px;font-size:12px;color:var(--muted)">'+diag+'</span><br><button class="btn btn-primary" style="margin-top:14px" onclick="invalidateFinanceCache();loadOverview()">ลองใหม่</button>'; 
+    loading.textContent='โหลดข้อมูลไม่สำเร็จ: '+e.message;
     if(window.UI?.toast) UI.toast('โหลด P&L ไม่สำเร็จ: '+e.message,'error');
   }
 }
 
 function renderOverview(s){
   const rev=Number(s.revenue?.total||0);
-  const grossSales=Number(s.gross_sales||rev);
-  const discount=Number(s.discount_total||0);
   const cogs=Number(s.cogs||0);
   const gp=Number(s.gross_profit||0);
   const opex=Number(s.total_expenses||0);
   const dep=Number(s.depreciation||0);
   const capex=Number(s.capex_and_inventory_spend||0);
   const net=Number(s.net_profit||0);
-  const estimated=Number(s.cost_quality?.estimated_lines||0);
 
   document.getElementById('kpi-rev').textContent=fmtB(rev);
-  document.getElementById('kpi-rev-count').textContent=
-    (s.order_count||0)+' transactions · Net Sales';
-
+  document.getElementById('kpi-rev-count').textContent=(s.order_count||0)+' ออเดอร์';
   document.getElementById('kpi-cogs').textContent=fmtB(cogs);
-  document.getElementById('kpi-cogs-pct').textContent=
-    pctOf(cogs,rev)+' ของ Net Sales'+(estimated>0?' · ⚠ estimated '+estimated+' lines':'');
-
+  document.getElementById('kpi-cogs-pct').textContent=pctOf(cogs,rev)+' ของยอดขาย';
   document.getElementById('kpi-gp').textContent=fmtB(gp);
   document.getElementById('kpi-gp-pct').textContent='GP '+Number(s.gross_margin_pct||0).toFixed(1)+'%';
-
-  // KPI นี้แสดง OpEx เท่านั้น; Depreciation แยกใน subtitle/P&L
-  document.getElementById('kpi-opex').textContent=fmtB(opex);
-  document.getElementById('kpi-opex-pct').textContent='ค่าเสื่อมเพิ่มเติม '+fmtB(dep);
+  document.getElementById('kpi-opex').textContent=fmtB(opex+dep);
+  document.getElementById('kpi-opex-pct').textContent='OpEx '+fmtB(opex)+' · ค่าเสื่อม '+fmtB(dep);
 
   const netEl=document.getElementById('kpi-net');
   netEl.textContent=fmtB(net);
   netEl.classList.toggle('good',net>=0);
   netEl.classList.toggle('bad',net<0);
-  document.getElementById('kpi-net-pct').textContent='NP '+Number(s.net_margin_pct||0).toFixed(1)+'%';
+  const netPct=document.getElementById('kpi-net-pct');
+  netPct.textContent='NP '+Number(s.net_margin_pct||0).toFixed(1)+'%';
 
   const pRange=financePeriod(currentMonth);
   document.getElementById('pl-statement-title').textContent='P&L Statement — '+periodLabel(pRange);
@@ -1438,26 +1298,19 @@ function renderOverview(s){
   const expRows=Object.keys(expByCat).length
     ? Object.entries(expByCat).map(([cat,amt])=>`
       <div class="pl-row subtotal">
-        <span class="pl-label indent">${categoryLabel(cat)}</span>
+        <span class="pl-label indent">${CAT_LABELS[cat]||cat}</span>
         <span class="pl-value bad">-${fmtB(amt)}</span>
       </div>`).join('')
     : `<div class="pl-row subtotal"><span class="pl-label indent">ไม่มี Operating Expense ที่บันทึกในเดือนนี้</span></div>`;
 
-  const costNote = estimated>0
-    ? `<div class="pl-note">⚠️ COGS มี ${estimated} line(s) ที่ไม่มี cost snapshot จึง fallback ไปใช้ต้นทุนสูตร/Products ปัจจุบัน — ตัวเลขส่วนนี้ถือเป็น estimated historical cost</div>`
-    : `<div class="pl-note">✓ COGS ใช้ cost snapshot ณ เวลาขายครบทุก line ในช่วงนี้</div>`;
-
   document.getElementById('pl-statement-body').innerHTML=`
-    <div class="pl-section-header">Sales</div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Gross Sales</span><span class="pl-value">${fmtB(grossSales)}</span></div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Discounts</span><span class="pl-value bad">-${fmtB(discount)}</span></div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew · Net Sales</span><span class="pl-value good">${fmtB(s.revenue?.bb)}</span></div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng · Net Sales</span><span class="pl-value good">${fmtB(s.revenue?.hh)}</span></div>
-    <div class="pl-row"><span class="pl-label">Net Sales</span><span class="pl-value good">${fmtB(rev)}</span></div>
+    <div class="pl-section-header">Revenue</div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew Coffee</span><span class="pl-value good">${fmtB(s.revenue?.bb)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng Phanit</span><span class="pl-value good">${fmtB(s.revenue?.hh)}</span></div>
+    <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value good">${fmtB(rev)}</span></div>
 
     <div class="pl-section-header">Cost of Goods Sold</div>
-    <div class="pl-row"><span class="pl-label">COGS · ING + PKG ที่ใช้ขายจริง</span><span class="pl-value bad">-${fmtB(cogs)}</span></div>
-    ${costNote}
+    <div class="pl-row"><span class="pl-label">COGS · วัตถุดิบและแพ็กเกจจิ้งที่ใช้จริง</span><span class="pl-value bad">-${fmtB(cogs)}</span></div>
     <div class="pl-row total"><span class="pl-label">Gross Profit</span><span class="pl-value good">${fmtB(gp)}</span></div>
 
     <div class="pl-section-header">Operating Expenses</div>
@@ -1465,14 +1318,14 @@ function renderOverview(s){
     <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value bad">-${fmtB(opex)}</span></div>
 
     <div class="pl-section-header">Depreciation</div>
-    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์ตามช่วงใช้งาน</span><span class="pl-value bad">-${fmtB(dep)}</span></div>
+    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์</span><span class="pl-value bad">-${fmtB(dep)}</span></div>
 
     <div class="pl-row total">
       <span class="pl-label">Net Profit</span>
       <span class="pl-value ${net>=0?'good':'bad'}" style="font-size:14px">${fmtB(net)}</span>
     </div>
 
-    ${capex>0?`<div class="pl-note">Cash spending เดือนนี้สำหรับซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่หักซ้ำใน P&L; รับรู้ผ่าน COGS หรือ Depreciation</div>`:''}
+    ${capex>0?`<div class="pl-note">เดือนนี้มีเงินสดจ่ายซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่ถูกหักซ้ำใน P&L โดยตรง เพราะระบบทยอยนับผ่าน COGS หรือค่าเสื่อมราคา</div>`:''}
   `;
 
   renderBrandChart(Number(s.revenue?.bb||0),Number(s.revenue?.hh||0));
@@ -1481,85 +1334,71 @@ function renderOverview(s){
 }
 
 function renderBrandChart(bb,hh){
-  const canvas=document.getElementById('brand-chart');
-  const wrap=canvas?.parentElement;
-  if(!wrap) return;
-  const total=Math.max(0,Number(bb||0)+Number(hh||0));
-  const bbPct=total>0?Math.round(Number(bb||0)/total*100):0;
-  const hhPct=total>0?100-bbPct:0;
-  wrap.innerHTML=`
-    <div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:10px 6px">
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span>Brain Brew</span><strong>${fmtB(bb)} · ${bbPct}%</strong></div>
-        <div style="height:16px;background:rgba(20,61,43,.08);border-radius:999px;overflow:hidden"><div style="height:100%;width:${bbPct}%;background:#143D2B;border-radius:999px"></div></div>
-      </div>
-      <div>
-        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span>Heng Heng</span><strong>${fmtB(hh)} · ${hhPct}%</strong></div>
-        <div style="height:16px;background:rgba(242,108,33,.10);border-radius:999px;overflow:hidden"><div style="height:100%;width:${hhPct}%;background:#F26C21;border-radius:999px"></div></div>
-      </div>
-    </div>`;
+  const ctx=document.getElementById('brand-chart')?.getContext('2d');
+  if(!ctx) return;
+  if(window._brandChart) window._brandChart.destroy();
+  window._brandChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['Brain Brew','Heng Heng'],
+      datasets:[{data:[bb,hh],backgroundColor:['#143D2B','#F26C21'],borderRadius:7,borderSkipped:false,barThickness:34}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>fmtB(c.raw)},backgroundColor:'#17211A',padding:9,cornerRadius:7}
+      },
+      scales:{
+        x:{grid:{display:false},border:{display:false},ticks:{color:'#6D766F',font:{size:10,family:'Anuphan'}}},
+        y:{beginAtZero:true,grid:{color:'rgba(20,61,43,.06)'},border:{display:false},ticks:{color:'#9CA39E',font:{size:10},callback:v=>'฿'+Number(v).toLocaleString('th-TH')}}
+      }
+    }
+  });
 }
 
 function renderExpenseDonut(expByCat){
-  const canvas=document.getElementById('exp-donut');
-  const box=canvas?.parentElement;
+  const ctx=document.getElementById('exp-donut')?.getContext('2d');
   const legend=document.getElementById('donut-legend');
-  if(!box||!legend) return;
-  const cats=Object.keys(expByCat||{});
+  if(!ctx||!legend) return;
+  const cats=Object.keys(expByCat);
+  if(window._donutChart) window._donutChart.destroy();
   if(!cats.length){
-    box.innerHTML='<div style="height:100%;display:grid;place-items:center;color:var(--muted);font-size:11px">No OpEx</div>';
     legend.innerHTML='<div style="color:var(--muted)">ไม่มี OpEx ในเดือนนี้</div>';
     return;
   }
   const vals=cats.map(c=>Number(expByCat[c]||0));
-  const total=vals.reduce((a,b)=>a+b,0)||1;
   const colors=cats.map(c=>CAT_COLORS[c]||'#94A3B8');
-  let acc=0;
-  const stops=cats.map((c,i)=>{
-    const from=acc;
-    acc += vals[i]/total*100;
-    return `${colors[i]} ${from.toFixed(2)}% ${acc.toFixed(2)}%`;
-  }).join(',');
-  box.innerHTML=`<div style="width:128px;height:128px;border-radius:50%;background:conic-gradient(${stops});position:relative;margin:auto">
-    <div style="position:absolute;inset:24%;background:var(--surface,#fff);border-radius:50%;display:grid;place-items:center;text-align:center;font-size:10px;color:var(--muted)"><strong style="display:block;font-size:12px;color:var(--text)">${fmtB(total)}</strong>OpEx</div>
-  </div>`;
+  window._donutChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:cats.map(c=>CAT_LABELS[c]||c),datasets:[{data:vals,backgroundColor:colors,borderWidth:0,hoverOffset:3}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}
+  });
   legend.innerHTML=cats.map((c,i)=>`
-    <div class="legend-row"><span class="legend-dot" style="background:${colors[i]}"></span><span class="legend-name">${CAT_LABELS[c]||c}</span><span class="legend-value">${fmtB(vals[i])}</span></div>`).join('');
+    <div class="legend-row">
+      <span class="legend-dot" style="background:${colors[i]}"></span>
+      <span class="legend-name">${CAT_LABELS[c]||c}</span>
+      <span class="legend-value">${fmtB(vals[i])}</span>
+    </div>`).join('');
 }
 
 function renderBrandComparison(s){
-  const bb=s.brand?.bb||{};
-  const hh=s.brand?.hh||{};
-
-  function card(name,color,b){
-    return `
-      <div class="brand-card">
-        <div class="brand-head"><span class="brand-dot" style="background:${color}"></span><span class="brand-name">${name}</span></div>
-        <div class="brand-revenue">${fmtB(b.revenue||0)}</div>
-        <div class="brand-share">Net Sales</div>
-        <div class="brand-metric"><span>COGS</span><strong>${fmtB(b.cogs||0)}</strong></div>
-        <div class="brand-metric"><span>Gross Profit</span><strong>${fmtB(b.gross_profit||0)}</strong></div>
-        <div class="brand-metric"><span>GP Margin</span><strong>${Number(b.gross_margin_pct||0).toFixed(1)}%</strong></div>
-      </div>`;
-  }
-
+  const bb=Number(s.revenue?.bb||0),hh=Number(s.revenue?.hh||0),total=bb+hh;
   document.getElementById('brand-comparison-body').innerHTML=`
     <div class="brand-grid">
-      ${card('Brain Brew Coffee','#143D2B',bb)}
-      ${card('Heng Heng Phanit','#F26C21',hh)}
+      <div class="brand-card">
+        <div class="brand-head"><span class="brand-dot" style="background:#143D2B"></span><span class="brand-name">Brain Brew Coffee</span></div>
+        <div class="brand-revenue">${fmtB(bb)}</div>
+        <div class="brand-share">Revenue share · ${pctOf(bb,total)}</div>
+      </div>
+      <div class="brand-card">
+        <div class="brand-head"><span class="brand-dot" style="background:#F26C21"></span><span class="brand-name">Heng Heng Phanit</span></div>
+        <div class="brand-revenue">${fmtB(hh)}</div>
+        <div class="brand-share">Revenue share · ${pctOf(hh,total)}</div>
+      </div>
     </div>
-    <div class="pl-note">ตัวเลขแบรนด์ทั้งหมดส่งมาจาก Accounting Core ฝั่ง backend โดยตรง ไม่คำนวณ GP ซ้ำในหน้าเว็บ</div>
+    <div class="pl-note">กำไรขั้นต้นแยกแบรนด์ยังไม่แสดงในหน้านี้จนกว่า <code>financeSummary()</code> จะส่ง COGS/GP แยก BB และ HH มาโดยตรง เพื่อไม่เดาตัวเลขฝั่งหน้าเว็บ</div>
   `;
-}
-
-async function loadExpenseCategories(){
-  try{
-    EXPENSE_CATEGORIES=await financeDirect('getExpenseCategories','expenseCategories',{});
-    EXPENSE_CATEGORIES.forEach(c=>CAT_LABELS[c.category_id]=c.label_th||c.label_en||c.category_id);
-    const opts='<option value="">ทุกหมวด</option>'+EXPENSE_CATEGORIES.map(c=>`<option value="${c.category_id}">${c.label_th||c.label_en}</option>`).join('');
-    const filter=document.getElementById('exp-cat-filter'); if(filter) filter.innerHTML=opts;
-    const create=document.getElementById('exp-cat'); if(create) create.innerHTML=EXPENSE_CATEGORIES.filter(c=>String(c.expense_type)==='OPEX').map(c=>`<option value="${c.category_id}">${c.label_th||c.label_en}</option>`).join('');
-  }catch(e){ console.warn('expense categories',e); }
 }
 
 async function loadExpenses(){
@@ -1567,12 +1406,11 @@ async function loadExpenses(){
   body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
   try{
     const range=financePeriod(currentMonth);
-    const data=await financeDirect('getExpensesList','expenses',{date_from:range.first,date_to:range.last});
+    const data=await API.expenses({date_from:range.first,date_to:range.last});
     EXPENSES=(data||[]).map(e=>({
       id:e.expense_id,desc:e.description,cat:e.category,brand:e.brand_id,
       amount:Number(e.amount||0),date:e.date,
-      expense_type:String(e.expense_type||'OPEX'),
-      is_capex:Boolean(e.is_capex), is_inventory_spend:Boolean(e.is_inventory_spend), is_opex:Boolean(e.is_opex)
+      is_capex:CAPEX_CATEGORIES.includes(String(e.category||''))
     }));
     renderExpenses();
   }catch(e){
@@ -1589,7 +1427,7 @@ function renderExpenses(){
 
   let exps=[...EXPENSES].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   if(catFilter) exps=exps.filter(e=>e.cat===catFilter);
-  if(q) exps=exps.filter(e=>(e.desc||'').toLowerCase().includes(q)||categoryLabel(e.cat).toLowerCase().includes(q));
+  if(q) exps=exps.filter(e=>(e.desc||'').toLowerCase().includes(q)||(CAT_LABELS[e.cat]||'').toLowerCase().includes(q));
 
   const total=exps.reduce((s,e)=>s+e.amount,0);
   document.getElementById('exp-total-label').textContent='รวมรายการที่แสดง: '+fmtB(total);
@@ -1602,54 +1440,14 @@ function renderExpenses(){
   body.innerHTML=exps.map(e=>`
     <div class="table-row exp-grid ${e.is_capex?'capex-row':''}">
       <div style="font-weight:600;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-        ${e.desc||'—'}${e.expense_type!=='OPEX'?'<span class="capex-tag">'+e.expense_type+'</span>':''}
+        ${e.desc||'—'}${e.is_capex?'<span class="capex-tag">CAPEX</span>':''}
       </div>
-      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${categoryLabel(e.cat)}</span></div>
+      <div><span class="exp-badge" style="background:${CAT_COLORS[e.cat]||'#94A3B8'}20;color:${CAT_COLORS[e.cat]||'#94A3B8'}">${CAT_LABELS[e.cat]||e.cat}</span></div>
       <div style="color:var(--muted)">${e.brand||'—'}</div>
       <div class="bad" style="font-family:'Poppins',sans-serif;font-weight:600">-${fmtB(e.amount)}</div>
       <div style="color:var(--muted)">${e.date||'—'}</div>
     </div>`).join('');
 }
-
-async function loadAssets(){
-  const body=document.getElementById('asset-body'); body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
-  try{
-    const [rows,sum]=await Promise.all([
-      financeDirect('getAssets','assets',{}),
-      financeDirect('getAssetSummary','assetSummary',{})
-    ]); ASSETS=rows||[]; ASSET_SUMMARY=sum||{};
-    document.getElementById('asset-threshold').textContent=fmtB(ASSET_SUMMARY.capitalization_threshold||1000);
-    document.getElementById('asset-summary').innerHTML=`
-      <div class="kpi-card"><div class="kpi-label">Registered Equipment</div><div class="kpi-value">${ASSET_SUMMARY.asset_count||0}</div><div class="kpi-sub">รายการในทะเบียน</div></div>
-      <div class="kpi-card"><div class="kpi-label">Total Registered Cost</div><div class="kpi-value">${fmtB(ASSET_SUMMARY.total_registered_cost||0)}</div><div class="kpi-sub">รวมสินทรัพย์ + small equipment</div></div>
-      <div class="kpi-card"><div class="kpi-label">Capitalized Cost</div><div class="kpi-value">${fmtB(ASSET_SUMMARY.capitalized_cost||0)}</div><div class="kpi-sub">ฐานค่าเสื่อม</div></div>
-      <div class="kpi-card emphasis"><div class="kpi-label">Monthly Depreciation</div><div class="kpi-value">${fmtB(ASSET_SUMMARY.monthly_depreciation||0)}</div><div class="kpi-sub">Straight-line</div></div>`;
-    renderAssets();
-  }catch(e){ body.innerHTML='<div class="loading-text">โหลดไม่สำเร็จ: '+e.message+'</div>'; }
-}
-function renderAssets(){
-  const body=document.getElementById('asset-body'), q=(document.getElementById('asset-search')?.value||'').toLowerCase(), st=document.getElementById('asset-status-filter')?.value||'';
-  let rows=[...ASSETS]; if(st)rows=rows.filter(a=>a.status===st); if(q)rows=rows.filter(a=>(a.name||'').toLowerCase().includes(q)||(a.category||'').toLowerCase().includes(q));
-  if(!rows.length){body.innerHTML='<div class="loading-text">ไม่พบอุปกรณ์</div>';return;}
-  body.innerHTML=rows.map(a=>`<div class="table-row asset-grid">
-    <div><strong>${a.name}</strong><div style="font-size:9px;color:var(--muted)">${a.asset_id}${a.source_ref?' · '+a.source_ref:''}</div></div>
-    <div><span class="asset-tag ${a.is_depreciable?'':'small'}">${a.category}</span></div>
-    <div style="font-family:Poppins,sans-serif;font-weight:600">${fmtB(a.price)}</div>
-    <div>${a.is_depreciable?fmtB(a.monthly_depreciation)+'/mo':'—'}</div>
-    <div>${a.status||'active'}</div>
-    <div>${a.status==='active'?`<button class="action-link" onclick="retireAsset('${a.asset_id}')">Retire</button>`:'—'}</div>
-  </div>`).join('');
-}
-async function saveAsset(){
-  const name=document.getElementById('asset-name').value.trim(), price=Number(document.getElementById('asset-price').value||0), date=document.getElementById('asset-date').value;
-  if(!name||!(price>0)||!date){UI.toast('กรอกชื่อ ราคา และวันที่ซื้อให้ครบ','error');return;}
-  const btn=document.getElementById('save-asset-btn'); UI.loading(btn,true);
-  try{
-    const r=await financeDirect('createAsset','createAsset',{name,price,purchase_date:date,brand_id:document.getElementById('asset-brand').value,category:document.getElementById('asset-category').value,lifespan_months:Number(document.getElementById('asset-life').value||36),payment_method:document.getElementById('asset-payment').value,vendor:document.getElementById('asset-vendor').value.trim(),notes:document.getElementById('asset-note').value.trim()});
-    UI.toast(r.is_depreciable?'บันทึกเป็นสินทรัพย์และเริ่มค่าเสื่อมแล้ว':'บันทึกเป็น Small Equipment OpEx แล้ว'); UI.closeModal('add-asset-modal'); await Promise.all([loadAssets(),loadOverview()]);
-  }catch(e){UI.toast('บันทึกไม่สำเร็จ: '+e.message,'error');}finally{UI.loading(btn,false);}
-}
-async function retireAsset(id){ if(!confirm('ยืนยันเลิกใช้อุปกรณ์ '+id+'?'))return; try{await financeDirect('deleteAsset','deleteAsset',id,'deleteAsset');UI.toast('ปรับสถานะเป็น retired แล้ว');await Promise.all([loadAssets(),loadOverview()]);}catch(e){UI.toast(e.message,'error');} }
 
 async function saveExpense(){
   const desc=document.getElementById('exp-desc').value.trim();
@@ -1664,7 +1462,7 @@ async function saveExpense(){
   if(window.UI?.loading) UI.loading(btn,true); else btn.disabled=true;
 
   try{
-    const res=await financeDirect('createExpense','createExpense',{
+    const res=await API.createExpense({
       date,
       category:document.getElementById('exp-cat').value,
       description:desc,
@@ -1692,13 +1490,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   document.getElementById('staff-name-label').textContent=name;
   document.getElementById('staff-avatar').textContent=String(name||'S').slice(0,2).toUpperCase();
   document.getElementById('exp-date').value=bkkDateKey();
-  document.getElementById('asset-date').value=bkkDateKey();
   updateMonthLabel();
-  // v5.8.6: preload Finance with ONE HTTP request; all tabs share this cache.
-  try{
-    await financeBootstrap(monthKey(currentMonth));
-    await loadExpenseCategories();
-  }catch(e){ console.error('finance bootstrap preload',e); }
   await loadOverview();
 
   document.querySelectorAll('.modal-overlay').forEach(el=>{
