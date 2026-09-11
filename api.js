@@ -1,6 +1,6 @@
 /**
- * BrewOS — Shared API Client v3.1.0
- * Synced with BrewOS backend v5.6.0 ACCOUNTING CORE
+ * BrewOS — Shared API Client v3.2.0
+ * Synced with BrewOS backend v5.7.0 INVENTORY & PURCHASE CORE
  *
  * หลักการ:
  *   - api.js เป็น transport layer เท่านั้น
@@ -105,7 +105,13 @@ const API = {
   // Inventory / Ingredients / Packaging
   ingredients:      (p = {}) => apiGet('get_ingredients', p),
   inventoryStats:   ()       => apiGet('get_inventory_stats'),
+  inventoryHealth:  (p = {}) => apiGet('get_inventory_health', p),
+  inventoryTransactions: (p = {}) => apiGet('get_inventory_transactions', p),
+  purchaseReceipts: (p = {}) => apiGet('get_purchase_receipts', p),
+  purchaseReceipt:  (receipt_id) => apiGet('get_purchase_receipt', { receipt_id }),
   adjustStock:      (data)   => apiPost('adjust_stock', data),
+  stocktake:        (data)   => apiPost('stocktake', data),
+  receivePurchase:  (data)   => apiPost('receive_purchase', data),
   receiveStock:     (data)   => apiPost('receive_stock', data),
   createIngredient: (data)   => apiPost('create_ingredient', data),
   updateIngredient: (data)   => apiPost('update_ingredient', data),
@@ -146,7 +152,7 @@ const API = {
   createSupplier: (data)   => apiPost('create_supplier', data),
   salesReport:     notImplemented('รายงานยอดขายแยกต่างหาก (ใช้ orders() / financeSummary() แทน)'),
   profitReport:    notImplemented('รายงานกำไรแยกต่างหาก (ใช้ financeSummary() แทน)'),
-  inventoryReport: notImplemented('รายงานสต๊อกแยกต่างหาก (ใช้ inventoryStats() + ingredients() แทน)'),
+  inventoryReport: (p = {}) => apiGet('get_inventory_health', p),
 
   // Settings & Brands
   settings:      ()     => apiGet('get_settings'),
