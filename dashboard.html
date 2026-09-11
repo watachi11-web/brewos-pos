@@ -43,7 +43,6 @@
   .brand-btn.active { color: #fff; }
   .brand-btn.bb.active { background: var(--bb-dark); }
   .brand-btn.hh.active { background: var(--hh-dark); }
-  .brand-btn.all.active { background: #5F6F65; }
 
   .nav-section { padding: 8px 12px 4px; font-size: 10px; color: rgba(255,255,255,0.2); text-transform: uppercase; letter-spacing: 0.1em; }
   .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; margin: 1px 8px; border-radius: 8px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; transition: all 0.2s; text-decoration: none; }
@@ -564,8 +563,7 @@ nav::-webkit-scrollbar-thumb,.content::-webkit-scrollbar-thumb{
   </div>
 
   <div class="brand-switcher">
-    <button class="brand-btn all active" onclick="switchBrand('ALL', this)">All</button>
-    <button class="brand-btn bb" onclick="switchBrand('BB', this)">Brain Brew</button>
+    <button class="brand-btn bb active" onclick="switchBrand('BB', this)">Brain Brew</button>
     <button class="brand-btn hh" onclick="switchBrand('HH', this)">Heng Heng</button>
   </div>
 
@@ -603,6 +601,10 @@ nav::-webkit-scrollbar-thumb,.content::-webkit-scrollbar-thumb{
     <a class="nav-item" href="finance.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M4 6h8M4 10h6"/></svg>
       Finance
+    </a>
+    <a class="nav-item" href="daily_close.html">
+      <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4"/></svg>
+      Daily Close
     </a>
     <a class="nav-item" href="suppliers.html">
       <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3h10l1 5H2L3 3zM2 8v5h12V8"/></svg>
@@ -742,7 +744,7 @@ nav::-webkit-scrollbar-thumb,.content::-webkit-scrollbar-thumb{
 // #NAVFIX — เอาลิงก์ production.html/staff.html ออกจาก sidebar (ระบบพนักงาน/ผลิตแยก
 // ถูกลบทิ้งไปแล้วทั้งหมด) ย้าย CRM มารวมในหมวด Business แทนหมวด People เดิม
 // ═══════════════════════════════════════════════════════════
-let ACTIVE_BRAND = ['ALL','BB','HH'].includes(Identity.getBrand()) ? Identity.getBrand() : 'ALL';
+let ACTIVE_BRAND = Identity.getBrand() || 'ALL';
 let PERIOD_DAYS = 7;
 let ALL_ORDERS_RAW = [];
 
@@ -759,39 +761,37 @@ function fmtB(n) { return '฿' + Number(n||0).toLocaleString(); }
 //   category_breakdown:[...], top_customers:[...] }
 // ============================================================
 function renderKPIs(data, prevDayRevenue) {
-  const todayRev = Number(data.today?.revenue || 0);
-  const todayProfit = Number(data.today?.profit || 0);
-  const gp = Number(data.today?.gross_margin_pct || 0);
+  const todayRev = data.today?.revenue || 0;
+  const todayProfit = data.today?.profit || 0;
+  // #FIX — เทียบกับยอดเมื่อวานจริงจาก revenue_trend (index สุดท้าย = วันนี้, รองสุดท้าย = เมื่อวาน)
+  // แทนการเดา +12% คงที่แบบเดิม
   const diff = prevDayRevenue > 0 ? todayRev - prevDayRevenue : null;
   const diffPct = prevDayRevenue > 0 ? Math.round((diff / prevDayRevenue) * 1000) / 10 : null;
-  const scopeName = ACTIVE_BRAND === 'ALL' ? 'All Brands' : (ACTIVE_BRAND === 'HH' ? 'Heng Heng' : 'Brain Brew');
-  const est = Number(data.cost_quality?.today_estimated_lines || 0);
-  const qualityText = est > 0 ? ` · ⚠ ${est} estimated cost line${est>1?'s':''}` : '';
 
   const kpis = [
     {
-      label: `Today's Net Sales · ${scopeName}`,
+      label: "Today's Revenue",
       value: fmtB(todayRev),
       change: diff === null ? 'No data for yesterday' : `${diff >= 0 ? '+' : ''}${fmtB(diff)} (${diffPct}%) vs yesterday`,
       dir: (diff === null || diff >= 0) ? 'up' : 'down',
       icon: '💰', color: '#DCE5C7',
     },
     {
-      label: 'Transactions Today',
+      label: 'Orders Today',
       value: data.today?.orders || 0,
-      change: `Gross Profit ${fmtB(todayProfit)} · GP ${gp.toFixed(1)}%${qualityText}`,
-      dir: todayProfit >= 0 ? 'up' : 'down', icon: '📋', color: '#F7E9D6',
+      change: `Profit: ${fmtB(todayProfit)}`,
+      dir: 'up', icon: '📋', color: '#F7E9D6',
     },
     {
       label: 'Brain Brew Today',
       value: fmtB(data.brand_bb?.revenue || 0),
-      change: `GP ${fmtB(data.brand_bb?.profit || 0)}`,
+      change: `Profit: ${fmtB(data.brand_bb?.profit || 0)}`,
       dir: 'up', icon: '☕', color: '#EED29A',
     },
     {
       label: 'Heng Heng Today',
       value: fmtB(data.brand_hh?.revenue || 0),
-      change: `GP ${fmtB(data.brand_hh?.profit || 0)}`,
+      change: `Profit: ${fmtB(data.brand_hh?.profit || 0)}`,
       dir: 'up', icon: '🌸', color: '#F9C58A',
     },
   ];
@@ -808,12 +808,9 @@ function renderKPIs(data, prevDayRevenue) {
 
 function renderBestSellers(sellers) {
   const el = document.getElementById('best-sellers');
-  if (!sellers || !sellers.length) {
-    el.innerHTML = `<div class="empty-note">ยังไม่มีข้อมูลใน ${PERIOD_DAYS} วันล่าสุด</div>`;
-    return;
-  }
+  if (!sellers || !sellers.length) { el.innerHTML = '<div class="empty-note">ยังไม่มีข้อมูล 30 วันล่าสุด</div>'; return; }
 
-  const max = Math.max(...sellers.map(s => Number(s.revenue||0)));
+  const max = Math.max(...sellers.map(s => s.revenue));
   const colors = ['#143D2B','#1E5A3F','#A7C48D','#F26C21','#D95B17','#EED29A','#DCE5C7'];
   const ranks  = ['🥇','🥈','🥉','4','5','6','7'];
 
@@ -822,12 +819,12 @@ function renderBestSellers(sellers) {
       <div class="seller-rank" style="background:${colors[i]}22;color:${colors[i]}">${ranks[i]}</div>
       <div style="flex:1;min-width:0">
         <div class="seller-name">${s.name}</div>
-        <div class="seller-qty">${s.cat || ''} · ${Number(s.qty||0)} pcs · GP ${Number(s.gp||0).toFixed(1)}%</div>
+        <div class="seller-qty">${s.cat || ''} · GP ${s.gp ?? '—'}%</div>
         <div class="seller-bar-wrap" style="margin-top:4px">
-          <div class="seller-bar" style="width:${max>0?(Number(s.revenue||0)/max*100).toFixed(0):0}%;background:${colors[i]}"></div>
+          <div class="seller-bar" style="width:${max>0?(s.revenue/max*100).toFixed(0):0}%;background:${colors[i]}"></div>
         </div>
       </div>
-      <div class="seller-revenue">${fmtB(s.revenue)}</div>
+      <div class="seller-revenue">${fmtK(s.revenue)}</div>
     </div>
   `).join('');
 }
@@ -895,48 +892,29 @@ function renderRecentOrders(orders) {
 let revenueChart = null;
 let donutChart   = null;
 
-function renderRevenueChart(labels, revenueValues, profitValues) {
+function renderRevenueChart(labels, values) {
   const ctx = document.getElementById('revenue-chart').getContext('2d');
   if (revenueChart) revenueChart.destroy();
-
   revenueChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels,
-      datasets: [
-        {
-          label: 'Net Sales',
-          data: revenueValues,
-          backgroundColor: '#143D2B',
-          borderRadius: 5,
-          borderSkipped: false,
-        },
-        {
-          label: 'Gross Profit',
-          data: profitValues,
-          backgroundColor: '#F26C21',
-          borderRadius: 5,
-          borderSkipped: false,
-        }
-      ]
+      datasets: [{
+        label: 'Revenue',
+        data: values,
+        backgroundColor: values.map((_, i) => i === values.length - 1 ? '#F26C21' : '#143D2B1F'),
+        borderRadius: 6, borderSkipped: false,
+      }]
     },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          display: true,
-          position: 'top',
-          align: 'end',
-          labels: { usePointStyle: true, boxWidth: 8, font: { size: 10, family: 'Anuphan' } }
-        },
-        tooltip: {
-          callbacks: { label: ctx => `${ctx.dataset.label}: ฿${Number(ctx.raw||0).toLocaleString()}` },
-          backgroundColor: '#111', titleColor: '#fff', bodyColor: '#ddd', padding: 10, cornerRadius: 8
-        },
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => `฿${ctx.raw.toLocaleString()}` }, backgroundColor: '#111', titleColor: '#fff', bodyColor: '#aaa', padding: 10, cornerRadius: 8 },
       },
       scales: {
-        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#999', font: { size: 10 }, maxTicksLimit: 14 } },
-        y: { beginAtZero:true, grid: { color: '#F0EDE6' }, border: { display: false }, ticks: { color: '#999', font: { size: 10 }, callback: v => `฿${Number(v).toLocaleString()}` } },
+        x: { grid: { display: false }, border: { display: false }, ticks: { color: '#999', font: { size: 11 } } },
+        y: { grid: { color: '#F0EDE6' }, border: { display: false }, ticks: { color: '#999', font: { size: 11 }, callback: v => `฿${(v/1000).toFixed(0)}K` } },
       },
     },
   });
@@ -969,12 +947,11 @@ function renderDonutChart(bb, hh) {
 // เป็น filter parameter (คืนข้อมูลทุกแบรนด์เสมอ) ปุ่มสลับแบรนด์นี้จึงเป็นแค่ UI state
 // ที่ยังไม่มีผลกรองข้อมูลจริง — ถ้าต้องการฟีเจอร์นี้จริง ต้องเพิ่ม logic ฝั่ง backend ก่อน
 // ============================================================
-async function switchBrand(brand, btn) {
+function switchBrand(brand, btn) {
   ACTIVE_BRAND = brand;
   Identity.setBrand(brand);
   document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  await loadDashboard();
+  btn.classList.add('active');
 }
 
 function scrollToAlerts() {
@@ -994,26 +971,52 @@ function dateKeyBkkLocal(val) {
   return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
 }
 
-async function setPeriod(days, btn) {
+function setPeriod(days, btn) {
   PERIOD_DAYS = days;
   document.querySelectorAll('.period-tab').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  document.getElementById('revenue-period-label').textContent = `Last ${days} days · Net Sales vs Gross Profit`;
-  await loadDashboard();
+  btn.classList.add('active');
+  document.getElementById('revenue-period-label').textContent = `Last ${days} days`;
+  recomputeForPeriod();
 }
 
-function recomputeForPeriod(summary) {
-  if (!summary) return;
-  renderRevenueChart(
-    summary.revenue_labels || [],
-    summary.revenue_trend || [],
-    summary.profit_trend || []
-  );
-  renderBestSellers(summary.best_sellers || []);
-  renderDonutChart(
-    Number(summary.period_brand_bb?.revenue || 0),
-    Number(summary.period_brand_hh?.revenue || 0)
-  );
+function recomputeForPeriod() {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - PERIOD_DAYS);
+  const cutoffStr = dateKeyBkkLocal(cutoff);
+
+  const periodOrders = ALL_ORDERS_RAW.filter(o => o.order_status !== 'cancelled' && dateKeyBkkLocal(o.created_at) >= cutoffStr);
+
+  const dayMap = {};
+  periodOrders.forEach(o => {
+    const k = dateKeyBkkLocal(o.created_at);
+    if (!k) return;
+    dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount||0);
+  });
+  const labels = [], values = [];
+  for (let i = PERIOD_DAYS - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = dateKeyBkkLocal(d);
+    labels.push(`${String(d.getDate()).padStart(2,'0')}/${d.getMonth()+1}`);
+    values.push(dayMap[key] || 0);
+  }
+  renderRevenueChart(labels, values);
+
+  const itemMap = {};
+  periodOrders.forEach(o => {
+    (o.items||[]).forEach(i => {
+      if (!itemMap[i.name]) itemMap[i.name] = { name: i.name, revenue: 0, qty: 0 };
+      itemMap[i.name].revenue += Number(i.total||0) || Number(i.price||0)*Number(i.qty||1);
+      itemMap[i.name].qty += Number(i.qty||1);
+    });
+  });
+  const bestSellers = Object.values(itemMap).sort((a,b) => b.revenue - a.revenue).slice(0, 7)
+    .map(i => ({ name: i.name, cat: '', revenue: Math.round(i.revenue), gp: null }));
+  renderBestSellers(bestSellers);
+
+  const bbRev = periodOrders.filter(o => o.brand_id === 'BB').reduce((s,o) => s + Number(o.total_amount||0), 0);
+  const hhRev = periodOrders.filter(o => o.brand_id === 'HH').reduce((s,o) => s + Number(o.total_amount||0), 0);
+  renderDonutChart(bbRev, hhRev);
 }
 
 // ============================================================
@@ -1021,35 +1024,29 @@ function recomputeForPeriod(summary) {
 // ============================================================
 async function loadDashboard() {
   try {
-    const todayKey = dateKeyBkkLocal(new Date());
-    const orderFn = API.orders || API.ordersToday;
-
     const [summary, orders] = await Promise.all([
-      API.dashboardSummary({ period_days: PERIOD_DAYS, brand_id: ACTIVE_BRAND }),
-      orderFn({ date: todayKey, brand_id: ACTIVE_BRAND, limit: 50 }),
+      API.dashboardSummary(),
+      API.ordersToday(),
     ]);
 
     ALL_ORDERS_RAW = orders || [];
 
+    // ยอดเมื่อวาน = index รองสุดท้ายของ revenue_trend (7 วันล่าสุด รวมวันนี้)
     const trend = summary.revenue_trend || [];
-    const prevDayRevenue = trend.length >= 2 ? Number(trend[trend.length - 2] || 0) : 0;
+    const prevDayRevenue = trend.length >= 2 ? trend[trend.length - 2] : 0;
 
     renderKPIs(summary, prevDayRevenue);
-    recomputeForPeriod(summary);
-    renderRecentOrders((orders || []).filter(o =>
-      o.payment_status === 'paid' && o.order_status !== 'cancelled'
-    ).slice(0, 6));
+    recomputeForPeriod(); // #FIX — กราฟ/เมนูขายดี/โดนัท คำนวณตามช่วงที่เลือกไว้เสมอ (ไม่ใช่ค่าคงที่จาก backend)
 
-    const est = Number(summary.cost_quality?.period_estimated_lines || 0);
-    const periodSub = document.getElementById('revenue-period-label');
-    if (periodSub && est > 0) {
-      periodSub.textContent += ` · ⚠ ${est} cost lines estimated`;
-    }
+    // Recent orders — เอาแค่วันนี้ เรียงล่าสุดก่อน (ordersToday คืนย้อนกลับมาแล้วจาก backend)
+    const today = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
+    const todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+    const todayOrders = (orders || []).filter(o => String(o.created_at||'').indexOf(todayKey) === 0).slice(0, 6);
+    renderRecentOrders(todayOrders);
 
   } catch (e) {
     console.error('Dashboard load error:', e);
-    document.getElementById('kpi-grid').innerHTML =
-      '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
+    document.getElementById('kpi-grid').innerHTML = '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
   }
 
   await loadAndRenderLowStock();
@@ -1057,19 +1054,8 @@ async function loadDashboard() {
 
 function initUI() {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('en', {
-    timeZone:'Asia/Bangkok',
-    weekday:'long', day:'numeric', month:'long', year:'numeric'
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   });
-
-  document.querySelectorAll('.brand-btn').forEach(btn => btn.classList.remove('active'));
-  const selector = ACTIVE_BRAND === 'ALL'
-    ? '.brand-btn.all'
-    : (ACTIVE_BRAND === 'HH' ? '.brand-btn.hh' : '.brand-btn.bb');
-  const active = document.querySelector(selector);
-  if (active) active.classList.add('active');
-
-  document.getElementById('revenue-period-label').textContent =
-    `Last ${PERIOD_DAYS} days · Net Sales vs Gross Profit`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
