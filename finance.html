@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finance & P&L — HENG HENG PHANIT · BrewOS</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -1168,7 +1167,7 @@ button{cursor:pointer}
 
 <script src="api.js"></script>
 <script>
-// v5.8.1 HOTFIX — currency formatter used by Finance renderers
+// v5.8.2 FINANCE SPEED — no blocking Chart.js; overview renders immediately
 function fmtB(value){
   const n = Number(value ?? 0);
   const safe = Number.isFinite(n) ? n : 0;
@@ -1390,52 +1389,50 @@ function renderOverview(s){
 }
 
 function renderBrandChart(bb,hh){
-  const ctx=document.getElementById('brand-chart')?.getContext('2d');
-  if(!ctx) return;
-  if(window._brandChart) window._brandChart.destroy();
-  window._brandChart=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:['Brain Brew','Heng Heng'],
-      datasets:[{data:[bb,hh],backgroundColor:['#143D2B','#F26C21'],borderRadius:7,borderSkipped:false,barThickness:34}]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:c=>fmtB(c.raw)},backgroundColor:'#17211A',padding:9,cornerRadius:7}
-      },
-      scales:{
-        x:{grid:{display:false},border:{display:false},ticks:{color:'#6D766F',font:{size:10,family:'Anuphan'}}},
-        y:{beginAtZero:true,grid:{color:'rgba(20,61,43,.06)'},border:{display:false},ticks:{color:'#9CA39E',font:{size:10},callback:v=>'฿'+Number(v).toLocaleString('th-TH')}}
-      }
-    }
-  });
+  const canvas=document.getElementById('brand-chart');
+  const wrap=canvas?.parentElement;
+  if(!wrap) return;
+  const total=Math.max(0,Number(bb||0)+Number(hh||0));
+  const bbPct=total>0?Math.round(Number(bb||0)/total*100):0;
+  const hhPct=total>0?100-bbPct:0;
+  wrap.innerHTML=`
+    <div style="height:100%;display:flex;flex-direction:column;justify-content:center;gap:18px;padding:10px 6px">
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span>Brain Brew</span><strong>${fmtB(bb)} · ${bbPct}%</strong></div>
+        <div style="height:16px;background:rgba(20,61,43,.08);border-radius:999px;overflow:hidden"><div style="height:100%;width:${bbPct}%;background:#143D2B;border-radius:999px"></div></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px"><span>Heng Heng</span><strong>${fmtB(hh)} · ${hhPct}%</strong></div>
+        <div style="height:16px;background:rgba(242,108,33,.10);border-radius:999px;overflow:hidden"><div style="height:100%;width:${hhPct}%;background:#F26C21;border-radius:999px"></div></div>
+      </div>
+    </div>`;
 }
 
 function renderExpenseDonut(expByCat){
-  const ctx=document.getElementById('exp-donut')?.getContext('2d');
+  const canvas=document.getElementById('exp-donut');
+  const box=canvas?.parentElement;
   const legend=document.getElementById('donut-legend');
-  if(!ctx||!legend) return;
-  const cats=Object.keys(expByCat);
-  if(window._donutChart) window._donutChart.destroy();
+  if(!box||!legend) return;
+  const cats=Object.keys(expByCat||{});
   if(!cats.length){
+    box.innerHTML='<div style="height:100%;display:grid;place-items:center;color:var(--muted);font-size:11px">No OpEx</div>';
     legend.innerHTML='<div style="color:var(--muted)">ไม่มี OpEx ในเดือนนี้</div>';
     return;
   }
   const vals=cats.map(c=>Number(expByCat[c]||0));
+  const total=vals.reduce((a,b)=>a+b,0)||1;
   const colors=cats.map(c=>CAT_COLORS[c]||'#94A3B8');
-  window._donutChart=new Chart(ctx,{
-    type:'doughnut',
-    data:{labels:cats.map(c=>CAT_LABELS[c]||c),datasets:[{data:vals,backgroundColor:colors,borderWidth:0,hoverOffset:3}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',plugins:{legend:{display:false}}}
-  });
+  let acc=0;
+  const stops=cats.map((c,i)=>{
+    const from=acc;
+    acc += vals[i]/total*100;
+    return `${colors[i]} ${from.toFixed(2)}% ${acc.toFixed(2)}%`;
+  }).join(',');
+  box.innerHTML=`<div style="width:128px;height:128px;border-radius:50%;background:conic-gradient(${stops});position:relative;margin:auto">
+    <div style="position:absolute;inset:24%;background:var(--surface,#fff);border-radius:50%;display:grid;place-items:center;text-align:center;font-size:10px;color:var(--muted)"><strong style="display:block;font-size:12px;color:var(--text)">${fmtB(total)}</strong>OpEx</div>
+  </div>`;
   legend.innerHTML=cats.map((c,i)=>`
-    <div class="legend-row">
-      <span class="legend-dot" style="background:${colors[i]}"></span>
-      <span class="legend-name">${CAT_LABELS[c]||c}</span>
-      <span class="legend-value">${fmtB(vals[i])}</span>
-    </div>`).join('');
+    <div class="legend-row"><span class="legend-dot" style="background:${colors[i]}"></span><span class="legend-name">${CAT_LABELS[c]||c}</span><span class="legend-value">${fmtB(vals[i])}</span></div>`).join('');
 }
 
 function renderBrandComparison(s){
@@ -1601,8 +1598,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
   document.getElementById('staff-avatar').textContent=String(name||'S').slice(0,2).toUpperCase();
   document.getElementById('exp-date').value=bkkDateKey();
   document.getElementById('asset-date').value=bkkDateKey();
-  await loadExpenseCategories();
   updateMonthLabel();
+  // หมวดรายจ่ายไม่ควร block P&L; โหลดเบื้องหลัง
+  loadExpenseCategories();
   await loadOverview();
 
   document.querySelectorAll('.modal-overlay').forEach(el=>{
