@@ -1,14 +1,11 @@
 /**
- * BrewOS — Shared API Client v3.0.0
- * แก้จาก v2.1.0 (#SIMPLIFY รอบรื้อระบบ):
- *   - ตัด wrapper staff/attendance/production/members ทิ้งทั้งหมด (backend ไม่มี route
- *     พวกนี้แล้ว — ดู รหัส.gs v5.0.0)
- *   - เพิ่ม wrapper สำหรับ assets (อุปกรณ์ + ค่าเสื่อมราคา) ใหม่
- *   - Identity เดิมที่อ่านชื่อ staff จาก sessionStorage/query param (display-only) ยังคงไว้ได้
- *     เพราะไม่ได้ gate อะไร แค่โชว์ชื่อบนจอเฉยๆ ไม่ผูกกับชีท staff ที่ถูกลบไปแล้ว
+ * BrewOS — Shared API Client v3.1.0
+ * Synced with BrewOS backend v5.6.0 ACCOUNTING CORE
  *
- * ⚠️ #DEPLOYFIX สำคัญที่สุด: API_BASE ต้องเป็น URL เดียวกับ BREWOS_API ใน mobile_pos.html
- * เป๊ะๆ เสมอ — หลังดีพลอย Web App ใหม่ ก็อปปี้ URL เดียวมาแปะทั้งสองไฟล์นี้
+ * หลักการ:
+ *   - api.js เป็น transport layer เท่านั้น
+ *   - Business / Inventory / Accounting calculation อยู่ที่ รหัส.gs เป็น source of truth
+ *   - API_BASE ต้องตรงกับ BREWOS_API ใน mobile_pos.html ทุกครั้งหลัง deploy
  */
 
 const API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
@@ -36,13 +33,19 @@ const apiGet = async (action, params = {}) => {
     await new Promise(r => setTimeout(r, 120));
     throw new Error('OFFLINE_MODE เปิดอยู่ แต่ยังไม่ได้ตั้งค่า mock data สำหรับ action: ' + action);
   }
+
   const url = new URL(API_BASE);
   url.searchParams.set('action', action);
-  for (const [k, v] of Object.entries(params)) {
+
+  for (const [k, v] of Object.entries(params || {})) {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   }
+
   url.searchParams.set('_ts', Date.now());
+
   const res = await fetch(url.toString(), { cache: 'no-store' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} · ${action}`);
+
   const json = await res.json();
   if (!json.success) throw new Error(json.error || ('API error: ' + action));
   return json.data;
@@ -53,11 +56,18 @@ const apiPost = async (action, body = {}) => {
     await new Promise(r => setTimeout(r, 180));
     throw new Error('OFFLINE_MODE เปิดอยู่ แต่ยังไม่ได้ตั้งค่า mock data สำหรับ action: ' + action);
   }
+
+  // action จาก wrapper ต้องชนะเสมอ — ป้องกัน body.action เขียนทับ route โดยไม่ตั้งใจ
+  const payload = { ...(body || {}), action };
+
   const res = await fetch(API_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ action, ...body }),
+    body: JSON.stringify(payload),
   });
+
+  if (!res.ok) throw new Error(`HTTP ${res.status} · ${action}`);
+
   const json = await res.json();
   if (!json.success) throw new Error(json.error || ('API error: ' + action));
   return json.data;
@@ -69,69 +79,79 @@ function notImplemented(featureName) {
   };
 }
 
-// ─── Convenience wrappers — ตรงกับ route จริงใน รหัส.gs v5.0.0 เท่านั้น ────
+// ─── Convenience wrappers ──────────────────────────────────────────────────
 const API = {
-  // Dashboard
+  // Dashboard / Accounting analytics
   dashboardSummary: (p = {}) => apiGet('dashboard_summary', p),
 
   // Menu / Products / Categories
-  menuData:    ()      => apiGet('get_menu_data'),
-  categories:  (brand_id) => apiGet('get_categories', { brand_id }),
-  products:    (p = {})   => apiGet('get_products', p),
-  createProduct: (data) => apiPost('create_product', data),
-  updateProduct: (data) => apiPost('update_product', data),
-  deleteProduct: (product_id) => apiPost('delete_product', { product_id }),
-  createCategory: (data) => apiPost('create_category', data),
-  updateCategory: (data) => apiPost('update_category', data),
+  menuData:       ()          => apiGet('get_menu_data'),
+  categories:     (brand_id)  => apiGet('get_categories', { brand_id }),
+  products:       (p = {})    => apiGet('get_products', p),
+  createProduct:  (data)      => apiPost('create_product', data),
+  updateProduct:  (data)      => apiPost('update_product', data),
+  deleteProduct:  (product_id)=> apiPost('delete_product', { product_id }),
+  createCategory: (data)      => apiPost('create_category', data),
+  updateCategory: (data)      => apiPost('update_category', data),
 
   // Orders
-  ordersToday: (p = {}) => apiGet('get_orders_sheet', p),
-  submitOrder: (data) => apiPost('submit_order', data),
-  cancelOrder: (order_id, reason) => apiPost('cancel_order', { order_id, reason }),
+  // Generic canonical name — รองรับ date / date_from / date_to / brand_id / limit
+  orders:       (p = {}) => apiGet('get_orders_sheet', p),
+  // Legacy alias เพื่อไม่ให้หน้าเก่าพัง
+  ordersToday:  (p = {}) => apiGet('get_orders_sheet', p),
+  submitOrder:  (data)   => apiPost('submit_order', data),
+  cancelOrder:  (order_id, reason) => apiPost('cancel_order', { order_id, reason }),
 
-  // Inventory / Ingredients (แพ็กเกจจิ้งก็อยู่ในนี้ — ดู #INGCRUD ใน รหัส.gs)
-  ingredients:     (p = {}) => apiGet('get_ingredients', p),
-  inventoryStats:  ()       => apiGet('get_inventory_stats'),
-  adjustStock:     (data)   => apiPost('adjust_stock', data), // { ingredient_id, adjust_type: 'add'|'subtract'|'set', amount } — ไม่แตะ unit_cost
-  receiveStock:    (data)   => apiPost('receive_stock', data), // #WAC — { ingredient_id, qty, unit_price, brand_id?, payment_method?, date? } — คำนวณ unit_cost ถัวเฉลี่ยใหม่ + log รายจ่ายอัตโนมัติ
-  createIngredient:(data)   => apiPost('create_ingredient', data),
-  updateIngredient:(data)   => apiPost('update_ingredient', data),
-  deleteIngredient:(ingredient_id) => apiPost('delete_ingredient', { ingredient_id }),
+  // Inventory / Ingredients / Packaging
+  ingredients:      (p = {}) => apiGet('get_ingredients', p),
+  inventoryStats:   ()       => apiGet('get_inventory_stats'),
+  adjustStock:      (data)   => apiPost('adjust_stock', data),
+  receiveStock:     (data)   => apiPost('receive_stock', data),
+  createIngredient: (data)   => apiPost('create_ingredient', data),
+  updateIngredient: (data)   => apiPost('update_ingredient', data),
+  deleteIngredient: (ingredient_id) => apiPost('delete_ingredient', { ingredient_id }),
 
-  // Recipes (รวม sub-recipe cost อัตโนมัติแล้ว — ดู #SUBCOST ใน รหัส.gs)
+  // Recipes
   recipes:      (p = {}) => apiGet('get_recipes', p),
-  createRecipe: (data)   => apiPost('create_recipe', data), // { product_id, product_name, lines:[{ingredient_id, ingredient_name, qty_used, unit}] }
+  createRecipe: (data)   => apiPost('create_recipe', data),
   getRecipe:    notImplemented('ดึงสูตรรายตัว (ใช้ recipes() แล้ว find ฝั่ง client แทนได้)'),
   updateRecipe: notImplemented('แก้ไขสูตรรายตัวโดยตรง (ใช้ createRecipe() เพื่อ overwrite ทั้งสูตรแทน)'),
 
-  // Customers (แทน members ที่ตัดทิ้งไปแล้ว)
+  // Customers
   customers: (p = {}) => apiGet('get_customers', p),
-  createCustomer: (data) => apiPost('create_customer', data), // { name, brand_id?, phone?, email?, notes? }
-  updateCustomer: (data) => apiPost('update_customer', data), // { customer_id, ...fields }
-  addCustomerPoints: (data) => apiPost('add_customer_points', data), // { customer_id, points?, amount }
+  createCustomer: (data) => apiPost('create_customer', data),
+  updateCustomer: (data) => {
+    const payload = { ...(data || {}) };
+    if (payload.name !== undefined && payload.full_name === undefined) {
+      payload.full_name = payload.name;
+      delete payload.name;
+    }
+    return apiPost('update_customer', payload);
+  },
+  addCustomerPoints: (data) => apiPost('add_customer_points', data),
   lookupCustomer: notImplemented('ค้นหาลูกค้าจากเบอร์โทร'),
   redeemPoints:   notImplemented('แลกแต้มสะสม'),
 
-  // #ASSETS — อุปกรณ์/ครุภัณฑ์ + ค่าเสื่อมราคารายเดือน (ใหม่)
-  assets:       (p = {}) => apiGet('get_assets', p), // p: { brand_id?, status? } — แต่ละแถวมี monthly_depreciation คำนวณมาให้แล้ว
-  createAsset:  (data)   => apiPost('create_asset', data), // { name, price, lifespan_months, brand_id?, category?, purchase_date?, payment_method?, notes? } — บันทึกลง expenses อัตโนมัติด้วย
-  updateAsset:  (data)   => apiPost('update_asset', data), // { asset_id, ...fields }
-  deleteAsset:  (asset_id, hard = false) => apiPost('delete_asset', { asset_id, hard }), // default = soft delete (status: retired)
+  // Assets / Depreciation
+  assets:      (p = {}) => apiGet('get_assets', p),
+  createAsset: (data)   => apiPost('create_asset', data),
+  updateAsset: (data)   => apiPost('update_asset', data),
+  deleteAsset: (asset_id, hard = false) => apiPost('delete_asset', { asset_id, hard }),
 
-  // Finance (รวมค่าเสื่อมราคาอุปกรณ์เข้าไปในกำไรสุทธิแล้ว — ดู field depreciation)
-  financeSummary: (p = {}) => apiGet('get_finance_summary', p), // { month: 'YYYY-MM' } → { ..., depreciation, depreciation_by_asset, net_profit }
+  // Finance
+  financeSummary: (p = {}) => apiGet('get_finance_summary', p),
   expenses:       (p = {}) => apiGet('get_expenses', p),
-  createExpense:  (data)   => apiPost('create_expense', data), // { date, category, description, amount, brand_id, payment_method, note }
+  createExpense:  (data)   => apiPost('create_expense', data),
   suppliers:      (p = {}) => apiGet('get_suppliers', p),
   createSupplier: (data)   => apiPost('create_supplier', data),
-  salesReport:     notImplemented('รายงานยอดขายแยกต่างหาก (ใช้ financeSummary() แทน)'),
+  salesReport:     notImplemented('รายงานยอดขายแยกต่างหาก (ใช้ orders() / financeSummary() แทน)'),
   profitReport:    notImplemented('รายงานกำไรแยกต่างหาก (ใช้ financeSummary() แทน)'),
   inventoryReport: notImplemented('รายงานสต๊อกแยกต่างหาก (ใช้ inventoryStats() + ingredients() แทน)'),
 
   // Settings & Brands
-  settings:     ()     => apiGet('get_settings'),
-  updateSetting:(data) => apiPost('update_setting', data),
-  brands:       ()     => apiGet('get_brands'),
+  settings:      ()     => apiGet('get_settings'),
+  updateSetting: (data) => apiPost('update_setting', data),
+  brands:        ()     => apiGet('get_brands'),
 
   // Utility
   ping: () => apiGet('ping'),
@@ -149,6 +169,7 @@ const UI = {
   },
 
   loading(el, on) {
+    if (!el) return;
     if (on) {
       el.dataset.originalText = el.textContent;
       el.disabled = true;
@@ -159,9 +180,41 @@ const UI = {
     }
   },
 
-  baht(n) { return '฿' + Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); },
-  date(d) { return new Date(d).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' }); },
-  time(d) { return new Date(d).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }); },
+  baht(n) {
+    return '฿' + Number(n || 0).toLocaleString('th-TH', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  },
+
+  date(d) {
+    if (d === null || d === undefined || d === '') return '—';
+    const raw = String(d).trim();
+
+    // date-only ไม่ให้ browser ตีความ timezone เอง
+    const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const value = m ? `${m[1]}-${m[2]}-${m[3]}T12:00:00+07:00` : raw;
+    const dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return raw;
+
+    return dt.toLocaleDateString('th-TH', {
+      timeZone: 'Asia/Bangkok',
+      day: 'numeric',
+      month: 'short',
+      year: '2-digit'
+    });
+  },
+
+  time(d) {
+    if (d === null || d === undefined || d === '') return '—';
+    const dt = new Date(d);
+    if (Number.isNaN(dt.getTime())) return String(d);
+    return dt.toLocaleTimeString('th-TH', {
+      timeZone: 'Asia/Bangkok',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  },
 
   openModal(id) {
     const el = document.getElementById(id);
@@ -169,6 +222,7 @@ const UI = {
     el.classList.add('open');
     el.classList.add('show');
   },
+
   closeModal(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -177,7 +231,11 @@ const UI = {
   },
 
   skeleton(n = 5) {
-    return Array(n).fill('<tr>' + '<td><div style="height:14px;background:#e8e4de;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>'.repeat(5) + '</tr>').join('');
+    return Array(n).fill(
+      '<tr>' +
+      '<td><div style="height:14px;background:#e8e4de;border-radius:4px;animation:pulse 1.5s infinite;"></div></td>'.repeat(5) +
+      '</tr>'
+    ).join('');
   },
 };
 
