@@ -818,7 +818,13 @@ async function doCheckout() {
     lastData = data;
     hideLoad();
     showSuccess(data);
-    toast2('✅ บันทึกออเดอร์สำเร็จ!');
+    const shortages = result && result.stock && Array.isArray(result.stock.shortages) ? result.stock.shortages : [];
+    if (shortages.length) {
+      console.warn('⚠️ Stock shortages:', shortages);
+      toast2('⚠️ บันทึกออเดอร์แล้ว แต่สต๊อกติดลบ ' + shortages.length + ' รายการ — กรุณาตรวจนับสต๊อก');
+    } else {
+      toast2('✅ บันทึกออเดอร์สำเร็จ!');
+    }
   } catch(e) {
     console.error('❌ doCheckout failed:', e);
     hideLoad();
