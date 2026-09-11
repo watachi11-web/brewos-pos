@@ -1,6 +1,6 @@
 /**
- * BrewOS — Shared API Client v3.2.0
- * Synced with BrewOS backend v5.7.0 INVENTORY & PURCHASE CORE
+ * BrewOS — Shared API Client v3.3.0
+ * Synced with BrewOS backend v5.8.0 EXPENSES & ASSETS CORE
  *
  * หลักการ:
  *   - api.js เป็น transport layer เท่านั้น
@@ -140,6 +140,7 @@ const API = {
 
   // Assets / Depreciation
   assets:      (p = {}) => apiGet('get_assets', p),
+  assetSummary:(p = {}) => apiGet('get_asset_summary', p),
   createAsset: (data)   => apiPost('create_asset', data),
   updateAsset: (data)   => apiPost('update_asset', data),
   deleteAsset: (asset_id, hard = false) => apiPost('delete_asset', { asset_id, hard }),
@@ -147,7 +148,10 @@ const API = {
   // Finance
   financeSummary: (p = {}) => apiGet('get_finance_summary', p),
   expenses:       (p = {}) => apiGet('get_expenses', p),
+  expenseCategories:(p = {}) => apiGet('get_expense_categories', p),
   createExpense:  (data)   => apiPost('create_expense', data),
+  updateExpense:  (data)   => apiPost('update_expense', data),
+  deleteExpense:  (expense_id) => apiPost('delete_expense', { expense_id }),
   suppliers:      (p = {}) => apiGet('get_suppliers', p),
   createSupplier: (data)   => apiPost('create_supplier', data),
   salesReport:     notImplemented('รายงานยอดขายแยกต่างหาก (ใช้ orders() / financeSummary() แทน)'),
