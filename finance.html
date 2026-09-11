@@ -1167,7 +1167,7 @@ button{cursor:pointer}
 
 <script src="api.js"></script>
 <script>
-// v5.8.3 FINANCE DIRECT — P&L uses google.script.run in same Apps Script project
+// v5.8.4 FINANCE ALL DIRECT — Finance reads/writes use google.script.run in same Apps Script project
 function fmtB(value){
   const n = Number(value ?? 0);
   const safe = Number.isFinite(n) ? n : 0;
@@ -1175,7 +1175,7 @@ function fmtB(value){
 }
 
 
-// v5.8.3: Finance page is served by the same Apps Script project.
+// v5.8.4: Finance page is served by the same Apps Script project.
 // Calling the server directly avoids a second HTTP fetch back into the /exec URL,
 // which can be slow/unreliable inside HtmlService iframe.
 function gasCall(functionName, ...args){
@@ -1203,6 +1203,21 @@ async function financeSummaryTransport(params){
     return await API.financeSummary(params || {});
   }
   throw new Error('Finance transport unavailable');
+}
+
+
+// v5.8.4: use direct Apps Script calls for every Finance action, not only P&L.
+// This avoids /exec?action=... endpoint mismatches (e.g. HTTP 404 get_expenses)
+// and removes a second HTTP round-trip from the HtmlService iframe.
+async function financeDirect(serverFunction, fallbackApiMethod, payload, mode){
+  if(window.google && google.script && google.script.run){
+    if(mode==='deleteAsset') return await gasCall(serverFunction, {asset_id: payload});
+    return await gasCall(serverFunction, payload || {});
+  }
+  if(window.API && fallbackApiMethod && typeof API[fallbackApiMethod]==='function'){
+    return await API[fallbackApiMethod](payload || {});
+  }
+  throw new Error('Finance transport unavailable: '+serverFunction);
 }
 
 let currentMonth = new Date();
@@ -1494,7 +1509,7 @@ function renderBrandComparison(s){
 
 async function loadExpenseCategories(){
   try{
-    EXPENSE_CATEGORIES=await API.expenseCategories();
+    EXPENSE_CATEGORIES=await financeDirect('getExpenseCategories','expenseCategories',{});
     EXPENSE_CATEGORIES.forEach(c=>CAT_LABELS[c.category_id]=c.label_th||c.label_en||c.category_id);
     const opts='<option value="">ทุกหมวด</option>'+EXPENSE_CATEGORIES.map(c=>`<option value="${c.category_id}">${c.label_th||c.label_en}</option>`).join('');
     const filter=document.getElementById('exp-cat-filter'); if(filter) filter.innerHTML=opts;
@@ -1507,7 +1522,7 @@ async function loadExpenses(){
   body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
   try{
     const range=financePeriod(currentMonth);
-    const data=await API.expenses({date_from:range.first,date_to:range.last});
+    const data=await financeDirect('getExpensesList','expenses',{date_from:range.first,date_to:range.last});
     EXPENSES=(data||[]).map(e=>({
       id:e.expense_id,desc:e.description,cat:e.category,brand:e.brand_id,
       amount:Number(e.amount||0),date:e.date,
@@ -1554,7 +1569,10 @@ function renderExpenses(){
 async function loadAssets(){
   const body=document.getElementById('asset-body'); body.innerHTML='<div class="loading-text">กำลังโหลด...</div>';
   try{
-    const [rows,sum]=await Promise.all([API.assets({}),API.assetSummary({})]); ASSETS=rows||[]; ASSET_SUMMARY=sum||{};
+    const [rows,sum]=await Promise.all([
+      financeDirect('getAssets','assets',{}),
+      financeDirect('getAssetSummary','assetSummary',{})
+    ]); ASSETS=rows||[]; ASSET_SUMMARY=sum||{};
     document.getElementById('asset-threshold').textContent=fmtB(ASSET_SUMMARY.capitalization_threshold||1000);
     document.getElementById('asset-summary').innerHTML=`
       <div class="kpi-card"><div class="kpi-label">Registered Equipment</div><div class="kpi-value">${ASSET_SUMMARY.asset_count||0}</div><div class="kpi-sub">รายการในทะเบียน</div></div>
@@ -1582,11 +1600,11 @@ async function saveAsset(){
   if(!name||!(price>0)||!date){UI.toast('กรอกชื่อ ราคา และวันที่ซื้อให้ครบ','error');return;}
   const btn=document.getElementById('save-asset-btn'); UI.loading(btn,true);
   try{
-    const r=await API.createAsset({name,price,purchase_date:date,brand_id:document.getElementById('asset-brand').value,category:document.getElementById('asset-category').value,lifespan_months:Number(document.getElementById('asset-life').value||36),payment_method:document.getElementById('asset-payment').value,vendor:document.getElementById('asset-vendor').value.trim(),notes:document.getElementById('asset-note').value.trim()});
+    const r=await financeDirect('createAsset','createAsset',{name,price,purchase_date:date,brand_id:document.getElementById('asset-brand').value,category:document.getElementById('asset-category').value,lifespan_months:Number(document.getElementById('asset-life').value||36),payment_method:document.getElementById('asset-payment').value,vendor:document.getElementById('asset-vendor').value.trim(),notes:document.getElementById('asset-note').value.trim()});
     UI.toast(r.is_depreciable?'บันทึกเป็นสินทรัพย์และเริ่มค่าเสื่อมแล้ว':'บันทึกเป็น Small Equipment OpEx แล้ว'); UI.closeModal('add-asset-modal'); await Promise.all([loadAssets(),loadOverview()]);
   }catch(e){UI.toast('บันทึกไม่สำเร็จ: '+e.message,'error');}finally{UI.loading(btn,false);}
 }
-async function retireAsset(id){ if(!confirm('ยืนยันเลิกใช้อุปกรณ์ '+id+'?'))return; try{await API.deleteAsset(id);UI.toast('ปรับสถานะเป็น retired แล้ว');await Promise.all([loadAssets(),loadOverview()]);}catch(e){UI.toast(e.message,'error');} }
+async function retireAsset(id){ if(!confirm('ยืนยันเลิกใช้อุปกรณ์ '+id+'?'))return; try{await financeDirect('deleteAsset','deleteAsset',id,'deleteAsset');UI.toast('ปรับสถานะเป็น retired แล้ว');await Promise.all([loadAssets(),loadOverview()]);}catch(e){UI.toast(e.message,'error');} }
 
 async function saveExpense(){
   const desc=document.getElementById('exp-desc').value.trim();
@@ -1601,7 +1619,7 @@ async function saveExpense(){
   if(window.UI?.loading) UI.loading(btn,true); else btn.disabled=true;
 
   try{
-    const res=await API.createExpense({
+    const res=await financeDirect('createExpense','createExpense',{
       date,
       category:document.getElementById('exp-cat').value,
       description:desc,
