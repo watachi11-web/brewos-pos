@@ -5,12 +5,37 @@
 <div id="status" class="note">กำลังโหลด…</div><div id="kpi" class="grid"></div>
 <div class="card"><h3>ยอดตามช่องทางรับเงิน</h3><div class="payments" id="payments"></div><div class="note">กรอก “ยอดรับจริง” จากเงินสด/QR/โอน ณ ตอนปิดวัน ระบบจะเทียบกับยอดที่ POS บันทึกไว้</div></div>
 <div class="card" style="margin-top:16px"><label class="label">หมายเหตุ</label><input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน"><button id="closeBtn" class="btn" style="margin-top:14px" onclick="closeDay()">ปิดยอดวันนี้</button><div id="result" class="note"></div></div>
-</div><script>
-const API='https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';let P=null;const fmt=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
-function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date())}document.getElementById('date').value=today();
-async function apiGet(a,p={}){const u=new URL(API);u.searchParams.set('action',a);Object.entries(p).forEach(([k,v])=>u.searchParams.set(k,v));const r=await fetch(u);return r.json()}
-async function apiPost(b){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(b)});return r.json()}
+</div><script src="api.js"></script>
+<script>
+let P=null;
+const fmt=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
+function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date())}
+document.getElementById('date').value=today();
 function k(label,v){return `<div class="card"><div class="label">${label}</div><div class="value">${v}</div></div>`}
-async function loadPreview(){document.getElementById('status').textContent='กำลังโหลด…';const j=await apiGet('get_daily_close_preview',{date:date.value});if(!j.success){status.textContent=j.error;return}P=j.data;kpi.innerHTML=k('Net Sales',fmt(P.net_sales))+k('COGS',fmt(P.cogs))+k('Gross Profit',fmt(P.gross_profit))+k('Net Profit',fmt(P.net_profit))+k('Tickets',P.ticket_count)+k('Low Stock',P.low_stock_count)+k('Negative Stock',P.negative_stock_count)+k('Integrity Errors',P.unresolved_integrity_events);const e=P.expected_payment;payments.innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${e[x]}"></div>`).join('');status.innerHTML=P.can_close?'<span class="ok">พร้อมปิดยอด</span>':'<span class="bad">ยังปิดไม่ได้: มี Integrity Error</span>';closeBtn.disabled=!P.can_close}
-async function closeDay(){if(!P)return;closeBtn.disabled=true;result.textContent='กำลังปิดยอด…';const j=await apiPost({action:'close_day',date:P.date,actual_cash:a_cash.value,actual_qr:a_qr.value,actual_transfer:a_transfer.value,actual_other:a_other.value,notes:notes.value,closed_by:'owner'});if(!j.success||!j.data?.success){result.innerHTML='<span class="bad">'+(j.data?.error||j.error||'Close failed')+'</span>';closeBtn.disabled=false;return}const v=j.data.variance||{};result.innerHTML=`<span class="ok">ปิดยอดแล้ว ${j.data.close_id}</span> · variance รวม ${fmt(v.total||0)}`}
-loadPreview();</script></body></html>
+async function loadPreview(){
+  document.getElementById('status').textContent='กำลังโหลด…';
+  try{
+    P=await API.dailyClosePreview(date.value);
+    kpi.innerHTML=k('Net Sales',fmt(P.net_sales))+k('COGS',fmt(P.cogs))+k('Gross Profit',fmt(P.gross_profit))+k('Net Profit',fmt(P.net_profit))+k('Tickets',P.ticket_count)+k('Low Stock',P.low_stock_count)+k('Negative Stock',P.negative_stock_count)+k('Integrity Errors',P.unresolved_integrity_events);
+    const e=P.expected_payment||{};
+    payments.innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
+    status.innerHTML=P.can_close?'<span class="ok">พร้อมปิดยอด</span>':'<span class="bad">ยังปิดไม่ได้: มี Integrity Error</span>';
+    closeBtn.disabled=!P.can_close;
+  }catch(err){
+    status.innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span>';
+    closeBtn.disabled=true;
+  }
+}
+async function closeDay(){
+  if(!P)return;
+  closeBtn.disabled=true; result.textContent='กำลังปิดยอด…';
+  try{
+    const data=await API.closeDay({date:P.date,actual_cash:a_cash.value,actual_qr:a_qr.value,actual_transfer:a_transfer.value,actual_other:a_other.value,notes:notes.value,closed_by:'owner'});
+    if(!data?.success){result.innerHTML='<span class="bad">'+(data?.error||'Close failed')+'</span>';closeBtn.disabled=false;return}
+    const v=data.variance||{}; result.innerHTML=`<span class="ok">ปิดยอดแล้ว ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
+  }catch(err){
+    result.innerHTML='<span class="bad">'+(err.message||'Close failed')+'</span>'; closeBtn.disabled=false;
+  }
+}
+loadPreview();
+</script></body></html>
