@@ -1167,7 +1167,7 @@ button{cursor:pointer}
 
 <script src="api.js"></script>
 <script>
-// v5.8.4 FINANCE ALL DIRECT — Finance reads/writes use google.script.run in same Apps Script project
+// v5.8.5 FINANCE LITERAL DIRECT — explicit google.script.run calls + timeout guard
 function fmtB(value){
   const n = Number(value ?? 0);
   const safe = Number.isFinite(n) ? n : 0;
@@ -1179,24 +1179,46 @@ function fmtB(value){
 // Calling the server directly avoids a second HTTP fetch back into the /exec URL,
 // which can be slow/unreliable inside HtmlService iframe.
 function gasCall(functionName, ...args){
+  // v5.8.5: google.script.run is a special Apps Script proxy. Do not invoke server
+  // functions via runner[functionName](...) because computed-property dispatch can
+  // remain pending in HtmlService on some deployments. Use explicit literal calls.
   return new Promise((resolve,reject)=>{
     try{
       if(!(window.google && google.script && google.script.run)){
         reject(new Error('google.script.run unavailable'));
         return;
       }
-      let runner=google.script.run
-        .withSuccessHandler(resolve)
-        .withFailureHandler(err=>reject(new Error(err?.message || String(err || 'Apps Script error'))));
-      runner[functionName](...args);
+      const ok = value => resolve(value);
+      const fail = err => reject(new Error((err && err.message) || String(err || 'Apps Script error')));
+      const runner = google.script.run.withSuccessHandler(ok).withFailureHandler(fail);
+      const a0 = args[0] || {};
+      switch(functionName){
+        case 'getFinanceSummary': runner.getFinanceSummary(a0); break;
+        case 'getExpenseCategories': runner.getExpenseCategories(a0); break;
+        case 'getExpensesList': runner.getExpensesList(a0); break;
+        case 'getAssets': runner.getAssets(a0); break;
+        case 'getAssetSummary': runner.getAssetSummary(a0); break;
+        case 'createExpense': runner.createExpense(a0); break;
+        case 'createAsset': runner.createAsset(a0); break;
+        case 'deleteAsset': runner.deleteAsset(a0); break;
+        default: reject(new Error('Unsupported Finance server function: '+functionName));
+      }
     }catch(err){ reject(err); }
   });
+}
+
+function withTimeout(promise, ms, label){
+  let timer;
+  const timeout = new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(new Error((label||'Server')+' ใช้เวลานานเกิน '+Math.round(ms/1000)+' วินาที')),ms);
+  });
+  return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
 }
 
 async function financeSummaryTransport(params){
   // Preferred path for Apps Script-hosted Finance.
   if(window.google && google.script && google.script.run){
-    return await gasCall('getFinanceSummary', params || {});
+    return await withTimeout(gasCall('getFinanceSummary', params || {}), 25000, 'P&L');
   }
   // Fallback for standalone hosting/testing.
   if(window.API && typeof API.financeSummary==='function'){
@@ -1348,7 +1370,7 @@ async function loadOverview(){
     document.getElementById('overview-content').style.display='block';
   }catch(e){
     console.error('loadOverview failed',e);
-    loading.textContent='โหลดข้อมูลไม่สำเร็จ: '+e.message;
+    loading.innerHTML='โหลดข้อมูลไม่สำเร็จ: '+e.message+'<br><button class="btn btn-primary" style="margin-top:14px" onclick="loadOverview()">ลองใหม่</button>'; 
     if(window.UI?.toast) UI.toast('โหลด P&L ไม่สำเร็จ: '+e.message,'error');
   }
 }
