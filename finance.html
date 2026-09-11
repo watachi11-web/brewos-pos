@@ -834,6 +834,10 @@ button{cursor:pointer}
   .donut-row{align-items:flex-start}
   .topbar-flower{display:none}
 }
+
+.brand-metric{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0;border-top:1px solid rgba(20,61,43,.08);font-size:11.5px;color:var(--muted)}
+.brand-metric strong{font-family:'Poppins','Anuphan',sans-serif;color:var(--text);font-weight:600}
+
 </style>
 
 </head>
@@ -1011,7 +1015,7 @@ button{cursor:pointer}
           <div class="card-header">
             <div>
               <div class="card-title">Brand Performance</div>
-              <div class="card-subtitle">Revenue share · ยังไม่รวม COGS แยกแบรนด์</div>
+              <div class="card-subtitle">Net Sales · COGS · Gross Profit จาก backend</div>
             </div>
           </div>
           <div class="card-body" id="brand-comparison-body"></div>
@@ -1267,28 +1271,36 @@ async function loadOverview(){
 
 function renderOverview(s){
   const rev=Number(s.revenue?.total||0);
+  const grossSales=Number(s.gross_sales||rev);
+  const discount=Number(s.discount_total||0);
   const cogs=Number(s.cogs||0);
   const gp=Number(s.gross_profit||0);
   const opex=Number(s.total_expenses||0);
   const dep=Number(s.depreciation||0);
   const capex=Number(s.capex_and_inventory_spend||0);
   const net=Number(s.net_profit||0);
+  const estimated=Number(s.cost_quality?.estimated_lines||0);
 
   document.getElementById('kpi-rev').textContent=fmtB(rev);
-  document.getElementById('kpi-rev-count').textContent=(s.order_count||0)+' ออเดอร์';
+  document.getElementById('kpi-rev-count').textContent=
+    (s.order_count||0)+' transactions · Net Sales';
+
   document.getElementById('kpi-cogs').textContent=fmtB(cogs);
-  document.getElementById('kpi-cogs-pct').textContent=pctOf(cogs,rev)+' ของยอดขาย';
+  document.getElementById('kpi-cogs-pct').textContent=
+    pctOf(cogs,rev)+' ของ Net Sales'+(estimated>0?' · ⚠ estimated '+estimated+' lines':'');
+
   document.getElementById('kpi-gp').textContent=fmtB(gp);
   document.getElementById('kpi-gp-pct').textContent='GP '+Number(s.gross_margin_pct||0).toFixed(1)+'%';
-  document.getElementById('kpi-opex').textContent=fmtB(opex+dep);
-  document.getElementById('kpi-opex-pct').textContent='OpEx '+fmtB(opex)+' · ค่าเสื่อม '+fmtB(dep);
+
+  // KPI นี้แสดง OpEx เท่านั้น; Depreciation แยกใน subtitle/P&L
+  document.getElementById('kpi-opex').textContent=fmtB(opex);
+  document.getElementById('kpi-opex-pct').textContent='ค่าเสื่อมเพิ่มเติม '+fmtB(dep);
 
   const netEl=document.getElementById('kpi-net');
   netEl.textContent=fmtB(net);
   netEl.classList.toggle('good',net>=0);
   netEl.classList.toggle('bad',net<0);
-  const netPct=document.getElementById('kpi-net-pct');
-  netPct.textContent='NP '+Number(s.net_margin_pct||0).toFixed(1)+'%';
+  document.getElementById('kpi-net-pct').textContent='NP '+Number(s.net_margin_pct||0).toFixed(1)+'%';
 
   const pRange=financePeriod(currentMonth);
   document.getElementById('pl-statement-title').textContent='P&L Statement — '+periodLabel(pRange);
@@ -1302,14 +1314,21 @@ function renderOverview(s){
       </div>`).join('')
     : `<div class="pl-row subtotal"><span class="pl-label indent">ไม่มี Operating Expense ที่บันทึกในเดือนนี้</span></div>`;
 
+  const costNote = estimated>0
+    ? `<div class="pl-note">⚠️ COGS มี ${estimated} line(s) ที่ไม่มี cost snapshot จึง fallback ไปใช้ต้นทุนสูตร/Products ปัจจุบัน — ตัวเลขส่วนนี้ถือเป็น estimated historical cost</div>`
+    : `<div class="pl-note">✓ COGS ใช้ cost snapshot ณ เวลาขายครบทุก line ในช่วงนี้</div>`;
+
   document.getElementById('pl-statement-body').innerHTML=`
-    <div class="pl-section-header">Revenue</div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew Coffee</span><span class="pl-value good">${fmtB(s.revenue?.bb)}</span></div>
-    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng Phanit</span><span class="pl-value good">${fmtB(s.revenue?.hh)}</span></div>
-    <div class="pl-row"><span class="pl-label">Total Revenue</span><span class="pl-value good">${fmtB(rev)}</span></div>
+    <div class="pl-section-header">Sales</div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Gross Sales</span><span class="pl-value">${fmtB(grossSales)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Discounts</span><span class="pl-value bad">-${fmtB(discount)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Brain Brew · Net Sales</span><span class="pl-value good">${fmtB(s.revenue?.bb)}</span></div>
+    <div class="pl-row subtotal"><span class="pl-label indent">Heng Heng · Net Sales</span><span class="pl-value good">${fmtB(s.revenue?.hh)}</span></div>
+    <div class="pl-row"><span class="pl-label">Net Sales</span><span class="pl-value good">${fmtB(rev)}</span></div>
 
     <div class="pl-section-header">Cost of Goods Sold</div>
-    <div class="pl-row"><span class="pl-label">COGS · วัตถุดิบและแพ็กเกจจิ้งที่ใช้จริง</span><span class="pl-value bad">-${fmtB(cogs)}</span></div>
+    <div class="pl-row"><span class="pl-label">COGS · ING + PKG ที่ใช้ขายจริง</span><span class="pl-value bad">-${fmtB(cogs)}</span></div>
+    ${costNote}
     <div class="pl-row total"><span class="pl-label">Gross Profit</span><span class="pl-value good">${fmtB(gp)}</span></div>
 
     <div class="pl-section-header">Operating Expenses</div>
@@ -1317,14 +1336,14 @@ function renderOverview(s){
     <div class="pl-row"><span class="pl-label">Total OpEx</span><span class="pl-value bad">-${fmtB(opex)}</span></div>
 
     <div class="pl-section-header">Depreciation</div>
-    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์</span><span class="pl-value bad">-${fmtB(dep)}</span></div>
+    <div class="pl-row"><span class="pl-label">ค่าเสื่อมราคาอุปกรณ์ตามช่วงใช้งาน</span><span class="pl-value bad">-${fmtB(dep)}</span></div>
 
     <div class="pl-row total">
       <span class="pl-label">Net Profit</span>
       <span class="pl-value ${net>=0?'good':'bad'}" style="font-size:14px">${fmtB(net)}</span>
     </div>
 
-    ${capex>0?`<div class="pl-note">เดือนนี้มีเงินสดจ่ายซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่ถูกหักซ้ำใน P&L โดยตรง เพราะระบบทยอยนับผ่าน COGS หรือค่าเสื่อมราคา</div>`:''}
+    ${capex>0?`<div class="pl-note">Cash spending เดือนนี้สำหรับซื้อวัตถุดิบ/แพ็กเกจจิ้ง/อุปกรณ์รวม <strong>${fmtB(capex)}</strong> — ไม่หักซ้ำใน P&L; รับรู้ผ่าน COGS หรือ Depreciation</div>`:''}
   `;
 
   renderBrandChart(Number(s.revenue?.bb||0),Number(s.revenue?.hh||0));
@@ -1382,21 +1401,27 @@ function renderExpenseDonut(expByCat){
 }
 
 function renderBrandComparison(s){
-  const bb=Number(s.revenue?.bb||0),hh=Number(s.revenue?.hh||0),total=bb+hh;
+  const bb=s.brand?.bb||{};
+  const hh=s.brand?.hh||{};
+
+  function card(name,color,b){
+    return `
+      <div class="brand-card">
+        <div class="brand-head"><span class="brand-dot" style="background:${color}"></span><span class="brand-name">${name}</span></div>
+        <div class="brand-revenue">${fmtB(b.revenue||0)}</div>
+        <div class="brand-share">Net Sales</div>
+        <div class="brand-metric"><span>COGS</span><strong>${fmtB(b.cogs||0)}</strong></div>
+        <div class="brand-metric"><span>Gross Profit</span><strong>${fmtB(b.gross_profit||0)}</strong></div>
+        <div class="brand-metric"><span>GP Margin</span><strong>${Number(b.gross_margin_pct||0).toFixed(1)}%</strong></div>
+      </div>`;
+  }
+
   document.getElementById('brand-comparison-body').innerHTML=`
     <div class="brand-grid">
-      <div class="brand-card">
-        <div class="brand-head"><span class="brand-dot" style="background:#143D2B"></span><span class="brand-name">Brain Brew Coffee</span></div>
-        <div class="brand-revenue">${fmtB(bb)}</div>
-        <div class="brand-share">Revenue share · ${pctOf(bb,total)}</div>
-      </div>
-      <div class="brand-card">
-        <div class="brand-head"><span class="brand-dot" style="background:#F26C21"></span><span class="brand-name">Heng Heng Phanit</span></div>
-        <div class="brand-revenue">${fmtB(hh)}</div>
-        <div class="brand-share">Revenue share · ${pctOf(hh,total)}</div>
-      </div>
+      ${card('Brain Brew Coffee','#143D2B',bb)}
+      ${card('Heng Heng Phanit','#F26C21',hh)}
     </div>
-    <div class="pl-note">กำไรขั้นต้นแยกแบรนด์ยังไม่แสดงในหน้านี้จนกว่า <code>financeSummary()</code> จะส่ง COGS/GP แยก BB และ HH มาโดยตรง เพื่อไม่เดาตัวเลขฝั่งหน้าเว็บ</div>
+    <div class="pl-note">ตัวเลขแบรนด์ทั้งหมดส่งมาจาก Accounting Core ฝั่ง backend โดยตรง ไม่คำนวณ GP ซ้ำในหน้าเว็บ</div>
   `;
 }
 
