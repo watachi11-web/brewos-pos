@@ -59,7 +59,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .card-sub { font-size:10.5px; color:var(--muted); }
 .card-body { padding:18px; }
 
-.menu-grid { grid-template-columns:2fr 1fr 1fr 1fr; }
+.menu-grid { grid-template-columns:2fr .7fr 1fr 1fr .7fr; }
 .table-header { display:grid; padding:10px 16px; background:var(--green); font-size:10px; color:rgba(255,255,255,0.8); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
 .table-row { display:grid; padding:11px 16px; border-bottom:1px solid var(--border); align-items:center; font-size:12.5px; }
 .table-row:last-child { border-bottom:none; }
@@ -125,22 +125,22 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
     <div class="content">
       <div class="kpi-row">
         <div class="kpi-card">
-          <div class="kpi-label">Total Revenue</div>
+          <div class="kpi-label">Net Sales</div>
           <div class="kpi-value" id="r-revenue">—</div>
           <div class="kpi-sub" id="r-revenue-sub">&nbsp;</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Total Orders</div>
+          <div class="kpi-label">Transactions</div>
           <div class="kpi-value" id="r-orders">—</div>
           <div class="kpi-sub" id="r-orders-sub">&nbsp;</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Avg Order Value</div>
+          <div class="kpi-label">Gross Profit</div>
           <div class="kpi-value" id="r-avg">—</div>
           <div class="kpi-sub">&nbsp;</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">Top Selling Item</div>
+          <div class="kpi-label">GP Margin</div>
           <div class="kpi-value" id="r-top" style="font-size:14px;line-height:1.3">—</div>
           <div class="kpi-sub" id="r-top-sub">&nbsp;</div>
         </div>
@@ -149,7 +149,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
       <div class="two-col">
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Revenue Trend</div>
+            <div class="card-title">Net Sales vs Gross Profit</div>
             <div class="card-sub" id="chart-period-label">Last 30 days</div>
           </div>
           <div class="card-body">
@@ -172,7 +172,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
             <div class="card-sub" id="top-menu-sub">by revenue</div>
           </div>
           <div class="table-header menu-grid">
-            <div>Menu Item</div><div>Orders</div><div>Revenue</div><div>Avg Price</div>
+            <div>Menu Item</div><div>Qty</div><div>Net Sales</div><div>Gross Profit</div><div>GP</div>
           </div>
           <div id="top-menu-body"><div class="loading-text">Loading…</div></div>
         </div>
@@ -189,8 +189,8 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <div class="card-title">Daily Breakdown</div>
           <div class="card-sub" id="daily-sub">Most recent days first</div>
         </div>
-        <div class="table-header" style="grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;display:grid;padding:10px 16px">
-          <div>Date</div><div>Orders</div><div>Revenue</div><div>Avg Order</div><div>BB / HH</div>
+        <div class="table-header" style="grid-template-columns:1.5fr .7fr 1fr 1fr 1fr .7fr;display:grid;padding:10px 16px">
+          <div>Date</div><div>Txns</div><div>Net Sales</div><div>COGS</div><div>Gross Profit</div><div>GP</div>
         </div>
         <div id="daily-body"><div class="loading-text">Loading…</div></div>
       </div>
@@ -200,7 +200,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 <script src="api.js"></script>
 <script>
-// #DATAFIX v5.5.2 — Reports ดึงตาม date range จาก backend และรับ canonical created_at
+// #ACCOUNTING CORE v5.6.0 — Reports ดึงตาม date range จาก backend และรับ canonical created_at
 // (field name ที่ใช้ตรงกับ getOrdersFromSheet() อยู่แล้ว ไม่มี logic bug ต้องแก้)
 // #NAVFIX — เอาลิงก์ staff.html ออกจาก sidebar (ระบบพนักงานถูกลบทิ้งไปแล้ว)
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -294,10 +294,11 @@ async function loadReportData() {
           .withFailureHandler(reject)
           .getOrdersFromSheet(params);
       });
-    } else if (typeof API !== 'undefined' && API.ordersToday) {
-      ALL_ORDERS = await API.ordersToday(params);
+    } else if (typeof API !== 'undefined' && (API.orders || API.ordersToday)) {
+      const orderFn = API.orders || API.ordersToday;
+      ALL_ORDERS = await orderFn(params);
     } else {
-      throw new Error('ไม่พบ API.ordersToday / google.script.run');
+      throw new Error('ไม่พบ API.orders / google.script.run');
     }
 
     if (!Array.isArray(ALL_ORDERS)) ALL_ORDERS = [];
@@ -364,37 +365,29 @@ function renderAll() {
 }
 
 function renderKPIs(orders) {
-  const totalRev = orders.reduce((s,o) => s + Number(o.total_amount||0), 0);
-  const avg = orders.length ? totalRev / orders.length : 0;
+  const netSales = orders.reduce((s,o) => s + Number(o.total_amount||0), 0);
+  const cogs = orders.reduce((s,o) => s + Number(o.cogs||0), 0);
+  const grossProfit = netSales - cogs;
+  const gpPct = netSales > 0 ? grossProfit / netSales * 100 : 0;
 
-  const itemCount = {};
-  orders.forEach(o => {
-    if (!Array.isArray(o.items)) return;
-    o.items.forEach(i => {
-      if (!itemCount[i.name]) itemCount[i.name] = { qty:0, rev:0 };
-      itemCount[i.name].qty += Number(i.qty||1);
-      itemCount[i.name].rev += Number(i.total||0) || Number(i.price||0)*Number(i.qty||1);
-    });
-  });
-  const topItem = Object.entries(itemCount).sort((a,b)=>b[1].qty-a[1].qty)[0];
+  const txns = new Set(orders.map(o => o.transaction_id || String(o.order_id||'').replace(/-(BB|HH)$/,''))).size;
+  const estimatedLines = orders.reduce((s,o) => s + Number(o.cost_quality?.estimated_lines||0),0);
   const periodLabel = PERIOD_DAYS === 0 ? 'All time' : `Last ${PERIOD_DAYS} days`;
 
-  document.getElementById('r-revenue').textContent = fmt(totalRev);
+  document.getElementById('r-revenue').textContent = fmt(netSales);
   document.getElementById('r-revenue-sub').textContent = periodLabel;
-  document.getElementById('r-orders').textContent = orders.length;
-  document.getElementById('r-orders-sub').textContent = periodLabel;
-  document.getElementById('r-avg').textContent = fmt(avg);
-  document.getElementById('chart-period-label').textContent = periodLabel;
-  document.getElementById('daily-sub').textContent = `${orders.length} orders · ${periodLabel}`;
-  document.getElementById('top-menu-sub').textContent = `by revenue · ${periodLabel}`;
 
-  if (topItem) {
-    document.getElementById('r-top').textContent = topItem[0];
-    document.getElementById('r-top-sub').textContent = `${topItem[1].qty} sold · ${fmt(topItem[1].rev)}`;
-  } else {
-    document.getElementById('r-top').textContent = '—';
-    document.getElementById('r-top-sub').textContent = 'No data';
-  }
+  document.getElementById('r-orders').textContent = txns;
+  document.getElementById('r-orders-sub').textContent = `${orders.length} brand tickets · ${periodLabel}`;
+
+  document.getElementById('r-avg').textContent = fmt(grossProfit);
+  document.getElementById('r-top').textContent = gpPct.toFixed(1) + '%';
+  document.getElementById('r-top-sub').textContent =
+    estimatedLines > 0 ? `⚠ ${estimatedLines} cost lines estimated` : 'Cost snapshot complete';
+
+  document.getElementById('chart-period-label').textContent = periodLabel;
+  document.getElementById('daily-sub').textContent = `${txns} transactions · ${periodLabel}`;
+  document.getElementById('top-menu-sub').textContent = `Net Sales + GP · ${periodLabel}`;
 }
 
 function renderRevenueChart(orders) {
@@ -403,77 +396,57 @@ function renderRevenueChart(orders) {
   orders.forEach(o => {
     const k = o.date_key || dateKeyBkk(o.created_at);
     if (!k) return;
-    dayMap[k] = (dayMap[k] || 0) + Number(o.total_amount || 0);
+    if (!dayMap[k]) dayMap[k] = {rev:0, profit:0};
+    dayMap[k].rev += Number(o.total_amount || 0);
+    dayMap[k].profit += Number(o.gross_profit || 0);
   });
 
-  let labels = [];
-  let data = [];
+  let labels = [], revenue = [], profit = [];
 
   if (PERIOD_DAYS === 0) {
-    const keys = Object.keys(dayMap).sort();
-    const visible = keys.slice(-60);
-
-    labels = visible.map(key => {
+    const keys = Object.keys(dayMap).sort().slice(-60);
+    labels = keys.map(key => {
       const [y,m,d] = key.split('-');
       return `${d} ${MONTHS[Number(m)-1]}`;
     });
-    data = visible.map(key => dayMap[key] || 0);
-
+    revenue = keys.map(key => dayMap[key]?.rev || 0);
+    profit = keys.map(key => dayMap[key]?.profit || 0);
   } else {
     const dateTo = todayKeyBkkReport();
     const displayDays = Math.min(PERIOD_DAYS, 60);
     const firstKey = addDaysToKey(dateTo, -(displayDays - 1));
 
-    for (let i = 0; i < displayDays; i++) {
-      const key = addDaysToKey(firstKey, i);
-      const [y,m,d] = key.split('-');
+    for (let i=0;i<displayDays;i++) {
+      const key=addDaysToKey(firstKey,i);
+      const [y,m,d]=key.split('-');
       labels.push(`${d} ${MONTHS[Number(m)-1]}`);
-      data.push(dayMap[key] || 0);
+      revenue.push(dayMap[key]?.rev || 0);
+      profit.push(dayMap[key]?.profit || 0);
     }
   }
 
   const ctx = document.getElementById('revenue-chart').getContext('2d');
   if (revenueChart) revenueChart.destroy();
 
-  revenueChart = new Chart(ctx, {
+  revenueChart = new Chart(ctx,{
     type:'bar',
     data:{
       labels,
-      datasets:[{
-        data,
-        backgroundColor:labels.map((_,i) =>
-          i === labels.length - 1 ? '#F26C21' : '#143D2B33'
-        ),
-        borderColor:labels.map((_,i) =>
-          i === labels.length - 1 ? '#F26C21' : '#143D2B'
-        ),
-        borderWidth:1,
-        borderRadius:5,
-        borderSkipped:false
-      }]
+      datasets:[
+        {label:'Net Sales',data:revenue,backgroundColor:'#143D2B',borderRadius:5,borderSkipped:false},
+        {label:'Gross Profit',data:profit,backgroundColor:'#F26C21',borderRadius:5,borderSkipped:false}
+      ]
     },
     options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{legend:{display:false}},
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:true,position:'top',align:'end',labels:{usePointStyle:true,boxWidth:8,font:{size:9}}},
+        tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${fmt(c.raw)}`}}
+      },
       scales:{
-        x:{
-          grid:{display:false},
-          ticks:{
-            color:'#6b7d68',
-            font:{size:10},
-            maxTicksLimit:labels.length > 30 ? 10 : 14
-          }
-        },
-        y:{
-          beginAtZero:true,
-          grid:{color:'rgba(0,0,0,.04)'},
-          ticks:{
-            color:'#6b7d68',
-            font:{size:10},
-            callback:v=>'฿'+Number(v).toLocaleString('en-US')
-          }
-        }
+        x:{grid:{display:false},ticks:{color:'#6b7d68',font:{size:10},maxTicksLimit:labels.length>30?10:14}},
+        y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#6b7d68',font:{size:10},callback:v=>'฿'+Number(v).toLocaleString('en-US')}}
       }
     }
   });
@@ -507,98 +480,130 @@ function renderBrandDonut(orders) {
 
 function renderTopMenu(orders) {
   const itemMap = {};
+
   orders.forEach(o => {
-    if (!Array.isArray(o.items)) return;
-    o.items.forEach(i => {
-      if (!itemMap[i.name]) itemMap[i.name] = { qty:0, rev:0, count:0 };
-      itemMap[i.name].qty  += Number(i.qty||1);
-      itemMap[i.name].rev  += Number(i.total||0) || Number(i.price||0)*Number(i.qty||1);
-      itemMap[i.name].count++;
+    (o.items || []).forEach(i => {
+      const key = i.product_id || i.name;
+      if (!itemMap[key]) itemMap[key] = {name:i.name || key, qty:0, rev:0, cost:0};
+      itemMap[key].qty += Number(i.qty||0);
+      itemMap[key].rev += Number(i.net_total ?? i.total ?? 0);
+      itemMap[key].cost += Number(i.cost_total||0);
     });
   });
 
-  const top = Object.entries(itemMap).sort((a,b)=>b[1].rev-a[1].rev).slice(0,10);
+  const top = Object.values(itemMap).sort((a,b)=>b.rev-a.rev).slice(0,10);
   const body = document.getElementById('top-menu-body');
+  if (!top.length) {
+    body.innerHTML='<div class="empty-state">No data for selected period</div>';
+    return;
+  }
 
-  if (!top.length) { body.innerHTML = '<div class="empty-state">No data for selected period</div>'; return; }
-
-  body.innerHTML = top.map(([name, d], i) => `
-    <div class="table-row menu-grid">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span class="rank-badge">${i+1}</span>
-        <span style="font-size:12.5px;font-weight:500">${name}</span>
-      </div>
-      <div style="color:var(--muted)">${d.qty}</div>
-      <div style="font-weight:600">${fmt(d.rev)}</div>
-      <div style="color:var(--muted)">${d.qty > 0 ? fmt(d.rev/d.qty) : '—'}</div>
-    </div>
-  `).join('');
+  body.innerHTML = top.map((d,i) => {
+    const gp=d.rev-d.cost;
+    const gpPct=d.rev>0?gp/d.rev*100:0;
+    return `
+      <div class="table-row menu-grid">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="rank-badge">${i+1}</span>
+          <span style="font-size:12.5px;font-weight:500">${d.name}</span>
+        </div>
+        <div style="color:var(--muted)">${d.qty}</div>
+        <div style="font-weight:600">${fmt(d.rev)}</div>
+        <div style="font-weight:600">${fmt(gp)}</div>
+        <div style="color:var(--muted)">${gpPct.toFixed(1)}%</div>
+      </div>`;
+  }).join('');
 }
 
 function renderBrandCompare(orders) {
-  const bb = orders.filter(o => o.brand_id === 'BB');
-  const hh = orders.filter(o => o.brand_id === 'HH');
-  const bbRev = bb.reduce((s,o)=>s+Number(o.total_amount||0),0);
-  const hhRev = hh.reduce((s,o)=>s+Number(o.total_amount||0),0);
-  const bbAvg = bb.length ? bbRev/bb.length : 0;
-  const hhAvg = hh.length ? hhRev/hh.length : 0;
+  function stats(rows) {
+    const rev=rows.reduce((s,o)=>s+Number(o.total_amount||0),0);
+    const cost=rows.reduce((s,o)=>s+Number(o.cogs||0),0);
+    const gp=rev-cost;
+    const txns=new Set(rows.map(o=>o.transaction_id||String(o.order_id||'').replace(/-(BB|HH)$/,''))).size;
+    return {rev,cost,gp,gpPct:rev>0?gp/rev*100:0,txns};
+  }
 
-  document.getElementById('brand-compare').innerHTML = `
-    <div class="brand-card bb">
-      <div class="brand-name" style="color:var(--bb)">☕ Brain Brew</div>
-      <div class="brand-metric"><span class="metric-label">Revenue</span><span class="metric-value">${fmt(bbRev)}</span></div>
-      <div class="brand-metric"><span class="metric-label">Orders</span><span class="metric-value">${bb.length}</span></div>
-      <div class="brand-metric"><span class="metric-label">Avg Order</span><span class="metric-value">${fmt(bbAvg)}</span></div>
-    </div>
-    <div class="brand-card hh">
-      <div class="brand-name" style="color:var(--hh)">🍽 Heng Heng</div>
-      <div class="brand-metric"><span class="metric-label">Revenue</span><span class="metric-value">${fmt(hhRev)}</span></div>
-      <div class="brand-metric"><span class="metric-label">Orders</span><span class="metric-value">${hh.length}</span></div>
-      <div class="brand-metric"><span class="metric-label">Avg Order</span><span class="metric-value">${fmt(hhAvg)}</span></div>
-    </div>
-  `;
+  const bb=stats(orders.filter(o=>o.brand_id==='BB'));
+  const hh=stats(orders.filter(o=>o.brand_id==='HH'));
+
+  const card=(name,cls,icon,d)=>`
+    <div class="brand-card ${cls}">
+      <div class="brand-name" style="color:var(--${cls})">${icon} ${name}</div>
+      <div class="brand-metric"><span class="metric-label">Net Sales</span><span class="metric-value">${fmt(d.rev)}</span></div>
+      <div class="brand-metric"><span class="metric-label">COGS</span><span class="metric-value">${fmt(d.cost)}</span></div>
+      <div class="brand-metric"><span class="metric-label">Gross Profit</span><span class="metric-value">${fmt(d.gp)}</span></div>
+      <div class="brand-metric"><span class="metric-label">GP / Transactions</span><span class="metric-value">${d.gpPct.toFixed(1)}% · ${d.txns}</span></div>
+    </div>`;
+
+  document.getElementById('brand-compare').innerHTML =
+    card('Brain Brew','bb','☕',bb)+card('Heng Heng','hh','🍽',hh);
 }
 
 function renderDailyBreakdown(orders) {
   const dayMap = {};
+
   orders.forEach(o => {
-    const k = dateKeyBkk(o.created_at);
+    const k=o.date_key||dateKeyBkk(o.created_at);
     if (!k) return;
-    if (!dayMap[k]) dayMap[k] = { orders:0, rev:0, bb:0, hh:0 };
-    dayMap[k].orders++;
+    if (!dayMap[k]) dayMap[k]={txnIds:{},rev:0,cost:0};
+    const tx=o.transaction_id||String(o.order_id||'').replace(/-(BB|HH)$/,'');
+    if (tx) dayMap[k].txnIds[tx]=true;
     dayMap[k].rev += Number(o.total_amount||0);
-    if (o.brand_id === 'BB') dayMap[k].bb++; else dayMap[k].hh++;
+    dayMap[k].cost += Number(o.cogs||0);
   });
 
-  const sorted = Object.entries(dayMap).sort((a,b) => b[0].localeCompare(a[0])).slice(0, 60);
-  const body = document.getElementById('daily-body');
-  if (!sorted.length) { body.innerHTML = '<div class="empty-state">No data for selected period</div>'; return; }
+  const sorted=Object.entries(dayMap).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,60);
+  const body=document.getElementById('daily-body');
+  if (!sorted.length) {
+    body.innerHTML='<div class="empty-state">No data for selected period</div>';
+    return;
+  }
 
-  body.innerHTML = sorted.map(([date, d]) => {
-    const [y, m, dd] = date.split('-');
-    const label = `${dd} ${MONTHS[parseInt(m)-1]} ${y}`;
-    const avg = d.orders ? d.rev / d.orders : 0;
+  body.innerHTML=sorted.map(([date,d])=>{
+    const [y,m,dd]=date.split('-');
+    const label=`${dd} ${MONTHS[parseInt(m)-1]} ${y}`;
+    const gp=d.rev-d.cost;
+    const gpPct=d.rev>0?gp/d.rev*100:0;
     return `
-      <div class="table-row" style="grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;display:grid">
+      <div class="table-row" style="grid-template-columns:1.5fr .7fr 1fr 1fr 1fr .7fr;display:grid">
         <div style="font-size:12.5px;font-weight:500">${label}</div>
-        <div style="color:var(--muted)">${d.orders}</div>
+        <div style="color:var(--muted)">${Object.keys(d.txnIds).length}</div>
         <div style="font-weight:600">${fmt(d.rev)}</div>
-        <div style="color:var(--muted)">${fmt(avg)}</div>
-        <div style="font-size:11px;color:var(--muted)"><span style="color:var(--bb)">BB ${d.bb}</span> / <span style="color:var(--hh)">HH ${d.hh}</span></div>
-      </div>
-    `;
+        <div style="color:var(--muted)">${fmt(d.cost)}</div>
+        <div style="font-weight:600">${fmt(gp)}</div>
+        <div style="color:var(--muted)">${gpPct.toFixed(1)}%</div>
+      </div>`;
   }).join('');
 }
 
 function exportReport() {
-  const orders = getFilteredOrders();
-  const rows = [['Date','Order ID','Brand','Customer','Total','Payment Method','Items Count']];
-  orders.forEach(o => rows.push([dateKeyBkk(o.created_at), o.order_id||'', o.brand_id||'', o.customer_name||'Walk-in', o.total_amount||0, o.payment_method||'', o.items_count||1]));
-  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'}));
-  const period = PERIOD_DAYS === 0 ? 'all-time' : `last-${PERIOD_DAYS}d`;
-  a.download = `report_${period}_${new Date().toISOString().slice(0,10)}.csv`;
+  const orders = getFilteredOrders().filter(o =>
+    String(o.order_status||'').toLowerCase() !== 'cancelled' &&
+    String(o.payment_status||'paid').toLowerCase() === 'paid'
+  );
+
+  const rows=[['Date','Transaction ID','Order ID','Brand','Customer','Net Sales','COGS','Gross Profit','GP %','Payment Method','Items Count']];
+
+  orders.forEach(o=>rows.push([
+    o.date_key||dateKeyBkk(o.created_at),
+    o.transaction_id||String(o.order_id||'').replace(/-(BB|HH)$/,''),
+    o.order_id||'',
+    o.brand_id||'',
+    o.customer_name||'Walk-in',
+    Number(o.total_amount||0),
+    Number(o.cogs||0),
+    Number(o.gross_profit||0),
+    Number(o.gross_margin_pct||0),
+    o.payment_method||'',
+    o.items_count||0
+  ]));
+
+  const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  const period=PERIOD_DAYS===0?'all-time':`last-${PERIOD_DAYS}d`;
+  a.download=`report_${period}_${todayKeyBkkReport()}.csv`;
   a.click();
 }
 </script>
