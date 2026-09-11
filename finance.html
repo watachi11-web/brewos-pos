@@ -1167,11 +1167,42 @@ button{cursor:pointer}
 
 <script src="api.js"></script>
 <script>
-// v5.8.2 FINANCE SPEED — no blocking Chart.js; overview renders immediately
+// v5.8.3 FINANCE DIRECT — P&L uses google.script.run in same Apps Script project
 function fmtB(value){
   const n = Number(value ?? 0);
   const safe = Number.isFinite(n) ? n : 0;
   return '฿' + safe.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+
+// v5.8.3: Finance page is served by the same Apps Script project.
+// Calling the server directly avoids a second HTTP fetch back into the /exec URL,
+// which can be slow/unreliable inside HtmlService iframe.
+function gasCall(functionName, ...args){
+  return new Promise((resolve,reject)=>{
+    try{
+      if(!(window.google && google.script && google.script.run)){
+        reject(new Error('google.script.run unavailable'));
+        return;
+      }
+      let runner=google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(err=>reject(new Error(err?.message || String(err || 'Apps Script error'))));
+      runner[functionName](...args);
+    }catch(err){ reject(err); }
+  });
+}
+
+async function financeSummaryTransport(params){
+  // Preferred path for Apps Script-hosted Finance.
+  if(window.google && google.script && google.script.run){
+    return await gasCall('getFinanceSummary', params || {});
+  }
+  // Fallback for standalone hosting/testing.
+  if(window.API && typeof API.financeSummary==='function'){
+    return await API.financeSummary(params || {});
+  }
+  throw new Error('Finance transport unavailable');
 }
 
 let currentMonth = new Date();
@@ -1294,7 +1325,8 @@ async function loadOverview(){
   loading.textContent='กำลังโหลดข้อมูล...';
   document.getElementById('overview-content').style.display='none';
   try{
-    const s=await API.financeSummary({month:monthKey(currentMonth)});
+    const s=await financeSummaryTransport({month:monthKey(currentMonth)});
+    if(!s || s.error) throw new Error((s && s.error) || 'ไม่ได้รับข้อมูล P&L จาก server');
     CURRENT_SUMMARY=s;
     renderOverview(s);
     loading.style.display='none';
