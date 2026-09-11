@@ -1165,81 +1165,111 @@ button{cursor:pointer}
   </div>
 </div>
 
-<script src="api.js"></script>
+
 <script>
-// v5.8.5 FINANCE LITERAL DIRECT — explicit google.script.run calls + timeout guard
+// v5.8.6 FINANCE HTTP BRIDGE — self-contained static-page transport.
+// This Finance file is navigated as finance.html, so it is NOT guaranteed to be
+// running inside Apps Script HtmlService. Therefore google.script.run is not used.
+const FINANCE_API_BASE = 'https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
+
+const Identity = {
+  getName(){
+    const p=new URLSearchParams(window.location.search);
+    const raw=p.get('staff') || sessionStorage.getItem('brewos_user');
+    if(!raw) return 'Owner';
+    try{return JSON.parse(raw).name || raw;}catch(e){return raw;}
+  }
+};
+const UI = {
+  toast(msg,type='success'){
+    const colors={success:'#143D2B',error:'#dc2626',warning:'#d97706',info:'#2563eb'};
+    const t=document.createElement('div'); t.textContent=msg;
+    t.style.cssText=`position:fixed;bottom:24px;right:24px;background:${colors[type]||colors.success};color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 20px rgba(0,0,0,.2)`;
+    document.body.appendChild(t); setTimeout(()=>t.remove(),3200);
+  },
+  loading(el,on){if(!el)return;if(on){el.dataset.originalText=el.textContent;el.disabled=true;el.textContent='Loading…';}else{el.disabled=false;el.textContent=el.dataset.originalText||el.textContent;}},
+  openModal(id){const el=document.getElementById(id);if(el){el.classList.add('open');el.classList.add('show');}},
+  closeModal(id){const el=document.getElementById(id);if(el){el.classList.remove('open');el.classList.remove('show');}}
+};
+
 function fmtB(value){
-  const n = Number(value ?? 0);
-  const safe = Number.isFinite(n) ? n : 0;
-  return '฿' + safe.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  const n=Number(value??0), safe=Number.isFinite(n)?n:0;
+  return '฿'+safe.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 }
 
-
-// v5.8.4: Finance page is served by the same Apps Script project.
-// Calling the server directly avoids a second HTTP fetch back into the /exec URL,
-// which can be slow/unreliable inside HtmlService iframe.
-function gasCall(functionName, ...args){
-  // v5.8.5: google.script.run is a special Apps Script proxy. Do not invoke server
-  // functions via runner[functionName](...) because computed-property dispatch can
-  // remain pending in HtmlService on some deployments. Use explicit literal calls.
-  return new Promise((resolve,reject)=>{
-    try{
-      if(!(window.google && google.script && google.script.run)){
-        reject(new Error('google.script.run unavailable'));
-        return;
-      }
-      const ok = value => resolve(value);
-      const fail = err => reject(new Error((err && err.message) || String(err || 'Apps Script error')));
-      const runner = google.script.run.withSuccessHandler(ok).withFailureHandler(fail);
-      const a0 = args[0] || {};
-      switch(functionName){
-        case 'getFinanceSummary': runner.getFinanceSummary(a0); break;
-        case 'getExpenseCategories': runner.getExpenseCategories(a0); break;
-        case 'getExpensesList': runner.getExpensesList(a0); break;
-        case 'getAssets': runner.getAssets(a0); break;
-        case 'getAssetSummary': runner.getAssetSummary(a0); break;
-        case 'createExpense': runner.createExpense(a0); break;
-        case 'createAsset': runner.createAsset(a0); break;
-        case 'deleteAsset': runner.deleteAsset(a0); break;
-        default: reject(new Error('Unsupported Finance server function: '+functionName));
-      }
-    }catch(err){ reject(err); }
-  });
+async function financeFetch(action, params={}, method='GET', timeoutMs=30000){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    let url=FINANCE_API_BASE, options={method,cache:'no-store',signal:controller.signal,redirect:'follow'};
+    if(method==='GET'){
+      const u=new URL(url); u.searchParams.set('action',action);
+      Object.entries(params||{}).forEach(([k,v])=>{if(v!==undefined&&v!==null&&v!=='')u.searchParams.set(k,v);});
+      u.searchParams.set('_ts',Date.now()); url=u.toString();
+    }else{
+      options.headers={'Content-Type':'text/plain;charset=utf-8'};
+      options.body=JSON.stringify({...params,action});
+    }
+    const res=await fetch(url,options);
+    const text=await res.text();
+    if(!res.ok) throw new Error(`HTTP ${res.status} · ${action}`);
+    let json; try{json=JSON.parse(text);}catch(e){throw new Error(`Backend ตอบกลับไม่ใช่ JSON · ${action}`);}
+    if(!json.success) throw new Error(json.error || `API error · ${action}`);
+    return json.data;
+  }catch(e){
+    if(e && e.name==='AbortError') throw new Error(`Backend ใช้เวลานานเกิน ${Math.round(timeoutMs/1000)} วินาที · ${action}`);
+    throw e;
+  }finally{clearTimeout(timer);}
 }
 
-function withTimeout(promise, ms, label){
-  let timer;
-  const timeout = new Promise((_,reject)=>{
-    timer=setTimeout(()=>reject(new Error((label||'Server')+' ใช้เวลานานเกิน '+Math.round(ms/1000)+' วินาที')),ms);
-  });
-  return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));
+const BOOT_CACHE=new Map();
+const BOOT_PENDING=new Map();
+function financeBootstrap(month,force=false){
+  month=month || monthKey(currentMonth);
+  if(force){BOOT_CACHE.delete(month);BOOT_PENDING.delete(month);}
+  if(BOOT_CACHE.has(month)) return Promise.resolve(BOOT_CACHE.get(month));
+  if(BOOT_PENDING.has(month)) return BOOT_PENDING.get(month);
+  const p=financeFetch('finance_bootstrap',{month},'GET',35000).then(data=>{
+    if(!data || !data.summary) throw new Error('finance_bootstrap ไม่มี summary');
+    BOOT_CACHE.set(month,data); BOOT_PENDING.delete(month); return data;
+  }).catch(err=>{BOOT_PENDING.delete(month);throw err;});
+  BOOT_PENDING.set(month,p); return p;
+}
+function invalidateFinanceCache(){BOOT_CACHE.clear();BOOT_PENDING.clear();}
+
+async function backendDiagnostic(){
+  try{
+    const p=await financeFetch('ping',{},'GET',10000);
+    return `Backend ${p?.version||'unknown'}`;
+  }catch(e){return `Ping ไม่สำเร็จ: ${e.message}`;}
 }
 
 async function financeSummaryTransport(params){
-  // Preferred path for Apps Script-hosted Finance.
-  if(window.google && google.script && google.script.run){
-    return await withTimeout(gasCall('getFinanceSummary', params || {}), 25000, 'P&L');
-  }
-  // Fallback for standalone hosting/testing.
-  if(window.API && typeof API.financeSummary==='function'){
-    return await API.financeSummary(params || {});
-  }
-  throw new Error('Finance transport unavailable');
+  const month=(params&&params.month)||monthKey(currentMonth);
+  const boot=await financeBootstrap(month);
+  return boot.summary;
 }
 
-
-// v5.8.4: use direct Apps Script calls for every Finance action, not only P&L.
-// This avoids /exec?action=... endpoint mismatches (e.g. HTTP 404 get_expenses)
-// and removes a second HTTP round-trip from the HtmlService iframe.
 async function financeDirect(serverFunction, fallbackApiMethod, payload, mode){
-  if(window.google && google.script && google.script.run){
-    if(mode==='deleteAsset') return await gasCall(serverFunction, {asset_id: payload});
-    return await gasCall(serverFunction, payload || {});
+  payload=payload||{};
+  if(serverFunction==='getExpenseCategories') return (await financeBootstrap(monthKey(currentMonth))).expense_categories||[];
+  if(serverFunction==='getExpensesList'){
+    const m=String(payload.date_from||'').slice(0,7)||monthKey(currentMonth);
+    return (await financeBootstrap(m)).expenses||[];
   }
-  if(window.API && fallbackApiMethod && typeof API[fallbackApiMethod]==='function'){
-    return await API[fallbackApiMethod](payload || {});
+  if(serverFunction==='getAssets') return (await financeBootstrap(monthKey(currentMonth))).assets||[];
+  if(serverFunction==='getAssetSummary') return (await financeBootstrap(monthKey(currentMonth))).asset_summary||{};
+  if(serverFunction==='createExpense'){
+    const r=await financeFetch('create_expense',payload,'POST',30000); invalidateFinanceCache(); return r;
   }
-  throw new Error('Finance transport unavailable: '+serverFunction);
+  if(serverFunction==='createAsset'){
+    const r=await financeFetch('create_asset',payload,'POST',30000); invalidateFinanceCache(); return r;
+  }
+  if(serverFunction==='deleteAsset'){
+    const body=(mode==='deleteAsset')?{asset_id:payload}:payload;
+    const r=await financeFetch('delete_asset',body,'POST',30000); invalidateFinanceCache(); return r;
+  }
+  throw new Error('Unsupported Finance action: '+serverFunction);
 }
 
 let currentMonth = new Date();
@@ -1370,7 +1400,8 @@ async function loadOverview(){
     document.getElementById('overview-content').style.display='block';
   }catch(e){
     console.error('loadOverview failed',e);
-    loading.innerHTML='โหลดข้อมูลไม่สำเร็จ: '+e.message+'<br><button class="btn btn-primary" style="margin-top:14px" onclick="loadOverview()">ลองใหม่</button>'; 
+    const diag=await backendDiagnostic();
+    loading.innerHTML='โหลดข้อมูลไม่สำเร็จ: '+e.message+'<br><span style="display:inline-block;margin-top:8px;font-size:12px;color:var(--muted)">'+diag+'</span><br><button class="btn btn-primary" style="margin-top:14px" onclick="invalidateFinanceCache();loadOverview()">ลองใหม่</button>'; 
     if(window.UI?.toast) UI.toast('โหลด P&L ไม่สำเร็จ: '+e.message,'error');
   }
 }
@@ -1671,8 +1702,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
   document.getElementById('exp-date').value=bkkDateKey();
   document.getElementById('asset-date').value=bkkDateKey();
   updateMonthLabel();
-  // หมวดรายจ่ายไม่ควร block P&L; โหลดเบื้องหลัง
-  loadExpenseCategories();
+  // v5.8.6: preload Finance with ONE HTTP request; all tabs share this cache.
+  try{
+    await financeBootstrap(monthKey(currentMonth));
+    await loadExpenseCategories();
+  }catch(e){ console.error('finance bootstrap preload',e); }
   await loadOverview();
 
   document.querySelectorAll('.modal-overlay').forEach(el=>{
