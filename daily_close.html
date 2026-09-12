@@ -5,26 +5,44 @@
 <div class="bar"><input id="date" class="input" type="date"><button class="btn" onclick="loadPreview()">โหลดสรุปวันนี้</button></div>
 <div id="status" class="note">กำลังโหลด…</div><div id="kpi" class="grid"></div>
 <div class="card"><h3>ยอดตามช่องทางรับเงิน</h3><div class="payments" id="payments"></div><div class="note">กรอก “ยอดรับจริง” จากเงินสด/QR/โอน ณ ตอนปิดวัน ระบบจะเทียบกับยอดที่ POS บันทึกไว้</div></div>
-<div class="card" style="margin-top:16px"><label class="label">หมายเหตุ</label><input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน"><button id="closeBtn" class="btn" style="margin-top:14px" onclick="closeDay()">ปิดยอดวันนี้</button><div id="result" class="note"></div></div>
+<div class="card" style="margin-top:16px"><label class="label">หมายเหตุ</label><input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button id="closeBtn" class="btn" onclick="closeDay()">ปิดยอดวันนี้</button><button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day</button></div><div id="result" class="note"></div></div>
 </div><script src="api.js"></script>
 <script>
-let P=null;
+let P=null, LOCK=null;
 const fmt=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date())}
 document.getElementById('date').value=today();
 function k(label,v){return `<div class="card"><div class="label">${label}</div><div class="value">${v}</div></div>`}
+function setButtons(){
+  const locked=!!(LOCK&&LOCK.locked);
+  const reopened=!!(LOCK&&LOCK.status==='reopened');
+  reopenBtn.style.display=locked?'inline-block':'none';
+  closeBtn.style.display=locked?'none':'inline-block';
+  closeBtn.textContent=reopened?'ปิดยอดอีกครั้ง':'ปิดยอดวันนี้';
+  closeBtn.disabled=!P || !P.can_close;
+}
 async function loadPreview(){
   document.getElementById('status').textContent='กำลังโหลด…';
+  result.textContent='';
   try{
-    P=await API.dailyClosePreview(date.value);
+    const d=date.value;
+    [P,LOCK]=await Promise.all([API.dailyClosePreview(d),API.dayLockStatus(d)]);
     kpi.innerHTML=k('Net Sales',fmt(P.net_sales))+k('COGS',fmt(P.cogs))+k('Gross Profit',fmt(P.gross_profit))+k('Net Profit',fmt(P.net_profit))+k('Tickets',P.ticket_count)+k('Low Stock',P.low_stock_count)+k('Negative Stock',P.negative_stock_count)+k('Integrity Errors',P.unresolved_integrity_events);
     const e=P.expected_payment||{};
     payments.innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
-    status.innerHTML=P.can_close?'<span class="ok">พร้อมปิดยอด</span>':'<span class="bad">ยังปิดไม่ได้: มี Integrity Error</span>';
-    closeBtn.disabled=!P.can_close;
+    if(LOCK.locked){
+      status.innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||''}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันนี้ถูกล็อก ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>`;
+    }else if(LOCK.status==='reopened'){
+      status.innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`;
+    }else if(P.can_close){
+      status.innerHTML='<span class="ok">พร้อมปิดยอด</span>';
+    }else{
+      status.innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error</span>';
+    }
+    setButtons();
   }catch(err){
     status.innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span>';
-    closeBtn.disabled=true;
+    closeBtn.disabled=true; reopenBtn.style.display='none';
   }
 }
 async function closeDay(){
@@ -33,10 +51,27 @@ async function closeDay(){
   try{
     const data=await API.closeDay({date:P.date,actual_cash:a_cash.value,actual_qr:a_qr.value,actual_transfer:a_transfer.value,actual_other:a_other.value,notes:notes.value,closed_by:'owner'});
     if(!data?.success){result.innerHTML='<span class="bad">'+(data?.error||'Close failed')+'</span>';closeBtn.disabled=false;return}
-    const v=data.variance||{}; result.innerHTML=`<span class="ok">ปิดยอดแล้ว ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
+    const v=data.variance||{}; result.innerHTML=`<span class="ok">${data.reclosed?'ปิดยอดใหม่แล้ว':'ปิดยอดแล้ว'} ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
+    await loadPreview();
   }catch(err){
     result.innerHTML='<span class="bad">'+(err.message||'Close failed')+'</span>'; closeBtn.disabled=false;
   }
 }
+async function reopenDay(){
+  if(!LOCK||!LOCK.locked)return;
+  const reason=prompt('เหตุผลที่ต้อง Reopen Day (อย่างน้อย 5 ตัวอักษร):');
+  if(reason===null)return;
+  if(String(reason).trim().length<5){result.innerHTML='<span class="bad">กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร</span>';return}
+  reopenBtn.disabled=true; result.textContent='กำลัง Reopen…';
+  try{
+    const data=await API.reopenDay({date:LOCK.date,reason:String(reason).trim(),reopened_by:'owner'});
+    if(!data?.success){result.innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';reopenBtn.disabled=false;return}
+    result.innerHTML='<span class="ok">Reopen แล้ว — สามารถแก้ไขข้อมูลของวันนี้ได้</span>';
+    await loadPreview();
+  }catch(err){
+    result.innerHTML='<span class="bad">'+(err.message||'Reopen failed')+'</span>'; reopenBtn.disabled=false;
+  }
+}
+date.addEventListener('change',loadPreview);
 loadPreview();
 </script></body></html>
