@@ -1,11 +1,11 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BrewOS · Daily Close</title><style>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BrewOS · Daily Close v6.1.1</title><style>
 :root{--g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;--m:#6b756f}*{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}h1{margin:0;font-size:24px}.sub{opacity:.72;margin-top:4px}.wrap{max-width:1100px;margin:auto;padding:24px}.bar,.grid,.payments{display:grid;gap:14px}.bar{grid-template-columns:1fr auto}.grid{grid-template-columns:repeat(4,1fr);margin:18px 0}.payments{grid-template-columns:repeat(4,1fr)}.card{background:#fff;border:1px solid #eadfce;border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}.label{font-size:12px;color:var(--m)}.value{font-size:24px;font-weight:700;margin-top:6px}.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}.btn:disabled{opacity:.45}.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:16px;margin-top:6px}.ok{color:#177a45}.bad{color:#b42318}.note{font-size:13px;color:var(--m);margin-top:12px}.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}.topnav a.active{background:var(--o);border-color:var(--o)}.topnav a:hover{background:rgba(255,255,255,.15)}
 @media(max-width:800px){.grid,.payments{grid-template-columns:1fr 1fr}.bar{grid-template-columns:1fr}}@media(max-width:500px){.grid,.payments{grid-template-columns:1fr}}</style></head><body>
 <header><h1>Daily Close & Reconciliation</h1><div class="sub">BrewOS · Brain Brew × Heng Heng</div><nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav></header><div class="wrap">
-<div class="bar"><input id="date" class="input" type="date"><button class="btn" onclick="loadPreview()">โหลดสรุปวันนี้</button></div>
-<div id="status" class="note">กำลังโหลด…</div><div id="kpi" class="grid"></div>
+<div class="bar"><input id="date" class="input" type="date"><button class="btn" onclick="loadPreview()">โหลดสรุปวันที่เลือก</button></div>
+<div id="status" class="note">กำลังโหลด…</div><div class="note">ระบบจะปิดยอดตาม <strong>วันที่ที่เลือกด้านบน</strong> ไม่ใช่วันที่ปัจจุบันโดยอัตโนมัติ</div><div id="kpi" class="grid"></div>
 <div class="card"><h3>ยอดตามช่องทางรับเงิน</h3><div class="payments" id="payments"></div><div class="note">กรอก “ยอดรับจริง” จากเงินสด/QR/โอน ณ ตอนปิดวัน ระบบจะเทียบกับยอดที่ POS บันทึกไว้</div></div>
-<div class="card" style="margin-top:16px"><label class="label">หมายเหตุ</label><input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button id="closeBtn" class="btn" onclick="closeDay()">ปิดยอดวันนี้</button><button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day</button></div><div id="result" class="note"></div></div>
+<div class="card" style="margin-top:16px"><label class="label">หมายเหตุ</label><input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button id="closeBtn" class="btn" onclick="closeDay()">ปิดยอดวันที่เลือก</button><button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day</button></div><div id="result" class="note"></div></div>
 </div><script src="api.js"></script>
 <script>
 let P=null, LOCK=null;
@@ -18,7 +18,7 @@ function setButtons(){
   const reopened=!!(LOCK&&LOCK.status==='reopened');
   reopenBtn.style.display=locked?'inline-block':'none';
   closeBtn.style.display=locked?'none':'inline-block';
-  closeBtn.textContent=reopened?'ปิดยอดอีกครั้ง':'ปิดยอดวันนี้';
+  closeBtn.textContent=reopened?'ปิดยอดวันที่เลือกอีกครั้ง':'ปิดยอดวันที่เลือก';
   closeBtn.disabled=!P || !P.can_close;
 }
 async function loadPreview(){
@@ -31,11 +31,11 @@ async function loadPreview(){
     const e=P.expected_payment||{};
     payments.innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
     if(LOCK.locked){
-      status.innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||''}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันนี้ถูกล็อก ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>`;
+      status.innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||''}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>`;
     }else if(LOCK.status==='reopened'){
       status.innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`;
     }else if(P.can_close){
-      status.innerHTML='<span class="ok">พร้อมปิดยอด</span>';
+      status.innerHTML=`<span class="ok">พร้อมปิดยอดวันที่ ${P.date||d}</span>`;
     }else{
       status.innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error</span>';
     }
