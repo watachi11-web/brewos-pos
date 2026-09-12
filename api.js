@@ -1,6 +1,6 @@
 /**
- * BrewOS — Shared API Client v3.4.1
- * Synced with BrewOS backend v6.0.0 DAILY CLOSE + all prior modules
+ * BrewOS — Shared API Client v3.5.0
+ * Synced with BrewOS backend v6.1.0 CLOSED-DAY LOCK + all prior modules
  *
  * หลักการ:
  *   - api.js เป็น transport layer เท่านั้น
@@ -170,6 +170,10 @@ const API = {
   dailyClosePreview: (date) => apiGet('get_daily_close_preview', date ? { date } : {}),
   dailyCloses:       (p = {}) => apiGet('get_daily_closes', p),
   closeDay:          (data) => apiPost('close_day', data),
+
+  // Phase 9 — Closed-Day Lock & Reopen Control
+  dayLockStatus:     (date) => apiGet('get_day_lock_status', date ? { date } : {}),
+  reopenDay:         (data) => apiPost('reopen_day', data),
 
   // Utility
   ping: () => apiGet('ping'),
