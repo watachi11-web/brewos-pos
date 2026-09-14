@@ -16,7 +16,7 @@
 <body>
 <header>
   <h1>Daily Close & Reconciliation</h1>
-  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.2 · Hotfix 6.2.2</div>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.4 · History Date Fix</div>
   <nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav>
 </header>
 <div class="wrap">
@@ -98,9 +98,17 @@ function displayDateTime(v){
   return dt.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
 function isZeroSalesDay(){return !!P && Number(P.ticket_count||0)===0 && Number(P.net_sales||0)===0 && Number(P.gross_sales||0)===0;}
+function recordDateKey(rec){
+  // Daily Close business date must be date-only and must never drift with timezone parsing.
+  // close_id is canonical (CLOSE-YYYYMMDD), so prefer it over the backend date value.
+  const id=String(rec?.close_id||'').trim();
+  const m=id.match(/^CLOSE-(\d{4})(\d{2})(\d{2})$/);
+  if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  return dateKey(rec?.date);
+}
 function historyRecordForDate(d){
   const key=dateKey(d||$('date').value);
-  return (CLOSES||[]).find(r=>dateKey(r.date)===key)||null;
+  return (CLOSES||[]).find(r=>recordDateKey(r)===key)||null;
 }
 function effectiveCloseStatus(){
   const lockStatus=String((LOCK&&LOCK.status)||'').toLowerCase();
@@ -176,17 +184,17 @@ function closeStatus(rec){
 }
 function statusLabel(s){return ({closed:'CLOSED',holiday:'HOLIDAY',reopened:'REOPENED',open:'OPEN',overdue:'ยังไม่ปิด',future:'อนาคต'})[s]||String(s||'').toUpperCase()}
 function statusPill(s){return `<span class="pill ${s}">${statusLabel(s)}</span>`}
-function firstOperationalDate(){const ds=CLOSES.map(x=>dateKey(x.date)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort(); return ds[0]||today()}
+function firstOperationalDate(){const ds=CLOSES.map(recordDateKey).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort(); return ds[0]||today()}
 function datesBetween(start,end){const out=[]; let d=new Date(start+'T12:00:00+07:00'), e=new Date(end+'T12:00:00+07:00'); while(d<=e){out.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(d)); d=new Date(d.getTime()+86400000)} return out}
 function renderOpsSummary(){
-  const map=Object.fromEntries(CLOSES.map(r=>[dateKey(r.date),r])); const start=firstOperationalDate(), t=today(); const pastEnd=new Date(t+'T12:00:00+07:00'); pastEnd.setDate(pastEnd.getDate()-1); const yest=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(pastEnd);
+  const map=Object.fromEntries(CLOSES.map(r=>[recordDateKey(r),r])); const start=firstOperationalDate(), t=today(); const pastEnd=new Date(t+'T12:00:00+07:00'); pastEnd.setDate(pastEnd.getDate()-1); const yest=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(pastEnd);
   const overdue=start<=yest?datesBetween(start,yest).filter(d=>!map[d]).length:0;
   const closed=CLOSES.filter(r=>closeStatus(r)==='closed').length, holiday=CLOSES.filter(r=>closeStatus(r)==='holiday').length, reopened=CLOSES.filter(r=>closeStatus(r)==='reopened').length;
   $('opsSummary').innerHTML=k('ปิดยอดแล้ว',closed)+k('วันหยุด',holiday)+k('ยังไม่ปิดย้อนหลัง',overdue)+k('Reopened',reopened);
 }
 function renderCalendar(){
   const mk=$('month').value||monthKey(); const [y,m]=mk.split('-').map(Number); const first=new Date(Date.UTC(y,m-1,1,12)), lastDay=new Date(Date.UTC(y,m,0,12)).getUTCDate(); const startDow=first.getUTCDay();
-  const map=Object.fromEntries(CLOSES.map(r=>[dateKey(r.date),r])); const start=firstOperationalDate(), t=today();
+  const map=Object.fromEntries(CLOSES.map(r=>[recordDateKey(r),r])); const start=firstOperationalDate(), t=today();
   let html=['อา','จ','อ','พ','พฤ','ศ','ส'].map(x=>`<div class="dow">${x}</div>`).join(''); for(let i=0;i<startDow;i++)html+='<div class="day blank"></div>';
   for(let day=1;day<=lastDay;day++){
     const d=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const rec=map[d]; let s='open', extra='';
@@ -201,7 +209,7 @@ function renderCalendar(){
 function selectDate(d){$('date').value=d; loadPreview(); window.scrollTo({top:0,behavior:'smooth'})}
 function renderHistory(){
   if(!CLOSES.length){$('historyBody').innerHTML='<tr><td colspan="8" class="muted">ยังไม่มี Daily Close</td></tr>';return}
-  $('historyBody').innerHTML=CLOSES.map(r=>{const d=dateKey(r.date),s=closeStatus(r), variance=Number(r.total_payment_variance||0); return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${displayDateTime(r.closed_at)}</td><td class="muted">${String(r.notes||'')||'—'}</td></tr>`}).join('');
+  $('historyBody').innerHTML=CLOSES.map(r=>{const d=recordDateKey(r),s=closeStatus(r), variance=Number(r.total_payment_variance||0); return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${displayDateTime(r.closed_at)}</td><td class="muted">${String(r.notes||'')||'—'}</td></tr>`}).join('');
 }
 async function loadHistory(){
   try{
