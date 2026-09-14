@@ -6,7 +6,7 @@
 <title>BrewOS — Orders</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--green:#1E5A3F;--green2:#40916C;--orange:#D97706;--danger:#DC2626;--bg:#faf9f7;--card:#fff;--border:#e8e3db;--text:#1c1917;--muted:#78716c;--sidebar:220px;}
+:root{--green:#143D2B;--green2:#40916C;--orange:#F26C21;--danger:#DC2626;--bg:#FBF7EF;--card:#fff;--border:#E8E1D6;--text:#1c1917;--muted:#78716c;--cream:#F7E9D6;--sage:#A7C48D;--sidebar:220px;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Anuphan','Poppins',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
 .sidebar{width:var(--sidebar);background:#fff;border-right:1.5px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:100;}
@@ -100,13 +100,36 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 .form-label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:6px;}
 .form-control{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:'Anuphan','Poppins',sans-serif;font-size:13px;outline:none;transition:all 0.2s;resize:none;}
 .form-control:focus{border-color:var(--green);}
+
+.lock-note{margin:0 20px 12px;padding:9px 11px;border-radius:8px;font-size:11px;line-height:1.5;display:none;}
+.lock-note.closed{display:block;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;}
+.lock-note.open{display:block;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.range-note{font-size:11px;color:var(--muted);margin-left:auto;}
+@media (max-width:1180px){
+  .orders-layout{grid-template-columns:1fr;}
+  .detail-panel{position:relative;top:auto;max-height:none;}
+  .kpi-row{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:760px){
+  :root{--sidebar:0px;}
+  .sidebar{display:none;}
+  .main{margin-left:0;}
+  .content{padding:16px;}
+  .topbar{padding:0 16px;}
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px;}
+  .orders-panel{overflow-x:auto;}
+  .orders-panel table{min-width:980px;}
+  .search-box{width:100%;}
+  .range-note{width:100%;margin-left:0;}
+}
+
 </style>
 </head>
 <body>
 <aside class="sidebar">
   <div class="sidebar-logo">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-      <img src="logo-hh-icon.png" style="width:24px;height:24px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
+      <img src="Asset 1(2).png" style="width:24px;height:24px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'">
       <span class="logo-mark">BrewOS</span>
     </div>
     <div class="logo-sub">Back Office</div>
@@ -124,6 +147,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
     <div class="nav-section">Business</div>
     <a class="nav-link" href="crm.html"><span class="icon">👥</span> CRM / ลูกค้า</a>
     <a class="nav-link" href="finance.html"><span class="icon">💰</span> Finance</a>
+    <a class="nav-link" href="daily_close.html"><span class="icon">🧮</span> Daily Close</a>
     <a class="nav-link" href="reports.html"><span class="icon">📈</span> Reports</a>
     <div class="nav-section">Admin</div>
     <a class="nav-link" href="settings.html"><span class="icon">⚙️</span> Settings</a>
@@ -177,8 +201,19 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
       <button class="filter-chip active" onclick="setStatus('all',this)">All / ทั้งหมด</button>
       <button class="filter-chip" onclick="setStatus('completed',this)">Completed / สำเร็จ</button>
       <button class="filter-chip" onclick="setStatus('cancelled',this)">Cancelled / ยกเลิก</button>
-      <select class="sel" id="brandSel" onchange="filterOrders()"><option>All Brands / ทุกแบรนด์</option><option>Brain Brew</option><option>Heng Heng</option></select>
-      <select class="sel" id="dateSel" onchange="filterOrders()"><option>Today / วันนี้</option><option>Yesterday / เมื่อวาน</option><option>This Week / สัปดาห์นี้</option><option>This Month / เดือนนี้</option><option>All Time / ทั้งหมด</option></select>
+      <select class="sel" id="brandSel" onchange="filterOrders()">
+        <option value="ALL">All Brands / ทุกแบรนด์</option>
+        <option value="BB">Brain Brew</option>
+        <option value="HH">Heng Heng</option>
+      </select>
+      <select class="sel" id="dateSel" onchange="loadOrders()">
+        <option value="today">Today / วันนี้</option>
+        <option value="yesterday">Yesterday / เมื่อวาน</option>
+        <option value="week">This Week / สัปดาห์นี้</option>
+        <option value="month">This Month / เดือนนี้</option>
+        <option value="all">All Time / ทั้งหมด</option>
+      </select>
+      <span class="range-note" id="rangeNote"></span>
     </div>
 
     <div class="orders-layout">
@@ -230,6 +265,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 
           <div id="detNoteBox" style="display:none;padding:0 20px 16px"></div>
 
+          <div class="lock-note" id="detLockMsg"></div>
           <div class="detail-actions">
             <button class="btn btn-outline btn-sm" onclick="printReceipt()">🖨 Print Receipt / พิมพ์ใบเสร็จ</button>
             <button class="btn btn-danger btn-sm" id="detCancelBtn" onclick="openCancelModal()">✕ Cancel Order / ยกเลิกออเดอร์</button>
@@ -266,87 +302,171 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 
 <script src="api.js"></script>
 <script>
-// #NOAUTH — ไม่มี Auth gate อยู่แล้วในไฟล์นี้ (ดีอยู่แล้ว) เพิ่ม Identity แสดงชื่อ staff
-// #NAVFIX — เอาลิงก์ production.html/staff.html ออกจาก sidebar (ถูกลบทิ้งไปแล้วทั้งคู่)
-document.getElementById('staff-name').textContent = Identity.getName();
-document.getElementById('staff-avatar').textContent = Identity.getName()[0].toUpperCase();
+/**
+ * BrewOS — Orders v6.2.1
+ * Fixes:
+ * - Date filters query backend correctly (date/date_from/date_to) instead of relying on one cached set
+ * - Uses canonical API.orders()
+ * - Closed-day lock is shown before Cancel
+ * - Safe HTML rendering for customer/item/note fields
+ * - CSV export is UTF-8 Excel-friendly and properly escaped
+ * - Browser receipt print is functional
+ * - Daily Close navigation added
+ */
+
+const staffName = (typeof Identity !== 'undefined' && Identity.getName) ? Identity.getName() : 'Staff';
+document.getElementById('staff-name').textContent = staffName;
+document.getElementById('staff-avatar').textContent = (staffName || 'S')[0].toUpperCase();
 
 let ALL_ORDERS = [];
 let activeOrderId = null;
 let statusFilter = 'all';
+let lockCheckSeq = 0;
 
-function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString(); }
-
+function fmt(n) {
+  return '฿' + Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 2 });
+}
+function esc(v) {
+  return String(v ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+function todayKeyBkk() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Asia/Bangkok', year:'numeric', month:'2-digit', day:'2-digit'
+  }).format(new Date());
+}
+function shiftDateKey(key, days) {
+  const [y,m,d] = String(key).split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + days, 12));
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,'0')}-${String(dt.getUTCDate()).padStart(2,'0')}`;
+}
+function mondayKey(key) {
+  const [y,m,d] = String(key).split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  const dow = dt.getUTCDay();
+  return shiftDateKey(key, -(dow === 0 ? 6 : dow - 1));
+}
+function firstOfMonthKey(key) {
+  return String(key).slice(0,7) + '-01';
+}
 function dateKeyBkk(val) {
+  if (!val) return '';
+  const raw = String(val).trim();
+  const m = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (m) return m[1];
   const d = new Date(val);
-  if (isNaN(d.getTime())) return '';
-  const bkk = new Date(d.toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
-  return `${bkk.getFullYear()}-${String(bkk.getMonth()+1).padStart(2,'0')}-${String(bkk.getDate()).padStart(2,'0')}`;
+  if (Number.isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Asia/Bangkok', year:'numeric', month:'2-digit', day:'2-digit'
+  }).format(d);
+}
+function timeBkk(val) {
+  if (!val) return '—';
+  const raw = String(val).trim();
+  const m = raw.match(/^\d{4}-\d{2}-\d{2}[ T](\d{2}):(\d{2})/);
+  if (m) return `${m[1]}:${m[2]}`;
+  const d = new Date(val);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleTimeString('th-TH', {
+    timeZone:'Asia/Bangkok', hour:'2-digit', minute:'2-digit'
+  });
+}
+function brandName(id) {
+  const v = String(id || '').toUpperCase();
+  if (v === 'HH') return 'Heng Heng';
+  if (v === 'BB') return 'Brain Brew';
+  return v || 'Unknown';
+}
+
+function getOrderQuery() {
+  const mode = document.getElementById('dateSel').value;
+  const today = todayKeyBkk();
+
+  if (mode === 'today') return { date: today, limit: 5000 };
+  if (mode === 'yesterday') return { date: shiftDateKey(today, -1), limit: 5000 };
+  if (mode === 'week') return { date_from: mondayKey(today), date_to: today, limit: 5000 };
+  if (mode === 'month') return { date_from: firstOfMonthKey(today), date_to: today, limit: 5000 };
+  return { limit: 5000 };
+}
+function rangeLabel() {
+  const mode = document.getElementById('dateSel').value;
+  const today = todayKeyBkk();
+  if (mode === 'today') return `วันที่ ${today}`;
+  if (mode === 'yesterday') return `วันที่ ${shiftDateKey(today,-1)}`;
+  if (mode === 'week') return `${mondayKey(today)} → ${today}`;
+  if (mode === 'month') return `${firstOfMonthKey(today)} → ${today}`;
+  return 'สูงสุด 5,000 ออเดอร์ล่าสุด';
+}
+function getActiveRangePredicate() {
+  // Server already filters the requested range. Keep this predicate for safety and future cache reuse.
+  const q = getOrderQuery();
+  return (o) => {
+    const k = o.dateKey || '';
+    if (q.date) return k === q.date;
+    if (q.date_from && k < q.date_from) return false;
+    if (q.date_to && k > q.date_to) return false;
+    return true;
+  };
 }
 
 async function loadOrders() {
   const tbody = document.getElementById('orderBody');
+  const previousSelection = activeOrderId;
   tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">⏳ กำลังโหลด...</td></tr>';
+  document.getElementById('rangeNote').textContent = rangeLabel();
+
   try {
-    const data = await API.ordersToday();
-    ALL_ORDERS = (data || []).map(o => ({
-      id: o.order_id,
+    const data = await API.orders(getOrderQuery());
+    ALL_ORDERS = (Array.isArray(data) ? data : []).map(o => ({
+      id: String(o.order_id || ''),
       rawCreatedAt: o.created_at || '',
-      time: o.created_at ? new Date(o.created_at).toLocaleTimeString('th-TH', {hour:'2-digit',minute:'2-digit', timeZone:'Asia/Bangkok'}) : '—',
-      customer: o.customer_name || 'Walk-in',
-      brand: o.brand_id === 'HH' ? 'Heng Heng' : 'Brain Brew',
-      brand_id: o.brand_id,
-      type: o.order_type || 'takeaway',
-      table: o.table_number || '',
+      dateKey: o.date_key || dateKeyBkk(o.created_at),
+      time: timeBkk(o.created_at),
+      customer: String(o.customer_name || 'Walk-in'),
+      brand: brandName(o.brand_id),
+      brand_id: String(o.brand_id || 'BB').toUpperCase(),
+      type: String(o.order_type || 'takeaway'),
+      table: String(o.table_number || ''),
       items: Array.isArray(o.items) ? o.items : [],
-      items_count: o.items_count || 1,
+      items_count: Number(o.items_count || 0),
+      subtotal: Number(o.subtotal || 0),
+      discount: Number(o.discount_amount || 0),
       total: Number(o.total_amount || 0),
-      pay: o.payment_method || 'cash',
-      status: o.order_status === 'cancelled' ? 'cancelled' : 'completed',
-      note: o.notes || '',
+      cogs: Number(o.cogs || 0),
+      gross_profit: Number(o.gross_profit || 0),
+      pay: String(o.payment_method || 'cash').toLowerCase(),
+      payment_status: String(o.payment_status || 'paid').toLowerCase(),
+      status: String(o.order_status || 'completed').toLowerCase() === 'cancelled' ? 'cancelled' : 'completed',
+      note: String(o.notes || ''),
     }));
   } catch(e) {
-    console.error('loadOrders error:', e.message);
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger)">⚠️ โหลดข้อมูลไม่ได้: ' + e.message + '</td></tr>';
+    console.error('loadOrders error:', e);
+    ALL_ORDERS = [];
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--danger)">⚠️ โหลดข้อมูลไม่ได้: ' + esc(e.message) + '</td></tr>';
+    updateKPIs([]);
+    document.getElementById('ordersStats').textContent = 'โหลดข้อมูลไม่สำเร็จ';
     return;
   }
-  filterOrders();
-}
 
-function getDateRangeFilter() {
-  const dateSel = document.getElementById('dateSel').value;
-  const todayStr = dateKeyBkk(new Date());
-  if (dateSel === 'All Time') return () => true;
-  if (dateSel === 'Yesterday') {
-    const y = new Date(); y.setDate(y.getDate() - 1);
-    const yStr = dateKeyBkk(y);
-    return (o) => dateKeyBkk(o.rawCreatedAt) === yStr;
+  filterOrders();
+
+  if (previousSelection && ALL_ORDERS.some(o => o.id === previousSelection)) {
+    selectOrder(previousSelection);
+  } else {
+    clearDetail();
   }
-  if (dateSel === 'This Week') {
-    const now = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
-    const dow = now.getDay();
-    const diffToMonday = dow === 0 ? 6 : dow - 1;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - diffToMonday);
-    const mondayStr = dateKeyBkk(monday);
-    return (o) => { const k = dateKeyBkk(o.rawCreatedAt); return k >= mondayStr && k <= todayStr; };
-  }
-  if (dateSel === 'This Month') {
-    const monthPrefix = todayStr.slice(0, 7);
-    return (o) => dateKeyBkk(o.rawCreatedAt).startsWith(monthPrefix);
-  }
-  return (o) => dateKeyBkk(o.rawCreatedAt) === todayStr;
 }
 
 function getFilteredOrders() {
-  const q = document.getElementById('orderSearch').value.toLowerCase();
+  const q = document.getElementById('orderSearch').value.trim().toLowerCase();
   const brandSel = document.getElementById('brandSel').value;
-  const matchDate = getDateRangeFilter();
+  const matchDate = getActiveRangePredicate();
 
   return ALL_ORDERS.filter(o => {
     const matchStatus = statusFilter === 'all' || o.status === statusFilter;
     const matchQ = !q || o.id.toLowerCase().includes(q) || o.customer.toLowerCase().includes(q);
-    const matchBrand = brandSel === 'All Brands' || o.brand === brandSel;
+    const matchBrand = brandSel === 'ALL' || o.brand_id === brandSel;
     return matchStatus && matchQ && matchBrand && matchDate(o);
   });
 }
@@ -357,18 +477,23 @@ function renderOrders(data) {
     body.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">No orders found / ไม่พบออเดอร์</td></tr>';
     return;
   }
+
   body.innerHTML = data.map(o => `
-    <tr class="${o.id===activeOrderId?'selected':''} ${o.status==='cancelled'?'cancelled':''}" onclick="selectOrder('${o.id}')">
-      <td class="order-id">${o.id}</td>
-      <td>${o.time}</td>
-      <td>${o.customer}</td>
+    <tr data-order-id="${esc(o.id)}" class="${o.id===activeOrderId?'selected':''} ${o.status==='cancelled'?'cancelled':''}">
+      <td class="order-id">${esc(o.id)}</td>
+      <td>${esc(o.time)}</td>
+      <td>${esc(o.customer)}</td>
       <td style="font-size:11px;">${o.brand_id==='HH'?'🌸 HH':'☕ BB'}</td>
-      <td><span class="order-type-chip">${o.type}</span></td>
-      <td>${o.items_count} items</td>
+      <td><span class="order-type-chip">${esc(o.type)}</span></td>
+      <td>${Number(o.items_count || 0).toLocaleString('th-TH')} items</td>
       <td class="td-bold">${fmt(o.total)}</td>
-      <td style="font-size:12px;color:var(--muted);">${o.pay}</td>
+      <td style="font-size:12px;color:var(--muted);">${esc(o.pay)}</td>
       <td><span class="badge badge-${o.status}">${o.status === 'cancelled' ? 'Cancelled / ยกเลิก' : 'Completed / สำเร็จ'}</span></td>
     </tr>`).join('');
+
+  body.querySelectorAll('tr[data-order-id]').forEach(row => {
+    row.addEventListener('click', () => selectOrder(row.dataset.orderId));
+  });
 }
 
 function filterOrders() {
@@ -379,26 +504,35 @@ function filterOrders() {
 
 function setStatus(s, el) {
   statusFilter = s;
-  document.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   filterOrders();
 }
 
-function selectOrder(id) {
+function clearDetail() {
+  activeOrderId = null;
+  document.getElementById('detailEmpty').style.display = 'block';
+  document.getElementById('detailContent').style.display = 'none';
+  const lockMsg = document.getElementById('detLockMsg');
+  lockMsg.className = 'lock-note';
+  lockMsg.textContent = '';
+}
+
+async function selectOrder(id) {
   activeOrderId = id;
   const o = ALL_ORDERS.find(x => x.id === id);
   if (!o) return;
-  filterOrders();
+  renderOrders(getFilteredOrders());
 
   document.getElementById('detailEmpty').style.display = 'none';
   document.getElementById('detailContent').style.display = 'block';
 
   document.getElementById('detOrderId').textContent = '#' + o.id;
-  document.getElementById('detOrderTime').textContent = (o.time||'—') + ' · ' + o.brand;
+  document.getElementById('detOrderTime').textContent = `${o.dateKey || '—'} · ${o.time || '—'} · ${o.brand}`;
 
   const badge = document.getElementById('detBadge');
   badge.className = 'badge badge-' + o.status;
-  badge.textContent = (o.status === 'cancelled' ? 'Cancelled / ยกเลิก' : 'Completed / สำเร็จ');
+  badge.textContent = o.status === 'cancelled' ? 'Cancelled / ยกเลิก' : 'Completed / สำเร็จ';
 
   document.getElementById('detCustomer').textContent = o.customer;
   document.getElementById('detType').textContent = o.type + (o.table ? ' · ห้อง ' + o.table : '');
@@ -409,60 +543,115 @@ function selectOrder(id) {
   detItems.innerHTML = o.items.length
     ? o.items.map(item => `
         <div class="order-item-row">
-          <div class="item-name">${item.name||'—'}</div>
-          <div class="item-qty">×${item.qty||1}</div>
-          <div class="item-price">${fmt(item.total || (item.price||0)*(item.qty||1))}</div>
+          <div class="item-name">${esc(item.name || '—')}</div>
+          <div class="item-qty">×${Number(item.qty || 1).toLocaleString('th-TH')}</div>
+          <div class="item-price">${fmt(item.total ?? ((item.price || 0) * (item.qty || 1)))}</div>
         </div>`).join('')
     : '<div style="text-align:center;padding:12px;color:var(--muted);font-size:12px;">ไม่มีข้อมูลรายการ</div>';
 
   document.getElementById('detTotal').textContent = fmt(o.total);
 
   const noteBox = document.getElementById('detNoteBox');
-  if (o.note) { noteBox.style.display = 'block'; noteBox.innerHTML = `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted)">📝 ${o.note}</div>`; }
-  else noteBox.style.display = 'none';
+  if (o.note) {
+    noteBox.style.display = 'block';
+    noteBox.innerHTML = `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted)">📝 ${esc(o.note)}</div>`;
+  } else {
+    noteBox.style.display = 'none';
+    noteBox.innerHTML = '';
+  }
 
-  document.getElementById('detCancelBtn').style.display = o.status === 'cancelled' ? 'none' : 'inline-flex';
+  await refreshCancelAvailability(o);
+}
+
+async function refreshCancelAvailability(o) {
+  const seq = ++lockCheckSeq;
+  const btn = document.getElementById('detCancelBtn');
+  const lockMsg = document.getElementById('detLockMsg');
+
+  lockMsg.className = 'lock-note';
+  lockMsg.textContent = '';
+
+  if (o.status === 'cancelled') {
+    btn.style.display = 'none';
+    return;
+  }
+
+  btn.style.display = 'inline-flex';
+  btn.disabled = true;
+  btn.textContent = '⏳ Checking day status...';
+
+  try {
+    const lock = await API.dayLockStatus(o.dateKey);
+    if (seq !== lockCheckSeq || activeOrderId !== o.id) return;
+
+    if (lock && lock.locked) {
+      btn.disabled = true;
+      btn.textContent = '🔒 Closed Day / ปิดยอดแล้ว';
+      lockMsg.className = 'lock-note closed';
+      lockMsg.textContent = `วันที่ ${o.dateKey} ปิดยอดแล้ว หากต้องยกเลิกออเดอร์ย้อนหลัง ให้ Reopen Day จากหน้า Daily Close ก่อน`;
+    } else {
+      btn.disabled = false;
+      btn.textContent = '✕ Cancel Order / ยกเลิกออเดอร์';
+      if (lock && String(lock.status || '').toLowerCase() === 'reopened') {
+        lockMsg.className = 'lock-note open';
+        lockMsg.textContent = `วันที่ ${o.dateKey} ถูก Reopen แล้ว สามารถแก้ไขออเดอร์ได้ และควรปิดยอดวันนั้นอีกครั้งหลังแก้ไขเสร็จ`;
+      }
+    }
+  } catch(e) {
+    if (seq !== lockCheckSeq || activeOrderId !== o.id) return;
+    console.warn('dayLockStatus failed:', e);
+    // Backend still enforces the real guard. Do not falsely claim the day is open.
+    btn.disabled = false;
+    btn.textContent = '✕ Cancel Order / ยกเลิกออเดอร์';
+    lockMsg.className = 'lock-note closed';
+    lockMsg.textContent = 'ตรวจสถานะ Closed Day จากหน้าเว็บไม่ได้ชั่วคราว — backend จะตรวจซ้ำก่อนยกเลิกจริง';
+  }
 }
 
 function updateKPIs(filtered) {
   const completed = filtered.filter(o => o.status !== 'cancelled');
   const cancelled = filtered.filter(o => o.status === 'cancelled');
-  const totalRevenue = completed.reduce((s,o) => s + o.total, 0);
+  const totalRevenue = completed.reduce((s,o) => s + Number(o.total || 0), 0);
   const avg = completed.length ? totalRevenue / completed.length : 0;
 
-  document.getElementById('kpiTodayOrders').textContent = filtered.length;
-  document.getElementById('kpiTodayOrdersSub').textContent = `${completed.length} completed`;
+  document.getElementById('kpiTodayOrders').textContent = filtered.length.toLocaleString('th-TH');
+  document.getElementById('kpiTodayOrdersSub').textContent = `${completed.length.toLocaleString('th-TH')} completed`;
   document.getElementById('kpiTodayRevenue').textContent = fmt(totalRevenue);
-  document.getElementById('kpiTodayRevenueSub').textContent = `${completed.length} orders`;
+  document.getElementById('kpiTodayRevenueSub').textContent = `${completed.length.toLocaleString('th-TH')} orders`;
   document.getElementById('kpiAvgOrder').textContent = fmt(avg);
-  document.getElementById('kpiCancelled').textContent = cancelled.length;
-  document.getElementById('kpiCancelledSub').textContent = cancelled.length ? `${fmt(cancelled.reduce((s,o)=>s+o.total,0))} value` : 'None';
+  document.getElementById('kpiCancelled').textContent = cancelled.length.toLocaleString('th-TH');
+  document.getElementById('kpiCancelledSub').textContent = cancelled.length
+    ? `${fmt(cancelled.reduce((s,o)=>s+Number(o.total||0),0))} value`
+    : 'None';
 
-  document.getElementById('ordersStats').textContent = `${filtered.length} orders · ${fmt(totalRevenue)} รวม`;
+  document.getElementById('ordersStats').textContent =
+    `${filtered.length.toLocaleString('th-TH')} orders · ${fmt(totalRevenue)} รวม · ${rangeLabel()}`;
 }
 
-// ── CANCEL — ใช้ cancelOrder() จริงจาก รหัส.gs (คืนสต๊อกเต็ม, กันคืนซ้ำ) ──
 function openCancelModal() {
   const o = ALL_ORDERS.find(x => x.id === activeOrderId);
-  if (!o) return;
+  const btn = document.getElementById('detCancelBtn');
+  if (!o || btn.disabled || o.status === 'cancelled') return;
   document.getElementById('cancelOrderInfo').textContent = `Order ${o.id} — ${o.customer} — ${fmt(o.total)}`;
   document.getElementById('cancelReason').value = '';
   document.getElementById('cancelModal').classList.add('open');
 }
-function closeCancelModal() { document.getElementById('cancelModal').classList.remove('open'); }
+function closeCancelModal() {
+  document.getElementById('cancelModal').classList.remove('open');
+}
 
 async function confirmCancelOrder() {
   if (!activeOrderId) return;
   const reason = document.getElementById('cancelReason').value.trim();
   const btn = document.getElementById('confirmCancelBtn');
   UI.loading(btn, true);
+
   try {
     const result = await API.cancelOrder(activeOrderId, reason);
     if (!result || !result.success) throw new Error((result && result.error) || 'ยกเลิกไม่สำเร็จ');
     showToast('✅ ยกเลิกออเดอร์สำเร็จ — คืนสต๊อกแล้ว');
     closeCancelModal();
     await loadOrders();
-    selectOrder(activeOrderId);
   } catch(e) {
     console.error('confirmCancelOrder failed:', e);
     showToast('❌ ยกเลิกไม่สำเร็จ: ' + e.message);
@@ -471,21 +660,75 @@ async function confirmCancelOrder() {
   }
 }
 
-function printReceipt(){ showToast('Print function is not yet connected to a physical printer. / ยังไม่ได้เชื่อมต่อเครื่องพิมพ์'); }
+function printReceipt() {
+  const o = ALL_ORDERS.find(x => x.id === activeOrderId);
+  if (!o) return;
+
+  const rows = o.items.map(item => `
+    <tr>
+      <td>${esc(item.name || '—')}</td>
+      <td style="text-align:center">×${Number(item.qty || 1).toLocaleString('th-TH')}</td>
+      <td style="text-align:right">${fmt(item.total ?? ((item.price || 0) * (item.qty || 1)))}</td>
+    </tr>`).join('');
+
+  const w = window.open('', '_blank', 'width=520,height=760');
+  if (!w) {
+    showToast('❌ Browser ปิดกั้นหน้าต่างพิมพ์ กรุณาอนุญาต Pop-up');
+    return;
+  }
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(o.id)}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:24px;color:#222}
+      h2{margin:0 0 6px}.muted{color:#666;font-size:12px}
+      table{width:100%;border-collapse:collapse;margin-top:18px}
+      td{padding:8px 0;border-bottom:1px solid #ddd;font-size:13px}
+      .total{font-size:18px;font-weight:700;text-align:right;margin-top:18px}
+      @media print{button{display:none}}
+    </style></head><body>
+    <h2>BrewOS Receipt</h2>
+    <div class="muted">Order ${esc(o.id)} · ${esc(o.dateKey)} ${esc(o.time)} · ${esc(o.brand)}</div>
+    <div class="muted">Customer: ${esc(o.customer)} · Payment: ${esc(o.pay)}</div>
+    <table>${rows || '<tr><td>ไม่มีข้อมูลรายการ</td></tr>'}</table>
+    <div class="total">Total ${fmt(o.total)}</div>
+    <button onclick="window.print()" style="margin-top:24px;padding:10px 16px">Print</button>
+    </body></html>`);
+  w.document.close();
+  w.focus();
+}
+
+function csvCell(v) {
+  const s = String(v ?? '');
+  return `"${s.replace(/"/g, '""')}"`;
+}
 function exportCSV() {
   const items = getFilteredOrders();
-  const rows = [['Order ID','Time','Customer','Brand','Type','Total','Payment','Status']];
-  items.forEach(o => rows.push([o.id,o.time,o.customer,o.brand,o.type,o.total,o.pay,o.status]));
-  const csv = rows.map(r => r.join(',')).join('\n');
+  const rows = [['Order ID','Date','Time','Customer','Brand','Type','Items','Total','Payment','Status']];
+  items.forEach(o => rows.push([
+    o.id, o.dateKey, o.time, o.customer, o.brand, o.type, o.items_count, o.total, o.pay, o.status
+  ]));
+  const csv = '\uFEFF' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'}));
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-  a.download = `orders_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href = url;
+  a.download = `orders_${todayKeyBkk()}.csv`;
+  document.body.appendChild(a);
   a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function showToast(m){const t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;bottom:24px;right:24px;background:#143D2B;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;';document.body.appendChild(t);setTimeout(()=>t.remove(),2800);}
+
+function showToast(m) {
+  const t = document.createElement('div');
+  t.textContent = m;
+  t.style.cssText='position:fixed;bottom:24px;right:24px;background:#143D2B;color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;max-width:420px;box-shadow:0 6px 24px rgba(0,0,0,.18)';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),3200);
+}
 
 document.addEventListener('DOMContentLoaded', loadOrders);
-document.getElementById('cancelModal').addEventListener('click', e => { if (e.target.id === 'cancelModal') closeCancelModal(); });
+document.getElementById('cancelModal').addEventListener('click', e => {
+  if (e.target.id === 'cancelModal') closeCancelModal();
+});
 </script>
 </body>
 </html>
