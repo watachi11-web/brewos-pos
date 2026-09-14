@@ -1,122 +1,174 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BrewOS · Daily Close v6.1.2</title><style>
-:root{--g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;--m:#6b756f}*{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}h1{margin:0;font-size:24px}.sub{opacity:.72;margin-top:4px}.wrap{max-width:1100px;margin:auto;padding:24px}.bar,.grid,.payments{display:grid;gap:14px}.bar{grid-template-columns:1fr auto}.grid{grid-template-columns:repeat(4,1fr);margin:18px 0}.payments{grid-template-columns:repeat(4,1fr)}.card{background:#fff;border:1px solid #eadfce;border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}.label{font-size:12px;color:var(--m)}.value{font-size:24px;font-weight:700;margin-top:6px}.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}.btn:disabled{opacity:.45}.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:16px;margin-top:6px}.ok{color:#177a45}.bad{color:#b42318}.note{font-size:13px;color:var(--m);margin-top:12px}.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}.topnav a.active{background:var(--o);border-color:var(--o)}.topnav a:hover{background:rgba(255,255,255,.15)}
-@media(max-width:800px){.grid,.payments{grid-template-columns:1fr 1fr}.bar{grid-template-columns:1fr}}@media(max-width:500px){.grid,.payments{grid-template-columns:1fr}}</style></head><body>
-<header><h1>Daily Close & Reconciliation</h1><div class="sub">BrewOS · Brain Brew × Heng Heng</div><nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav></header><div class="wrap">
-<div class="bar"><input id="date" class="input" type="date"><button class="btn" onclick="loadPreview()">โหลดสรุปวันที่เลือก</button></div>
-<div id="status" class="note">กำลังโหลด…</div><div class="note">ระบบจะปิดยอดตาม <strong>วันที่ที่เลือกด้านบน</strong> ไม่ใช่วันที่ปัจจุบันโดยอัตโนมัติ</div><div id="kpi" class="grid"></div>
-<div class="card"><h3>ยอดตามช่องทางรับเงิน</h3><div class="payments" id="payments"></div><div class="note">กรอก “ยอดรับจริง” จากเงินสด/QR/โอน ณ ตอนปิดวัน ระบบจะเทียบกับยอดที่ POS บันทึกไว้</div></div>
-<div class="card" style="margin-top:16px"><label class="label">หมายเหตุ</label><input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน"><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button id="closeBtn" class="btn" onclick="closeDay()">ปิดยอดวันที่เลือก</button><button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day</button></div><div id="result" class="note"></div></div>
-</div><script src="api.js"></script>
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BrewOS · Daily Close v6.2.0</title>
+<style>
+:root{--g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;--s:#A7C48D;--gold:#EED29A;--m:#6b756f;--line:#eadfce;--red:#B42318;--amber:#9A6700;--blue:#2457A7}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}h1{margin:0;font-size:24px}.sub{opacity:.72;margin-top:4px}.wrap{max-width:1180px;margin:auto;padding:24px}.bar,.grid,.payments,.statusGrid{display:grid;gap:14px}.bar{grid-template-columns:1fr auto}.grid{grid-template-columns:repeat(4,1fr);margin:18px 0}.payments{grid-template-columns:repeat(4,1fr)}.statusGrid{grid-template-columns:repeat(4,1fr);margin:16px 0}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}.label{font-size:12px;color:var(--m)}.value{font-size:24px;font-weight:700;margin-top:6px}.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}.btn.secondary{background:var(--g)}.btn:disabled{opacity:.45;cursor:not-allowed}.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:16px;margin-top:6px;background:#fff}.ok{color:#177a45}.bad{color:var(--red)}.warn{color:var(--amber)}.note{font-size:13px;color:var(--m);margin-top:12px}.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}.topnav a.active{background:var(--o);border-color:var(--o)}.topnav a:hover{background:rgba(255,255,255,.15)}
+.sectionTitle{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:26px 0 10px}.sectionTitle h2{margin:0;font-size:19px}.sectionTitle .right{min-width:180px}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:700}.pill.closed{background:#e9f6ee;color:#177a45}.pill.holiday{background:#fff0e7;color:#b24d0c}.pill.reopened{background:#f4e8d8;color:#8b5e34}.pill.open{background:#e8f0ff;color:#2457A7}.pill.overdue{background:#fdecec;color:#B42318}.pill.future{background:#f1f2f1;color:#7a817d}
+.calendarWrap{overflow:auto}.calendar{display:grid;grid-template-columns:repeat(7,minmax(110px,1fr));gap:8px;min-width:780px}.dow{font-size:12px;font-weight:700;color:var(--m);padding:8px;text-align:center}.day{min-height:92px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;cursor:pointer;position:relative;transition:.15s}.day:hover{transform:translateY(-1px);box-shadow:0 4px 14px #143d2b12}.day.blank{visibility:hidden;cursor:default}.day.future{background:#fafafa;color:#9a9f9c;cursor:default}.day.prestart{background:#fbfbfa;color:#aaa;cursor:default}.day.overdue{border-color:#f2b8b5;background:#fff8f8}.day.today{outline:2px solid var(--o);outline-offset:1px}.daynum{font-size:17px;font-weight:800}.daymeta{font-size:11px;color:var(--m);margin-top:9px;line-height:1.35}.day .pill{position:absolute;right:8px;top:8px;padding:4px 7px;font-size:10px}.dayAmount{font-size:14px;font-weight:700;margin-top:10px}
+.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:14px}.history{width:100%;border-collapse:collapse;min-width:800px;background:#fff}.history th,.history td{padding:11px 12px;border-bottom:1px solid #f0e8dd;text-align:left;font-size:13px;white-space:nowrap}.history th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--m);background:#fbf7ef;position:sticky;top:0}.history tr.clickable{cursor:pointer}.history tr.clickable:hover td{background:#fffaf3}.num{text-align:right!important;font-variant-numeric:tabular-nums}.muted{color:var(--m)}
+@media(max-width:800px){.grid,.payments,.statusGrid{grid-template-columns:1fr 1fr}.bar{grid-template-columns:1fr}.sectionTitle{align-items:stretch;flex-direction:column}.sectionTitle .right{min-width:0;width:100%}}@media(max-width:500px){.grid,.payments,.statusGrid{grid-template-columns:1fr}.wrap{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Daily Close & Reconciliation</h1>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13</div>
+  <nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav>
+</header>
+<div class="wrap">
+  <div class="bar"><input id="date" class="input" type="date"><button class="btn" onclick="loadPreview()">โหลดสรุปวันที่เลือก</button></div>
+  <div id="status" class="note">กำลังโหลด…</div>
+  <div class="note">ระบบจะปิดยอดตาม <strong>วันที่ที่เลือกด้านบน</strong> ไม่ใช่วันที่ปัจจุบันโดยอัตโนมัติ</div>
+  <div id="kpi" class="grid"></div>
+
+  <div class="card">
+    <h3>ยอดตามช่องทางรับเงิน</h3>
+    <div class="payments" id="payments"></div>
+    <div class="note">กรอก “ยอดรับจริง” จากเงินสด/QR/โอน ณ ตอนปิดวัน ระบบจะเทียบกับยอดที่ POS บันทึกไว้</div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <label class="label">หมายเหตุ</label>
+    <input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+      <button id="closeBtn" class="btn" onclick="closeDay()">ปิดยอดวันที่เลือก</button>
+      <button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day</button>
+    </div>
+    <div id="result" class="note"></div>
+  </div>
+
+  <div class="sectionTitle">
+    <div><h2>Store Calendar</h2><div class="note">ดูสถานะปิดยอดรายวันในเดือนเดียวกัน และคลิกวันที่เพื่อเปิดรายละเอียด</div></div>
+    <div class="right"><label class="label">เดือน</label><input id="month" class="input" type="month"></div>
+  </div>
+  <div id="opsSummary" class="statusGrid"></div>
+  <div class="legend">
+    <span class="pill closed">CLOSED</span><span class="pill holiday">HOLIDAY</span><span class="pill reopened">REOPENED</span><span class="pill open">OPEN</span><span class="pill overdue">ยังไม่ปิด</span>
+  </div>
+  <div class="card calendarWrap"><div id="calendar" class="calendar"></div></div>
+
+  <div class="sectionTitle">
+    <div><h2>Daily Close History</h2><div class="note">ย้อนหลังสูงสุด 120 วันจาก backend เดิม · ไม่มีการเปลี่ยน accounting logic</div></div>
+    <button class="btn secondary" onclick="loadHistory()">รีเฟรชประวัติ</button>
+  </div>
+  <div class="tableWrap">
+    <table class="history"><thead><tr><th>วันที่</th><th>สถานะ</th><th class="num">Net Sales</th><th class="num">Net Profit</th><th class="num">Variance</th><th class="num">Tickets</th><th>ปิดเมื่อ</th><th>หมายเหตุ</th></tr></thead><tbody id="historyBody"><tr><td colspan="8" class="muted">กำลังโหลด…</td></tr></tbody></table>
+  </div>
+</div>
+<script src="api.js"></script>
 <script>
-let P=null, LOCK=null;
+let P=null, LOCK=null, CLOSES=[];
 const $=id=>document.getElementById(id);
 const fmt=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date())}
-$('date').value=today();
+function monthKey(d=today()){return String(d).slice(0,7)}
+$('date').value=today(); $('month').value=monthKey();
 function k(label,v){return `<div class="card"><div class="label">${label}</div><div class="value">${v}</div></div>`}
-function isZeroSalesDay(){
-  return !!P && Number(P.ticket_count||0)===0 && Number(P.net_sales||0)===0 && Number(P.gross_sales||0)===0;
+function serialToDateKey(n){const ms=Math.round((Number(n)-25569)*86400000); return new Date(ms).toISOString().slice(0,10)}
+function dateKey(v){
+  if(v===null||v===undefined||v==='')return '';
+  if(typeof v==='number' && Number.isFinite(v))return serialToDateKey(v);
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  if(/^\d+(\.\d+)?$/.test(s) && Number(s)>20000)return serialToDateKey(Number(s));
+  const dt=new Date(s); if(Number.isNaN(dt.getTime()))return s;
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(dt);
 }
+function displayDate(v){const d=dateKey(v); if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d||'—'; const [y,m,day]=d.split('-').map(Number); return new Date(Date.UTC(y,m-1,day,12)).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});}
+function displayDateTime(v){
+  if(v===null||v===undefined||v==='')return '—';
+  let dt;
+  if(typeof v==='number' || (/^\d+(\.\d+)?$/.test(String(v))&&Number(v)>20000)){dt=new Date((Number(v)-25569)*86400000)}else{dt=new Date(v)}
+  if(Number.isNaN(dt.getTime()))return String(v);
+  return dt.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+function isZeroSalesDay(){return !!P && Number(P.ticket_count||0)===0 && Number(P.net_sales||0)===0 && Number(P.gross_sales||0)===0;}
 function canCloseSelectedDay(){
-  if(!P) return false;
-  if(LOCK && LOCK.locked) return false;
-  if(String(P.close_status||'').toLowerCase()==='closed') return false;
-  if(Number(P.unresolved_integrity_events||0)>0) return false;
-  // Respect backend guard if explicitly false; tolerate older payloads where can_close is absent.
-  if(P.can_close === false) return false;
-  return true;
+  if(!P)return false; if(LOCK&&LOCK.locked)return false; if(String(P.close_status||'').toLowerCase()==='closed')return false; if(Number(P.unresolved_integrity_events||0)>0)return false; if(P.can_close===false)return false; return true;
 }
 function setButtons(){
-  const locked=!!(LOCK&&LOCK.locked);
-  const reopened=!!(LOCK&&LOCK.status==='reopened');
-  $('reopenBtn').style.display=locked?'inline-block':'none';
-  $('closeBtn').style.display=locked?'none':'inline-block';
-  if(reopened){
-    $('closeBtn').textContent='ปิดยอดวันที่เลือกอีกครั้ง';
-  }else if(isZeroSalesDay()){
-    $('closeBtn').textContent='บันทึกวันหยุด / ปิดยอด 0 บาท';
-  }else{
-    $('closeBtn').textContent='ปิดยอดวันที่เลือก';
-  }
+  const locked=!!(LOCK&&LOCK.locked), reopened=!!(LOCK&&LOCK.status==='reopened');
+  $('reopenBtn').style.display=locked?'inline-block':'none'; $('closeBtn').style.display=locked?'none':'inline-block';
+  $('closeBtn').textContent=reopened?'ปิดยอดวันที่เลือกอีกครั้ง':(isZeroSalesDay()?'บันทึกวันหยุด / ปิดยอด 0 บาท':'ปิดยอดวันที่เลือก');
   $('closeBtn').disabled=!canCloseSelectedDay();
 }
 async function loadPreview(){
-  $('status').textContent='กำลังโหลด…';
-  $('result').textContent='';
-  P=null; LOCK=null; setButtons();
+  $('status').textContent='กำลังโหลด…'; $('result').textContent=''; P=null; LOCK=null; setButtons();
   try{
-    const d=$('date').value;
-    P=await API.dailyClosePreview(d);
-    try{
-      LOCK=await API.dayLockStatus(d);
-    }catch(lockErr){
-      // Daily Close preview is sufficient to close an open day; don't brick the page if lock-status lookup hiccups.
-      LOCK={date:d,locked:false,status:String(P.close_status||'open').toLowerCase()||'open',warning:lockErr?.message||''};
-    }
+    const d=$('date').value; P=await API.dailyClosePreview(d);
+    try{LOCK=await API.dayLockStatus(d)}catch(lockErr){LOCK={date:d,locked:false,status:String(P.close_status||'open').toLowerCase()||'open',warning:lockErr?.message||''}}
     $('kpi').innerHTML=k('Net Sales',fmt(P.net_sales))+k('COGS',fmt(P.cogs))+k('Gross Profit',fmt(P.gross_profit))+k('Net Profit',fmt(P.net_profit))+k('Tickets',P.ticket_count)+k('Low Stock',P.low_stock_count)+k('Negative Stock',P.negative_stock_count)+k('Integrity Errors',P.unresolved_integrity_events);
-    const e=P.expected_payment||{};
-    $('payments').innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
-
-    if(LOCK.locked){
-      $('status').innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||''}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>`;
-    }else if(LOCK.status==='reopened'){
-      $('status').innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`;
-    }else if(canCloseSelectedDay() && isZeroSalesDay()){
-      $('status').innerHTML=`<span class="ok">วันหยุด / ไม่มีการขาย · พร้อมบันทึกวันที่ ${P.date||d}</span><br><span class="note">ยอดรับเงินจริงควรเป็น 0 ทุกช่อง ระบบยังบันทึกค่าเสื่อมรายวันตามปกติ</span>`;
-    }else if(canCloseSelectedDay()){
-      $('status').innerHTML=`<span class="ok">พร้อมปิดยอดวันที่ ${P.date||d}</span>`;
-    }else{
-      $('status').innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error หรือสถานะวันไม่อนุญาตให้ปิด</span>';
-    }
+    const e=P.expected_payment||{}; $('payments').innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
+    if(LOCK.locked){$('status').innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||''}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>`}
+    else if(LOCK.status==='reopened'){$('status').innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`}
+    else if(canCloseSelectedDay()&&isZeroSalesDay()){$('status').innerHTML=`<span class="ok">วันหยุด / ไม่มีการขาย · พร้อมบันทึกวันที่ ${P.date||d}</span><br><span class="note">ยอดรับเงินจริงควรเป็น 0 ทุกช่อง ระบบยังบันทึกค่าเสื่อมรายวันตามปกติ</span>`}
+    else if(canCloseSelectedDay()){$('status').innerHTML=`<span class="ok">พร้อมปิดยอดวันที่ ${P.date||d}</span>`}
+    else{$('status').innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error หรือสถานะวันไม่อนุญาตให้ปิด</span>'}
     setButtons();
-  }catch(err){
-    $('status').innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span>';
-    $('closeBtn').disabled=true; $('reopenBtn').style.display='none';
-  }
+  }catch(err){$('status').innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span>';$('closeBtn').disabled=true;$('reopenBtn').style.display='none'}
 }
-function inputValue(id, fallback=0){
-  const el=$(id);
-  if(!el || el.value==='') return fallback;
-  const n=Number(el.value);
-  return Number.isFinite(n)?n:fallback;
-}
+function inputValue(id,fallback=0){const el=$(id); if(!el||el.value==='')return fallback; const n=Number(el.value); return Number.isFinite(n)?n:fallback}
 async function closeDay(){
-  if(!P || !canCloseSelectedDay())return;
-  $('closeBtn').disabled=true; $('result').textContent='กำลังปิดยอด…';
+  if(!P||!canCloseSelectedDay())return; $('closeBtn').disabled=true; $('result').textContent='กำลังปิดยอด…';
   try{
-    const zero=isZeroSalesDay();
-    const autoNote=zero?'วันหยุด / ไม่มีการขาย':'';
-    const data=await API.closeDay({
-      date:P.date,
-      actual_cash:inputValue('a_cash',0),
-      actual_qr:inputValue('a_qr',0),
-      actual_transfer:inputValue('a_transfer',0),
-      actual_other:inputValue('a_other',0),
-      notes:String($('notes').value||autoNote),
-      closed_by:'owner'
-    });
+    const zero=isZeroSalesDay(), autoNote=zero?'วันหยุด / ไม่มีการขาย':'';
+    const data=await API.closeDay({date:P.date,actual_cash:inputValue('a_cash',0),actual_qr:inputValue('a_qr',0),actual_transfer:inputValue('a_transfer',0),actual_other:inputValue('a_other',0),notes:String($('notes').value||autoNote),closed_by:'owner'});
     if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Close failed')+'</span>';$('closeBtn').disabled=false;return}
     const v=data.variance||{}; $('result').innerHTML=`<span class="ok">${data.reclosed?'ปิดยอดใหม่แล้ว':(zero?'บันทึกวันหยุดแล้ว':'ปิดยอดแล้ว')} ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
-    await loadPreview();
-  }catch(err){
-    $('result').innerHTML='<span class="bad">'+(err.message||'Close failed')+'</span>'; $('closeBtn').disabled=false;
-  }
+    await Promise.all([loadPreview(),loadHistory()]);
+  }catch(err){$('result').innerHTML='<span class="bad">'+(err.message||'Close failed')+'</span>';$('closeBtn').disabled=false}
 }
 async function reopenDay(){
-  if(!LOCK||!LOCK.locked)return;
-  const reason=prompt('เหตุผลที่ต้อง Reopen Day (อย่างน้อย 5 ตัวอักษร):');
-  if(reason===null)return;
+  if(!LOCK||!LOCK.locked)return; const reason=prompt('เหตุผลที่ต้อง Reopen Day (อย่างน้อย 5 ตัวอักษร):'); if(reason===null)return;
   if(String(reason).trim().length<5){$('result').innerHTML='<span class="bad">กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร</span>';return}
   $('reopenBtn').disabled=true; $('result').textContent='กำลัง Reopen…';
-  try{
-    const data=await API.reopenDay({date:LOCK.date,reason:String(reason).trim(),reopened_by:'owner'});
-    if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return}
-    $('result').innerHTML='<span class="ok">Reopen แล้ว — สามารถแก้ไขข้อมูลของวันนี้ได้</span>';
-    await loadPreview();
-  }catch(err){
-    $('result').innerHTML='<span class="bad">'+(err.message||'Reopen failed')+'</span>'; $('reopenBtn').disabled=false;
-  }
+  try{const data=await API.reopenDay({date:LOCK.date,reason:String(reason).trim(),reopened_by:'owner'}); if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return} $('result').innerHTML='<span class="ok">Reopen แล้ว — สามารถแก้ไขข้อมูลของวันนี้ได้</span>'; await Promise.all([loadPreview(),loadHistory()])}
+  catch(err){$('result').innerHTML='<span class="bad">'+(err.message||'Reopen failed')+'</span>';$('reopenBtn').disabled=false}
 }
-$('date').addEventListener('change',loadPreview);
-loadPreview();
-</script></body></html>
+function closeStatus(rec){
+  const st=String(rec?.status||'').toLowerCase(); if(st==='reopened')return 'reopened';
+  const note=String(rec?.notes||''); if(st==='closed'&&Number(rec?.ticket_count||0)===0&&Number(rec?.net_sales||0)===0&&(note.includes('วันหยุด')||note.includes('ไม่มีการขาย')))return 'holiday';
+  if(st==='closed')return 'closed'; return st||'open';
+}
+function statusLabel(s){return ({closed:'CLOSED',holiday:'HOLIDAY',reopened:'REOPENED',open:'OPEN',overdue:'ยังไม่ปิด',future:'อนาคต'})[s]||String(s||'').toUpperCase()}
+function statusPill(s){return `<span class="pill ${s}">${statusLabel(s)}</span>`}
+function firstOperationalDate(){const ds=CLOSES.map(x=>dateKey(x.date)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort(); return ds[0]||today()}
+function datesBetween(start,end){const out=[]; let d=new Date(start+'T12:00:00+07:00'), e=new Date(end+'T12:00:00+07:00'); while(d<=e){out.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(d)); d=new Date(d.getTime()+86400000)} return out}
+function renderOpsSummary(){
+  const map=Object.fromEntries(CLOSES.map(r=>[dateKey(r.date),r])); const start=firstOperationalDate(), t=today(); const pastEnd=new Date(t+'T12:00:00+07:00'); pastEnd.setDate(pastEnd.getDate()-1); const yest=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(pastEnd);
+  const overdue=start<=yest?datesBetween(start,yest).filter(d=>!map[d]).length:0;
+  const closed=CLOSES.filter(r=>closeStatus(r)==='closed').length, holiday=CLOSES.filter(r=>closeStatus(r)==='holiday').length, reopened=CLOSES.filter(r=>closeStatus(r)==='reopened').length;
+  $('opsSummary').innerHTML=k('ปิดยอดแล้ว',closed)+k('วันหยุด',holiday)+k('ยังไม่ปิดย้อนหลัง',overdue)+k('Reopened',reopened);
+}
+function renderCalendar(){
+  const mk=$('month').value||monthKey(); const [y,m]=mk.split('-').map(Number); const first=new Date(Date.UTC(y,m-1,1,12)), lastDay=new Date(Date.UTC(y,m,0,12)).getUTCDate(); const startDow=first.getUTCDay();
+  const map=Object.fromEntries(CLOSES.map(r=>[dateKey(r.date),r])); const start=firstOperationalDate(), t=today();
+  let html=['อา','จ','อ','พ','พฤ','ศ','ส'].map(x=>`<div class="dow">${x}</div>`).join(''); for(let i=0;i<startDow;i++)html+='<div class="day blank"></div>';
+  for(let day=1;day<=lastDay;day++){
+    const d=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const rec=map[d]; let s='open', extra='';
+    if(d<start)s='prestart'; else if(d>t)s='future'; else if(rec)s=closeStatus(rec); else if(d<t)s='overdue'; else s='open';
+    const cls=['day',s,d===t?'today':''].join(' '); const clickable=!['future','prestart'].includes(s); const pill=['prestart'].includes(s)?'':statusPill(s);
+    if(rec)extra=`<div class="dayAmount">${fmt(rec.net_sales)}</div><div class="daymeta">NP ${fmt(rec.net_profit)} · ${Number(rec.ticket_count||0)} tickets</div>`;
+    else if(s==='overdue')extra='<div class="daymeta bad">ควรปิดย้อนหลัง</div>'; else if(s==='open')extra='<div class="daymeta">วันกำลังเปิดอยู่</div>'; else extra='';
+    html+=`<div class="${cls}" ${clickable?`onclick="selectDate('${d}')"`:''}><div class="daynum">${day}</div>${pill}${extra}</div>`;
+  }
+  $('calendar').innerHTML=html;
+}
+function selectDate(d){$('date').value=d; loadPreview(); window.scrollTo({top:0,behavior:'smooth'})}
+function renderHistory(){
+  if(!CLOSES.length){$('historyBody').innerHTML='<tr><td colspan="8" class="muted">ยังไม่มี Daily Close</td></tr>';return}
+  $('historyBody').innerHTML=CLOSES.map(r=>{const d=dateKey(r.date),s=closeStatus(r), variance=Number(r.total_payment_variance||0); return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${displayDateTime(r.closed_at)}</td><td class="muted">${String(r.notes||'')||'—'}</td></tr>`}).join('');
+}
+async function loadHistory(){
+  try{const data=await API.dailyCloses({limit:120}); CLOSES=Array.isArray(data)?data:(data?.rows||data?.items||[]); renderOpsSummary(); renderCalendar(); renderHistory()}
+  catch(err){$('historyBody').innerHTML=`<tr><td colspan="8" class="bad">${err.message||'โหลดประวัติไม่สำเร็จ'}</td></tr>`}
+}
+$('date').addEventListener('change',loadPreview); $('month').addEventListener('change',renderCalendar);
+Promise.all([loadPreview(),loadHistory()]);
+</script>
+</body>
+</html>
