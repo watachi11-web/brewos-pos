@@ -16,7 +16,7 @@
 <body>
 <header>
   <h1>Daily Close & Reconciliation</h1>
-  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · Hotfix 6.2.2</div>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.2 · Hotfix 6.2.2</div>
   <nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav>
 </header>
 <div class="wrap">
@@ -36,7 +36,7 @@
     <input id="notes" class="input" placeholder="เช่น QR ต่าง 1 บาทจากค่าธรรมเนียม / เงินทอน">
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
       <button id="closeBtn" class="btn" onclick="closeDay()">ปิดยอดวันที่เลือก</button>
-      <button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day</button>
+      <button id="reopenBtn" class="btn" style="display:none;background:#8b5e34" onclick="reopenDay()">Reopen Day / เปิดวันเพื่อแก้ไข</button>
     </div>
     <div id="result" class="note"></div>
   </div>
@@ -68,12 +68,18 @@ function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'
 function monthKey(d=today()){return String(d).slice(0,7)}
 $('date').value=today(); $('month').value=monthKey();
 function k(label,v){return `<div class="card"><div class="label">${label}</div><div class="value">${v}</div></div>`}
-function serialToDateKey(n){const ms=Math.round((Number(n)-25569)*86400000); return new Date(ms).toISOString().slice(0,10)}
+function serialToDateKey(n){
+  // Google Sheets serial date is a sheet-local calendar value. Treat it as a date-only value,
+  // not as an instant that should be shifted again by Asia/Bangkok.
+  const ms=Math.round((Number(n)-25569)*86400000);
+  return new Date(ms).toISOString().slice(0,10);
+}
 function dateKey(v){
   if(v===null||v===undefined||v==='')return '';
   if(typeof v==='number' && Number.isFinite(v))return serialToDateKey(v);
   const s=String(v).trim();
-  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  // Exact YYYY-MM-DD is already a business-date key. ISO timestamps must be converted to Bangkok.
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
   if(/^\d+(\.\d+)?$/.test(s) && Number(s)>20000)return serialToDateKey(Number(s));
   const dt=new Date(s); if(Number.isNaN(dt.getTime()))return s;
   return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(dt);
@@ -81,16 +87,33 @@ function dateKey(v){
 function displayDate(v){const d=dateKey(v); if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d||'—'; const [y,m,day]=d.split('-').map(Number); return new Date(Date.UTC(y,m-1,day,12)).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});}
 function displayDateTime(v){
   if(v===null||v===undefined||v==='')return '—';
-  let dt;
-  if(typeof v==='number' || (/^\d+(\.\d+)?$/.test(String(v))&&Number(v)>20000)){dt=new Date((Number(v)-25569)*86400000)}else{dt=new Date(v)}
-  if(Number.isNaN(dt.getTime()))return String(v);
+  const raw=String(v).trim();
+  // Numeric sheet serials are already Asia/Bangkok wall-clock values. Render them in UTC to avoid +7h double shift.
+  if(typeof v==='number' || (/^\d+(\.\d+)?$/.test(raw)&&Number(raw)>20000)){
+    const dt=new Date((Number(v)-25569)*86400000);
+    if(Number.isNaN(dt.getTime()))return String(v);
+    return dt.toLocaleString('th-TH',{timeZone:'UTC',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  }
+  const dt=new Date(v); if(Number.isNaN(dt.getTime()))return String(v);
   return dt.toLocaleString('th-TH',{timeZone:'Asia/Bangkok',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
 function isZeroSalesDay(){return !!P && Number(P.ticket_count||0)===0 && Number(P.net_sales||0)===0 && Number(P.gross_sales||0)===0;}
-function isSelectedDayClosed(){
+function historyRecordForDate(d){
+  const key=dateKey(d||$('date').value);
+  return (CLOSES||[]).find(r=>dateKey(r.date)===key)||null;
+}
+function effectiveCloseStatus(){
   const lockStatus=String((LOCK&&LOCK.status)||'').toLowerCase();
   const previewStatus=String((P&&P.close_status)||'').toLowerCase();
-  return !!((LOCK&&LOCK.locked) || lockStatus==='closed' || (P&&P.is_closed) || previewStatus==='closed');
+  const hist=historyRecordForDate($('date').value);
+  const histStatus=String((hist&&hist.status)||'').toLowerCase();
+  return lockStatus||previewStatus||histStatus||'open';
+}
+function isSelectedDayClosed(){
+  const st=effectiveCloseStatus();
+  const hist=historyRecordForDate($('date').value);
+  // HOLIDAY is a visual classification only; the stored close record remains status=closed.
+  return !!((LOCK&&LOCK.locked) || (P&&P.is_closed) || st==='closed' || st==='holiday' || (hist&&String(hist.status||'').toLowerCase()==='closed'));
 }
 function canCloseSelectedDay(){
   if(!P)return false;
@@ -100,7 +123,7 @@ function canCloseSelectedDay(){
   return true;
 }
 function setButtons(){
-  const closed=isSelectedDayClosed(), reopened=String((LOCK&&LOCK.status)||(P&&P.close_status)||'').toLowerCase()==='reopened';
+  const closed=isSelectedDayClosed(), reopened=effectiveCloseStatus()==='reopened';
   $('reopenBtn').style.display=closed?'inline-block':'none';
   $('reopenBtn').disabled=false;
   $('closeBtn').style.display=closed?'none':'inline-block';
@@ -112,15 +135,16 @@ async function loadPreview(){
   try{
     const d=$('date').value; P=await API.dailyClosePreview(d);
     try{LOCK=await API.dayLockStatus(d)}catch(lockErr){
-      const st=String(P.close_status||'open').toLowerCase()||'open';
-      // Hotfix: preview เป็น source สำรองเมื่อ get_day_lock_status ใช้งานไม่ได้
-      // ถ้า preview บอก closed ต้องแสดง Reopen ไม่ใช่ซ่อนปุ่ม
-      LOCK={date:d,locked:(st==='closed'||!!P.is_closed),status:st,close_id:'CLOSE-'+String(d).replace(/-/g,''),warning:lockErr?.message||''};
+      const hist=historyRecordForDate(d);
+      const histStatus=String((hist&&hist.status)||'').toLowerCase();
+      const st=String(P.close_status||histStatus||'open').toLowerCase()||'open';
+      // Fallback chain: preview -> history. This keeps Reopen visible even when get_day_lock_status is unavailable.
+      LOCK={date:d,locked:(st==='closed'||!!P.is_closed),status:st,close_id:(hist&&hist.close_id)||('CLOSE-'+String(d).replace(/-/g,'')),closed_at:(hist&&hist.closed_at)||'',warning:lockErr?.message||''};
     }
     $('kpi').innerHTML=k('Net Sales',fmt(P.net_sales))+k('COGS',fmt(P.cogs))+k('Gross Profit',fmt(P.gross_profit))+k('Net Profit',fmt(P.net_profit))+k('Tickets',P.ticket_count)+k('Low Stock',P.low_stock_count)+k('Negative Stock',P.negative_stock_count)+k('Integrity Errors',P.unresolved_integrity_events);
     const e=P.expected_payment||{}; $('payments').innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
     if(isSelectedDayClosed()){$('status').innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||''}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>`}
-    else if(LOCK.status==='reopened'){$('status').innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`}
+    else if(effectiveCloseStatus()==='reopened'){$('status').innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`}
     else if(canCloseSelectedDay()&&isZeroSalesDay()){$('status').innerHTML=`<span class="ok">วันหยุด / ไม่มีการขาย · พร้อมบันทึกวันที่ ${P.date||d}</span><br><span class="note">ยอดรับเงินจริงควรเป็น 0 ทุกช่อง ระบบยังบันทึกค่าเสื่อมรายวันตามปกติ</span>`}
     else if(canCloseSelectedDay()){$('status').innerHTML=`<span class="ok">พร้อมปิดยอดวันที่ ${P.date||d}</span>`}
     else{$('status').innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error หรือสถานะวันไม่อนุญาตให้ปิด</span>'}
@@ -180,11 +204,25 @@ function renderHistory(){
   $('historyBody').innerHTML=CLOSES.map(r=>{const d=dateKey(r.date),s=closeStatus(r), variance=Number(r.total_payment_variance||0); return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${displayDateTime(r.closed_at)}</td><td class="muted">${String(r.notes||'')||'—'}</td></tr>`}).join('');
 }
 async function loadHistory(){
-  try{const data=await API.dailyCloses({limit:120}); CLOSES=Array.isArray(data)?data:(data?.rows||data?.items||[]); renderOpsSummary(); renderCalendar(); renderHistory()}
-  catch(err){$('historyBody').innerHTML=`<tr><td colspan="8" class="bad">${err.message||'โหลดประวัติไม่สำเร็จ'} · ประวัติไม่กระทบการ Reopen/ปิดยอด กรุณาอัปเดต Apps Script backend หากยังขึ้น 404</td></tr>`}
+  try{
+    const data=await API.dailyCloses({limit:120});
+    CLOSES=Array.isArray(data)?data:(data?.rows||data?.items||[]);
+    renderOpsSummary(); renderCalendar(); renderHistory();
+    // loadPreview and loadHistory start independently; history may finish later. Re-evaluate lock state now.
+    if(P){
+      const hist=historyRecordForDate($('date').value);
+      if(hist && (!LOCK || String(LOCK.status||'').toLowerCase()==='open')){
+        LOCK={date:$('date').value,locked:String(hist.status||'').toLowerCase()==='closed',status:String(hist.status||'').toLowerCase(),close_id:hist.close_id||'',closed_at:hist.closed_at||'',closed_by:hist.closed_by||'',reopen_reason:hist.reopen_reason||''};
+      }
+      setButtons();
+      if(isSelectedDayClosed()) $('status').innerHTML=`<span class="ok">ปิดยอดแล้ว · ${(LOCK&&LOCK.close_id)||('CLOSE-'+$('date').value.replace(/-/g,''))}</span><br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว กด “Reopen Day / เปิดวันเพื่อแก้ไข” ก่อนลง Purchase Receipt หรือแก้ข้อมูลย้อนหลัง</span>`;
+    }
+  }catch(err){
+    $('historyBody').innerHTML=`<tr><td colspan="8" class="bad">${err.message||'โหลดประวัติไม่สำเร็จ'} · ประวัติไม่กระทบการปิดยอด หากยังขึ้น 404 ให้ deploy backend เวอร์ชันล่าสุดใน deployment เดิม</td></tr>`;
+  }
 }
-$('date').addEventListener('change',loadPreview); $('month').addEventListener('change',renderCalendar);
-Promise.all([loadPreview(),loadHistory()]);
+$('date').addEventListener('change',async()=>{await loadPreview(); setButtons();}); $('month').addEventListener('change',renderCalendar);
+(async function boot(){await loadHistory(); await loadPreview();})();
 </script>
 </body>
 </html>
