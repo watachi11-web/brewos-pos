@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BrewOS · Daily Close v6.2.2</title>
+<title>BrewOS · Daily Close v6.2.4</title>
 <style>
 :root{--g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;--s:#A7C48D;--gold:#EED29A;--m:#6b756f;--line:#eadfce;--red:#B42318;--amber:#9A6700;--blue:#2457A7}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}h1{margin:0;font-size:24px}.sub{opacity:.72;margin-top:4px}.wrap{max-width:1180px;margin:auto;padding:24px}.bar,.grid,.payments,.statusGrid{display:grid;gap:14px}.bar{grid-template-columns:1fr auto}.grid{grid-template-columns:repeat(4,1fr);margin:18px 0}.payments{grid-template-columns:repeat(4,1fr)}.statusGrid{grid-template-columns:repeat(4,1fr);margin:16px 0}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}.label{font-size:12px;color:var(--m)}.value{font-size:24px;font-weight:700;margin-top:6px}.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}.btn.secondary{background:var(--g)}.btn:disabled{opacity:.45;cursor:not-allowed}.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:16px;margin-top:6px;background:#fff}.ok{color:#177a45}.bad{color:var(--red)}.warn{color:var(--amber)}.note{font-size:13px;color:var(--m);margin-top:12px}.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}.topnav a.active{background:var(--o);border-color:var(--o)}.topnav a:hover{background:rgba(255,255,255,.15)}
@@ -16,7 +16,7 @@
 <body>
 <header>
   <h1>Daily Close & Reconciliation</h1>
-  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.2</div>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13</div>
   <nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav>
 </header>
 <div class="wrap">
@@ -61,7 +61,9 @@
 </div>
 <script src="api.js"></script>
 <script>
+// BrewOS Daily Close v6.2.4 — close_id date sync + safe snapshot/Reopen fallback
 let P=null, LOCK=null, CLOSES=[];
+let PREVIEW_SOURCE='live';
 const $=id=>document.getElementById(id);
 const fmt=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date())}
@@ -72,11 +74,34 @@ function serialToDateKey(n){const ms=Math.round((Number(n)-25569)*86400000); ret
 function dateKey(v){
   if(v===null||v===undefined||v==='')return '';
   if(typeof v==='number' && Number.isFinite(v))return serialToDateKey(v);
-  const s=String(v).trim();
-  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
-  if(/^\d+(\.\d+)?$/.test(s) && Number(s)>20000)return serialToDateKey(Number(s));
-  const dt=new Date(s); if(Number.isNaN(dt.getTime()))return s;
+  const raw=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+  if(/^\d+(\.\d+)?$/.test(raw) && Number(raw)>20000)return serialToDateKey(Number(raw));
+  const dt=new Date(raw); if(Number.isNaN(dt.getTime()))return raw;
   return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(dt);
+}
+// Daily Close identity is encoded in close_id and is timezone-safe.
+// Prefer it over a serialized Sheet Date, which can shift one day when converted through UTC.
+function recordDateKey(rec){
+  const cid=String(rec?.close_id||'');
+  const m=cid.match(/^CLOSE-(\d{4})(\d{2})(\d{2})$/);
+  if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  return dateKey(rec?.date);
+}
+function findCloseRecord(d){return CLOSES.find(r=>recordDateKey(r)===d)||null;}
+function previewFromCloseRecord(r){
+  const d=recordDateKey(r);
+  const st=String(r?.status||'closed').toLowerCase();
+  return {
+    date:d, close_status:st, is_closed:st==='closed', can_close:false,
+    gross_sales:Number(r?.gross_sales||0), discount:Number(r?.discount||0), net_sales:Number(r?.net_sales||0),
+    cogs:Number(r?.cogs||0), gross_profit:Number(r?.gross_profit||0), opex:Number(r?.opex||0),
+    depreciation:Number(r?.depreciation||0), net_profit:Number(r?.net_profit||0), ticket_count:Number(r?.ticket_count||0),
+    low_stock_count:Number(r?.low_stock_count||0), negative_stock_count:Number(r?.negative_stock_count||0),
+    unresolved_integrity_events:Number(r?.unresolved_integrity_events||0),
+    expected_payment:{cash:Number(r?.expected_cash||0),qr:Number(r?.expected_qr||0),transfer:Number(r?.expected_transfer||0),other:Number(r?.expected_other||0)},
+    _snapshot_record:r
+  };
 }
 function displayDate(v){const d=dateKey(v); if(!/^\d{4}-\d{2}-\d{2}$/.test(d))return d||'—'; const [y,m,day]=d.split('-').map(Number); return new Date(Date.UTC(y,m-1,day,12)).toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});}
 function displayDateTime(v){
@@ -88,12 +113,8 @@ function displayDateTime(v){
 }
 function isZeroSalesDay(){return !!P && Number(P.ticket_count||0)===0 && Number(P.net_sales||0)===0 && Number(P.gross_sales||0)===0;}
 function previewStatus(){return String((P&&P.close_status)||'').toLowerCase();}
-function isClosedSelectedDay(){
-  return !!((LOCK&&LOCK.locked) || (P&&P.is_closed===true) || previewStatus()==='closed');
-}
-function isReopenedSelectedDay(){
-  return !!((LOCK&&String(LOCK.status||'').toLowerCase()==='reopened') || previewStatus()==='reopened');
-}
+function isClosedSelectedDay(){return !!((LOCK&&LOCK.locked)||(P&&P.is_closed===true)||previewStatus()==='closed');}
+function isReopenedSelectedDay(){return !!((LOCK&&String(LOCK.status||'').toLowerCase()==='reopened')||previewStatus()==='reopened');}
 function canCloseSelectedDay(){
   if(!P)return false;
   if(isClosedSelectedDay())return false;
@@ -107,36 +128,60 @@ function setButtons(){
   $('reopenBtn').disabled=!closed;
   $('closeBtn').style.display=closed?'none':'inline-block';
   $('closeBtn').textContent=reopened?'ปิดยอดวันที่เลือกอีกครั้ง':(isZeroSalesDay()?'บันทึกวันหยุด / ปิดยอด 0 บาท':'ปิดยอดวันที่เลือก');
-  $('closeBtn').disabled=!canCloseSelectedDay();
+  // Fallback snapshot is safe for viewing + Reopen only. Closing requires live recalculation.
+  $('closeBtn').disabled=!canCloseSelectedDay() || PREVIEW_SOURCE!=='live';
 }
 async function loadPreview(){
-  $('status').textContent='กำลังโหลด…'; $('result').textContent=''; P=null; LOCK=null; setButtons();
+  $('status').textContent='กำลังโหลด…'; $('result').textContent=''; P=null; LOCK=null; PREVIEW_SOURCE='live'; setButtons();
+  const d=$('date').value;
+  let previewErr=null;
   try{
-    const d=$('date').value; P=await API.dailyClosePreview(d);
+    P=await API.dailyClosePreview(d);
+  }catch(err){
+    previewErr=err;
+    const rec=findCloseRecord(d);
+    if(!rec){
+      $('status').innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span><br><span class="note">ยังไม่มี Daily Close snapshot ของวันที่เลือก จึงไม่เปิดปุ่ม Reopen/Close จากข้อมูลสำรอง</span>';
+      $('closeBtn').disabled=true; $('reopenBtn').style.display='none'; return;
+    }
+    PREVIEW_SOURCE='snapshot';
+    P=previewFromCloseRecord(rec);
+  }
+  try{
     try{
       LOCK=await API.dayLockStatus(d);
     }catch(lockErr){
-      const ps=String(P.close_status||'open').toLowerCase()||'open';
+      const rec=findCloseRecord(d);
+      const ps=String(P.close_status||rec?.status||'open').toLowerCase()||'open';
       LOCK={
         date:d,
-        locked:(P.is_closed===true || ps==='closed'),
+        locked:(P.is_closed===true||ps==='closed'),
         status:ps,
-        close_id:(P.is_closed===true || ps==='closed') ? ('CLOSE-'+String(d).replace(/-/g,'')) : '',
-        warning:lockErr?.message||''
+        close_id:rec?.close_id||((P.is_closed===true||ps==='closed')?('CLOSE-'+String(d).replace(/-/g,'')):''),
+        closed_at:rec?.closed_at||'', reopen_reason:rec?.reopen_reason||'', warning:lockErr?.message||''
       };
     }
     $('kpi').innerHTML=k('Net Sales',fmt(P.net_sales))+k('COGS',fmt(P.cogs))+k('Gross Profit',fmt(P.gross_profit))+k('Net Profit',fmt(P.net_profit))+k('Tickets',P.ticket_count)+k('Low Stock',P.low_stock_count)+k('Negative Stock',P.negative_stock_count)+k('Integrity Errors',P.unresolved_integrity_events);
-    const e=P.expected_payment||{}; $('payments').innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}"></div>`).join('');
+    const e=P.expected_payment||{};
+    $('payments').innerHTML=['cash','qr','transfer','other'].map(x=>`<div><div class="label">${x.toUpperCase()} · expected ${fmt(e[x])}</div><input id="a_${x}" class="input" type="number" step="0.01" value="${Number(e[x]||0)}" ${PREVIEW_SOURCE==='snapshot'?'disabled':''}></div>`).join('');
+    const snapshotWarn=PREVIEW_SOURCE==='snapshot'?`<br><span class="warn">⚠ ${previewErr?.message||'Preview route unavailable'} — ใช้ snapshot จาก Daily Close History แทนชั่วคราว; สามารถ Reopen วันปิดยอดได้ แต่ไม่อนุญาตให้ Close จาก snapshot</span>`:'';
     if(isClosedSelectedDay()){
-      const fallbackWarn=LOCK.warning?`<br><span class="warn">⚠ Day-lock endpoint ใช้ไม่ได้ (${LOCK.warning}) แต่ Preview ยืนยันว่าเป็นวันปิดยอดแล้ว — ปุ่ม Reopen ยังแสดงให้ใช้งาน</span>`:'';
-      $('status').innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||('CLOSE-'+String(d).replace(/-/g,''))}</span>${LOCK.closed_at?` · ${LOCK.closed_at}`:''}<br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว ไม่สามารถเพิ่ม/ยกเลิกออเดอร์ แก้รายจ่าย หรือรับ Purchase Receipt ย้อนวันที่นี้ได้จนกว่าจะ Reopen</span>${fallbackWarn}`
+      const fallbackWarn=LOCK.warning?`<br><span class="warn">⚠ Day-lock endpoint ใช้ไม่ได้ (${LOCK.warning}) แต่ snapshot ยืนยันสถานะวันปิดยอด</span>`:'';
+      $('status').innerHTML=`<span class="ok">ปิดยอดแล้ว · ${LOCK.close_id||('CLOSE-'+String(d).replace(/-/g,''))}</span>${LOCK.closed_at?` · ${displayDateTime(LOCK.closed_at)}`:''}<br><span class="note">วันที่ที่เลือกถูกล็อกแล้ว หากต้องแก้ Purchase Receipt / Expense ให้ Reopen ก่อน</span>${snapshotWarn}${fallbackWarn}`;
+    }else if(isReopenedSelectedDay()){
+      $('status').innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK&&LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>${snapshotWarn}`;
+    }else if(canCloseSelectedDay()&&isZeroSalesDay()){
+      $('status').innerHTML=`<span class="ok">วันหยุด / ไม่มีการขาย · พร้อมบันทึกวันที่ ${P.date||d}</span><br><span class="note">ยอดรับเงินจริงควรเป็น 0 ทุกช่อง ระบบยังบันทึกค่าเสื่อมรายวันตามปกติ</span>${snapshotWarn}`;
+    }else if(canCloseSelectedDay()){
+      $('status').innerHTML=`<span class="ok">พร้อมปิดยอดวันที่ ${P.date||d}</span>${snapshotWarn}`;
+    }else{
+      $('status').innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error หรือสถานะวันไม่อนุญาตให้ปิด</span>'+snapshotWarn;
     }
-    else if(isReopenedSelectedDay()){$('status').innerHTML=`<span class="bad">REOPENED — เปิดวันเพื่อแก้ไขข้อมูล</span>${LOCK&&LOCK.reopen_reason?` · เหตุผล: ${LOCK.reopen_reason}`:''}<br><span class="note">แก้ไขให้เสร็จ แล้วกด “ปิดยอดอีกครั้ง” เพื่อคำนวณ snapshot ใหม่</span>`}
-    else if(canCloseSelectedDay()&&isZeroSalesDay()){$('status').innerHTML=`<span class="ok">วันหยุด / ไม่มีการขาย · พร้อมบันทึกวันที่ ${P.date||d}</span><br><span class="note">ยอดรับเงินจริงควรเป็น 0 ทุกช่อง ระบบยังบันทึกค่าเสื่อมรายวันตามปกติ</span>`}
-    else if(canCloseSelectedDay()){$('status').innerHTML=`<span class="ok">พร้อมปิดยอดวันที่ ${P.date||d}</span>`}
-    else{$('status').innerHTML='<span class="bad">ยังปิดไม่ได้: มี Integrity Error หรือสถานะวันไม่อนุญาตให้ปิด</span>'}
     setButtons();
-  }catch(err){$('status').innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span>';$('closeBtn').disabled=true;$('reopenBtn').style.display='none'}
+  }catch(err){
+    $('status').innerHTML='<span class="bad">'+(err.message||'โหลดข้อมูลไม่สำเร็จ')+'</span>';
+    $('closeBtn').disabled=true; $('reopenBtn').style.display='none';
+  }
 }
 function inputValue(id,fallback=0){const el=$(id); if(!el||el.value==='')return fallback; const n=Number(el.value); return Number.isFinite(n)?n:fallback}
 async function closeDay(){
@@ -146,27 +191,24 @@ async function closeDay(){
     const data=await API.closeDay({date:P.date,actual_cash:inputValue('a_cash',0),actual_qr:inputValue('a_qr',0),actual_transfer:inputValue('a_transfer',0),actual_other:inputValue('a_other',0),notes:String($('notes').value||autoNote),closed_by:'owner'});
     if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Close failed')+'</span>';$('closeBtn').disabled=false;return}
     const v=data.variance||{}; $('result').innerHTML=`<span class="ok">${data.reclosed?'ปิดยอดใหม่แล้ว':(zero?'บันทึกวันหยุดแล้ว':'ปิดยอดแล้ว')} ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
-    await Promise.all([loadPreview(),loadHistory()]);
+    await loadHistory().then(()=>loadPreview()).catch(()=>loadPreview());
   }catch(err){$('result').innerHTML='<span class="bad">'+(err.message||'Close failed')+'</span>';$('closeBtn').disabled=false}
 }
 async function reopenDay(){
-  if(!P || !isClosedSelectedDay())return;
+  if(!P||!isClosedSelectedDay())return;
   const reopenDate=(LOCK&&LOCK.date)||$('date').value||P.date;
   const reason=prompt('เหตุผลที่ต้อง Reopen Day (อย่างน้อย 5 ตัวอักษร):'); if(reason===null)return;
-  if(String(reason).trim().length<5){$('result').innerHTML='<span class="bad">กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร</span>';return}
+  if(String(reason).trim().length<5){$('result').innerHTML='<span class="bad">กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร</span>';return;}
   $('reopenBtn').disabled=true; $('result').textContent='กำลัง Reopen…';
   try{
-    if(!API || typeof API.reopenDay!=='function') throw new Error('api.js ไม่มี reopenDay — กรุณาใช้ api.js v3.5.0 ขึ้นไป');
+    if(!API||typeof API.reopenDay!=='function')throw new Error('api.js ไม่มี reopenDay');
     const data=await API.reopenDay({date:reopenDate,reason:String(reason).trim(),reopened_by:'owner'});
-    if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return}
+    if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return;}
     $('result').innerHTML='<span class="ok">Reopen แล้ว — สามารถลง Purchase Receipt / Expense ย้อนวันที่นี้ได้</span>';
-    await loadPreview();
-    await loadHistory();
-  }
-  catch(err){
+    await loadHistory(); await loadPreview();
+  }catch(err){
     const msg=err.message||'Reopen failed';
-    const deployHint=/404|Unknown action|reopen_day/i.test(msg)?'<br><span class="warn">Backend ยังไม่มี route reopen_day ที่ใช้งานจริง — Deploy รหัส.gs v6.2.2 บน deployment เดิมก่อน</span>':'';
-    $('result').innerHTML='<span class="bad">'+msg+'</span>'+deployHint;
+    $('result').innerHTML='<span class="bad">'+msg+'</span>';
     $('reopenBtn').disabled=false;
   }
 }
@@ -177,17 +219,17 @@ function closeStatus(rec){
 }
 function statusLabel(s){return ({closed:'CLOSED',holiday:'HOLIDAY',reopened:'REOPENED',open:'OPEN',overdue:'ยังไม่ปิด',future:'อนาคต'})[s]||String(s||'').toUpperCase()}
 function statusPill(s){return `<span class="pill ${s}">${statusLabel(s)}</span>`}
-function firstOperationalDate(){const ds=CLOSES.map(x=>dateKey(x.date)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort(); return ds[0]||today()}
+function firstOperationalDate(){const ds=CLOSES.map(x=>recordDateKey(x)).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort(); return ds[0]||today()}
 function datesBetween(start,end){const out=[]; let d=new Date(start+'T12:00:00+07:00'), e=new Date(end+'T12:00:00+07:00'); while(d<=e){out.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(d)); d=new Date(d.getTime()+86400000)} return out}
 function renderOpsSummary(){
-  const map=Object.fromEntries(CLOSES.map(r=>[dateKey(r.date),r])); const start=firstOperationalDate(), t=today(); const pastEnd=new Date(t+'T12:00:00+07:00'); pastEnd.setDate(pastEnd.getDate()-1); const yest=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(pastEnd);
+  const map=Object.fromEntries(CLOSES.map(r=>[recordDateKey(r),r])); const start=firstOperationalDate(), t=today(); const pastEnd=new Date(t+'T12:00:00+07:00'); pastEnd.setDate(pastEnd.getDate()-1); const yest=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(pastEnd);
   const overdue=start<=yest?datesBetween(start,yest).filter(d=>!map[d]).length:0;
   const closed=CLOSES.filter(r=>closeStatus(r)==='closed').length, holiday=CLOSES.filter(r=>closeStatus(r)==='holiday').length, reopened=CLOSES.filter(r=>closeStatus(r)==='reopened').length;
   $('opsSummary').innerHTML=k('ปิดยอดแล้ว',closed)+k('วันหยุด',holiday)+k('ยังไม่ปิดย้อนหลัง',overdue)+k('Reopened',reopened);
 }
 function renderCalendar(){
   const mk=$('month').value||monthKey(); const [y,m]=mk.split('-').map(Number); const first=new Date(Date.UTC(y,m-1,1,12)), lastDay=new Date(Date.UTC(y,m,0,12)).getUTCDate(); const startDow=first.getUTCDay();
-  const map=Object.fromEntries(CLOSES.map(r=>[dateKey(r.date),r])); const start=firstOperationalDate(), t=today();
+  const map=Object.fromEntries(CLOSES.map(r=>[recordDateKey(r),r])); const start=firstOperationalDate(), t=today();
   let html=['อา','จ','อ','พ','พฤ','ศ','ส'].map(x=>`<div class="dow">${x}</div>`).join(''); for(let i=0;i<startDow;i++)html+='<div class="day blank"></div>';
   for(let day=1;day<=lastDay;day++){
     const d=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const rec=map[d]; let s='open', extra='';
@@ -202,24 +244,23 @@ function renderCalendar(){
 function selectDate(d){$('date').value=d; loadPreview(); window.scrollTo({top:0,behavior:'smooth'})}
 function renderHistory(){
   if(!CLOSES.length){$('historyBody').innerHTML='<tr><td colspan="8" class="muted">ยังไม่มี Daily Close</td></tr>';return}
-  $('historyBody').innerHTML=CLOSES.map(r=>{const d=dateKey(r.date),s=closeStatus(r), variance=Number(r.total_payment_variance||0); return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${displayDateTime(r.closed_at)}</td><td class="muted">${String(r.notes||'')||'—'}</td></tr>`}).join('');
+  $('historyBody').innerHTML=CLOSES.map(r=>{const d=recordDateKey(r),s=closeStatus(r), variance=Number(r.total_payment_variance||0); return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${displayDateTime(r.closed_at)}</td><td class="muted">${String(r.notes||'')||'—'}</td></tr>`}).join('');
 }
 async function loadHistory(){
   try{
     const data=await API.dailyCloses({limit:120});
     CLOSES=Array.isArray(data)?data:(data?.rows||data?.items||[]);
     renderOpsSummary(); renderCalendar(); renderHistory();
-  }
-  catch(err){
+  }catch(err){
     const msg=err.message||'โหลดประวัติไม่สำเร็จ';
     CLOSES=[];
-    $('opsSummary').innerHTML=k('สถานะ History','ต้องอัปเดต backend')+k('ปิดยอดวันนี้','ดูจากส่วนบน')+k('ข้อมูลบัญชี','ไม่กระทบ')+k('Route','get_daily_closes');
-    $('calendar').innerHTML='<div class="note bad" style="grid-column:1/-1;padding:12px">โหลด Store Calendar ไม่ได้: '+msg+'<br><span class="warn">ให้อัปเดต Apps Script backend v6.2.2 บน deployment เดิม แล้วรีเฟรชหน้า</span></div>';
-    $('historyBody').innerHTML=`<tr><td colspan="8" class="bad">${msg}<br><span class="warn">Backend route get_daily_closes ยังไม่พร้อม — ต้อง Deploy รหัส.gs v6.2.2</span></td></tr>`;
+    $('opsSummary').innerHTML=k('สถานะ History','โหลดไม่ได้')+k('ปิดยอดวันนี้','ดูจากส่วนบน')+k('ข้อมูลบัญชี','ไม่กระทบ')+k('Route','get_daily_closes');
+    $('calendar').innerHTML='<div class="note bad" style="grid-column:1/-1;padding:12px">โหลด Store Calendar ไม่ได้: '+msg+'</div>';
+    $('historyBody').innerHTML=`<tr><td colspan="8" class="bad">${msg}</td></tr>`;
   }
 }
 $('date').addEventListener('change',loadPreview); $('month').addEventListener('change',renderCalendar);
-Promise.all([loadPreview(),loadHistory()]);
+loadHistory().then(()=>loadPreview()).catch(()=>loadPreview());
 </script>
 </body>
 </html>
