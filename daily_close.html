@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BrewOS · Daily Close v6.2.5</title>
+<title>BrewOS · Daily Close v6.2.6</title>
 <style>
 :root{--g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;--s:#A7C48D;--gold:#EED29A;--m:#6b756f;--line:#eadfce;--red:#B42318;--amber:#9A6700;--blue:#2457A7}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}h1{margin:0;font-size:24px}.sub{opacity:.72;margin-top:4px}.wrap{max-width:1180px;margin:auto;padding:24px}.bar,.grid,.payments,.statusGrid{display:grid;gap:14px}.bar{grid-template-columns:1fr auto}.grid{grid-template-columns:repeat(4,1fr);margin:18px 0}.payments{grid-template-columns:repeat(4,1fr)}.statusGrid{grid-template-columns:repeat(4,1fr);margin:16px 0}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}.label{font-size:12px;color:var(--m)}.value{font-size:24px;font-weight:700;margin-top:6px}.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}.btn.secondary{background:var(--g)}.btn:disabled{opacity:.45;cursor:not-allowed}.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:16px;margin-top:6px;background:#fff}.ok{color:#177a45}.bad{color:var(--red)}.warn{color:var(--amber)}.note{font-size:13px;color:var(--m);margin-top:12px}.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}.topnav a.active{background:var(--o);border-color:var(--o)}.topnav a:hover{background:rgba(255,255,255,.15)}
@@ -16,7 +16,7 @@
 <body>
 <header>
   <h1>Daily Close & Reconciliation</h1>
-  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.5</div>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.6</div>
   <nav class="topnav"><a href="dashboard.html">Dashboard</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a></nav>
 </header>
 <div class="wrap">
@@ -61,7 +61,7 @@
 </div>
 <script src="api.js"></script>
 <script>
-// BrewOS Daily Close v6.2.5 — Reopen UI independent of history route + preview-based calendar fallback
+// BrewOS Daily Close v6.2.6 — Reopen reliability: closed-day detection can fall back to Daily Close history
 let P=null, LOCK=null, CLOSES=[];
 let HISTORY_SOURCE='route';
 const OPERATION_START='2026-09-11';
@@ -99,16 +99,29 @@ function isZeroSalesDay(){return !!P && Number(P.ticket_count||0)===0 && Number(
 function canCloseSelectedDay(){
   if(!P)return false; if(LOCK&&LOCK.locked)return false; if(String(P.close_status||'').toLowerCase()==='closed')return false; if(Number(P.unresolved_integrity_events||0)>0)return false; if(P.can_close===false)return false; return true;
 }
+function selectedHistoryRecord(){
+  const d=$('date').value;
+  return CLOSES.find(r=>recordDateKey(r)===d)||null;
+}
 function selectedDayStatus(){
   const lockStatus=String((LOCK&&LOCK.status)||'').toLowerCase();
   const previewStatus=String((P&&P.close_status)||'').toLowerCase();
-  if(lockStatus) return lockStatus;
-  if(previewStatus) return previewStatus;
+  const hist=selectedHistoryRecord();
+  const historyStatus=hist?closeStatus(hist):'';
+  // closed/reopened จาก lock หรือ preview มี priority สูงสุด
+  if(lockStatus && lockStatus!=='open') return lockStatus;
+  if(previewStatus && previewStatus!=='open') return previewStatus;
+  // ถ้า route lock/preview ตอบไม่ครบ ให้ยึด Daily Close record ที่มีอยู่จริง
+  if(historyStatus==='holiday') return 'closed';
+  if(historyStatus) return historyStatus;
   if(P&&P.is_closed) return 'closed';
-  return 'open';
+  if(LOCK&&LOCK.locked) return 'closed';
+  return lockStatus||previewStatus||'open';
 }
 function selectedDayIsClosed(){
-  return !!(LOCK&&LOCK.locked) || selectedDayStatus()==='closed' || !!(P&&P.is_closed);
+  const hist=selectedHistoryRecord();
+  const hs=hist?closeStatus(hist):'';
+  return !!(LOCK&&LOCK.locked) || !!(P&&P.is_closed) || selectedDayStatus()==='closed' || hs==='closed' || hs==='holiday';
 }
 function setButtons(){
   const closed=selectedDayIsClosed(), reopened=selectedDayStatus()==='reopened';
@@ -142,16 +155,29 @@ async function closeDay(){
     if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Close failed')+'</span>';$('closeBtn').disabled=false;return}
     const v=data.variance||{}; $('result').innerHTML=`<span class="ok">${data.reclosed?'ปิดยอดใหม่แล้ว':(zero?'บันทึกวันหยุดแล้ว':'ปิดยอดแล้ว')} ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
     await Promise.all([loadPreview(),loadHistory()]);
-  }catch(err){$('result').innerHTML='<span class="bad">'+(err.message||'Close failed')+'</span>';$('closeBtn').disabled=false}
+  }catch(err){
+    const msg=err?.message||'Close failed';
+    $('result').innerHTML='<span class="bad">'+msg+'</span>'+(msg.includes('HTTP 404')?'<br><span class="note">Backend deployment ยังไม่มี route close_day — ให้ตรวจ deployment เดิม/เวอร์ชัน backend ก่อน ไม่ต้องสร้าง deployment ใหม่</span>':'');
+    $('closeBtn').disabled=false;
+  }
 }
 async function reopenDay(){
-  if(!P || !selectedDayIsClosed()) return;
+  if(!selectedDayIsClosed()) return;
   const reason=prompt('เหตุผลที่ต้อง Reopen Day (อย่างน้อย 5 ตัวอักษร):'); if(reason===null)return;
   if(String(reason).trim().length<5){$('result').innerHTML='<span class="bad">กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร</span>';return}
   $('reopenBtn').disabled=true; $('result').textContent='กำลัง Reopen…';
-  const reopenDate=(LOCK&&LOCK.date)||P.date||$('date').value;
-  try{const data=await API.reopenDay({date:reopenDate,reason:String(reason).trim(),reopened_by:'owner'}); if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return} $('result').innerHTML='<span class="ok">Reopen แล้ว — สามารถลง Purchase / Expense ย้อนวันที่นี้ได้</span>'; await Promise.all([loadPreview(),loadHistory()])}
-  catch(err){$('result').innerHTML='<span class="bad">'+(err.message||'Reopen failed')+'</span>';$('reopenBtn').disabled=false}
+  const reopenDate=(LOCK&&LOCK.date)||(P&&P.date)||$('date').value;
+  try{
+    const data=await API.reopenDay({date:reopenDate,reason:String(reason).trim(),reopened_by:'owner'});
+    if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return}
+    $('result').innerHTML='<span class="ok">Reopen แล้ว — สามารถลง Purchase / Expense ย้อนวันที่นี้ได้</span>';
+    await loadHistory();
+    await loadPreview();
+  } catch(err){
+    const msg=err?.message||'Reopen failed';
+    $('result').innerHTML='<span class="bad">'+msg+'</span>'+(msg.includes('HTTP 404')?'<br><span class="note">Backend deployment ยังไม่มี route reopen_day — ต้องอัปเดต deployment เดิม ไม่ใช่สร้าง deployment ใหม่</span>':'');
+    $('reopenBtn').disabled=false;
+  }
 }
 function closeStatus(rec){
   const st=String(rec?.status||'').toLowerCase(); if(st==='reopened')return 'reopened';
@@ -236,14 +262,14 @@ async function loadHistoryFromPreview(){
     results.forEach(({d,p})=>{const r=pseudoCloseFromPreview(d,p);if(r)rows.push(r)});
   }
   CLOSES=rows;
-  renderOpsSummary();renderCalendar();renderHistory();
+  renderOpsSummary();renderCalendar();renderHistory();setButtons();
 }
 async function loadHistory(){
   try{
     const data=await API.dailyCloses({limit:120});
     CLOSES=Array.isArray(data)?data:(data?.rows||data?.items||[]);
     HISTORY_SOURCE='route';
-    renderOpsSummary(); renderCalendar(); renderHistory();
+    renderOpsSummary(); renderCalendar(); renderHistory(); setButtons();
   }catch(err){
     // Phase 13 safe fallback: active backend may not expose GET get_daily_closes.
     // Do not redeploy/regress the purchase-cashflow backend just for calendar/history.
