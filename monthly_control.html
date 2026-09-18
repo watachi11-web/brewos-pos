@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BrewOS · Monthly Control Center v6.3.1</title>
+<style>
+:root{
+  --g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;
+  --s:#A7C48D;--gold:#EED29A;--m:#6b756f;--line:#eadfce;
+  --red:#B42318;--amber:#9A6700;--blue:#2457A7;--ok:#177a45;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}
+header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}
+h1{margin:0;font-size:25px}.sub{opacity:.75;margin-top:5px}
+.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}
+.topnav a.active{background:var(--o);border-color:var(--o)}
+.wrap{max-width:1220px;margin:auto;padding:24px}
+.toolbar{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:12px;align-items:end;margin-bottom:18px}
+.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:15px;background:#fff}
+.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}
+.btn.secondary{background:var(--g)}.btn:disabled{opacity:.45;cursor:not-allowed}
+.section{margin-top:25px}.sectionHead{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px}
+.sectionHead h2{margin:0;font-size:19px}.note{font-size:12px;color:var(--m);line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--m)}
+.value{font-size:24px;font-weight:800;margin-top:7px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.small{font-size:12px;color:var(--m);margin-top:5px}
+.good{color:var(--ok)}.bad{color:var(--red)}.warn{color:var(--amber)}.blue{color:var(--blue)}
+.pill{display:inline-flex;align-items:center;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:800}
+.pill.good{background:#e9f6ee;color:var(--ok)}.pill.bad{background:#fdecec;color:var(--red)}
+.pill.warn{background:#fff5df;color:var(--amber)}.pill.blue{background:#e8f0ff;color:var(--blue)}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:850px}
+th,td{padding:10px 12px;border-bottom:1px solid #f0e8dd;text-align:left;font-size:12px;white-space:nowrap}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--m);background:#fbf7ef;position:sticky;top:0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.exception{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #f2ece3}
+.exception:last-child{border-bottom:0}
+.dot{width:10px;height:10px;border-radius:50%}.dot.bad{background:var(--red)}.dot.warn{background:#e0a11b}.dot.good{background:var(--ok)}
+.brandBar{height:8px;background:#eee6db;border-radius:999px;overflow:hidden;margin-top:10px}.brandFill{height:100%;background:var(--o)}
+.source{font-size:11px;color:var(--m)}
+pre{white-space:pre-wrap;word-break:break-word;font-size:11px;background:#fbf7ef;padding:12px;border-radius:10px;border:1px solid var(--line)}
+@media(max-width:900px){.grid,.grid5{grid-template-columns:1fr 1fr}.split{grid-template-columns:1fr}}
+@media(max-width:560px){.grid,.grid5{grid-template-columns:1fr}.toolbar{grid-template-columns:1fr}.wrap{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Monthly Control Center</h1>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 14 · v6.3.1</div>
+  <nav class="topnav">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="finance.html">Finance</a>
+    <a href="daily_close.html">Daily Close</a>
+    <a class="active" href="monthly_control.html">Monthly Control</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div>
+      <label class="label" for="month">เดือนที่ตรวจ</label>
+      <input id="month" class="input" type="month">
+    </div>
+    <button id="refreshBtn" class="btn" onclick="loadAll()">รีเฟรช Monthly Control</button>
+  </div>
+
+  <div id="status" class="card note" role="status" aria-live="polite">กำลังเตรียมข้อมูล…</div>
+
+  <div class="section">
+    <div class="sectionHead">
+      <div><h2>Owner Summary</h2><div class="note">ตัวเลขบัญชีอ่านจาก Finance source of truth โดยตรง</div></div>
+      <div id="periodPill"></div>
+    </div>
+    <div id="financeKpis" class="grid5"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead"><div><h2>Brand Performance</h2><div class="note">ใช้ brand split จาก Finance summary เดิม ไม่คำนวณต้นทุนใหม่ใน browser</div></div></div>
+    <div id="brandGrid" class="split"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead">
+      <div><h2>Close Control</h2><div class="note">ตรวจ completeness ของ Daily Close ตั้งแต่วันเริ่มใช้งาน BrewOS</div></div>
+      <div id="historySource" class="source"></div>
+    </div>
+    <div id="closeKpis" class="grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead">
+      <div><h2>Live Inventory Control</h2><div class="note">ใช้สถานะสต็อกปัจจุบันเป็น operational control; มีผลต่อ readiness เฉพาะเดือนปัจจุบัน</div></div>
+    </div>
+    <div id="inventoryKpis" class="grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead"><div><h2>Payment Reconciliation</h2><div class="note">รวมเฉพาะ snapshot ที่ปิดแล้วในเดือนที่เลือก · ไม่รวม Reopened · — หมายถึงข้อมูลยังตรวจสอบไม่ได้</div></div></div>
+    <div id="paymentKpis" class="grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead"><div><h2>Cash Out & Inventory Spend</h2><div class="note">แยกเงินออกจาก P&amp;L เพื่อไม่ให้ Purchase ถูกนับเป็น OpEx ซ้ำ</div></div></div>
+    <div id="cashoutKpis" class="grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead"><div><h2>Exception Center</h2><div class="note">สิ่งที่เจ้าของร้านควรตรวจ ก่อนถือว่าเดือนนั้นพร้อม review</div></div></div>
+    <div id="exceptions" class="card"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead"><div><h2>Month-End Readiness</h2><div class="note">Phase 14 รอบแรกเป็น read-only control; ยังไม่มีปุ่ม Lock Month</div></div></div>
+    <div id="readiness" class="card"></div>
+  </div>
+
+  <div class="section">
+    <div class="sectionHead"><div><h2>Daily Close Detail</h2><div class="note">ตรวจ snapshot รายวัน · เปิดหน้า <a href="daily_close.html">Daily Close</a> เพื่อเลือกวันที่ตรวจต่อ · ข้อมูล Preview ไม่ใช่ snapshot ที่บันทึกไว้</div></div></div>
+    <div class="tableWrap">
+      <table>
+        <thead><tr>
+          <th>วันที่</th><th>สถานะ</th><th class="num">Net Sales</th><th class="num">COGS</th>
+          <th class="num">Net Profit</th><th class="num">Tickets</th><th class="num">Variance</th>
+          <th class="num">Inventory Spend</th><th class="num">Negative Stock</th><th class="num">Integrity</th>
+        </tr></thead>
+        <tbody id="dailyRows"><tr><td colspan="10" class="note">กำลังโหลด…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="api.js"></script>
+<script>
+const OPERATION_START='2026-09-11';
+const $=id=>document.getElementById(id);
+let FIN=null, CLOSES=[], INVENTORY=null, HISTORY_SOURCE='route';
+let UNKNOWN_DATES=[], SOURCE_ERRORS=[], LOAD_ID=0;
+const CHANNELS=['cash','qr','transfer','other'];
+
+function today(){
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date());
+}
+function currentMonthKey(){ return today().slice(0,7); }
+function fmt(n){
+  return hasNumber(n)?'฿'+Number(n).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
+}
+function hasNumber(v){return (typeof v==='number'||(typeof v==='string'&&v.trim()!==''))&&Number.isFinite(Number(v));}
+function numberText(v){return hasNumber(v)?String(Number(v)):'—';}
+function n(v){ const x=Number(v||0); return Number.isFinite(x)?x:0; }
+function esc(s){
+  return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function serialToDateKey(v){
+  const ms=Math.round((Number(v)-25569)*86400000);
+  return new Date(ms).toISOString().slice(0,10);
+}
+function dateKey(v){
+  if(v===null||v===undefined||v==='')return '';
+  if(typeof v==='number'&&Number.isFinite(v))return serialToDateKey(v);
+  const s=String(v).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s))return s;
+  if(/^\d+(\.\d+)?$/.test(s)&&Number(s)>20000)return serialToDateKey(Number(s));
+  const dt=new Date(s);
+  if(Number.isNaN(dt.getTime()))return s;
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(dt);
+}
+function recordDateKey(r){
+  const cid=String(r?.close_id||'');
+  const m=cid.match(/^CLOSE-(\d{4})(\d{2})(\d{2})$/);
+  return m?`${m[1]}-${m[2]}-${m[3]}`:dateKey(r?.date);
+}
+function closeKind(r){
+  const st=String(r?.status||'').toLowerCase();
+  if(st==='reopened')return 'reopened';
+  const note=String(r?.notes||'');
+  if(st==='closed'&&n(r?.ticket_count)===0&&n(r?.net_sales)===0&&(note.includes('วันหยุด')||note.includes('ไม่มีการขาย')))return 'holiday';
+  if(st==='closed')return 'closed';
+  return st||'open';
+}
+function monthBounds(mk){
+  const [y,m]=mk.split('-').map(Number);
+  const last=String(new Date(Date.UTC(y,m,0,12)).getUTCDate()).padStart(2,'0');
+  return {first:`${mk}-01`,last:`${mk}-${last}`};
+}
+function datesBetween(a,b){
+  if(a>b)return [];
+  const out=[]; let d=new Date(a+'T12:00:00+07:00'), e=new Date(b+'T12:00:00+07:00');
+  while(d<=e){
+    out.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(d));
+    d=new Date(d.getTime()+86400000);
+  }
+  return out;
+}
+function kpi(label,value,sub='',cls=''){
+  return `<div class="card"><div class="label">${esc(label)}</div><div class="value ${cls}">${value}</div><div class="small">${sub}</div></div>`;
+}
+function pct(a,b){ return b?((a/b)*100).toFixed(1):'0.0'; }
+function readWithTimeout(task){
+  let timer;
+  return Promise.race([
+    Promise.resolve().then(task),
+    new Promise((resolve,reject)=>{timer=setTimeout(()=>reject(new Error('หมดเวลารอข้อมูล กรุณาลองใหม่')),30000);})
+  ]).finally(()=>clearTimeout(timer));
+}
+
+async function loadHistory(mk,loadId){
+  const bounds=monthBounds(mk), t=today();
+  const start=bounds.first>OPERATION_START?bounds.first:OPERATION_START;
+  const end=bounds.last<t?bounds.last:t;
+  const days=datesBetween(start,end), rows=[], unknownDates=[];
+  let source='route';
+  try{
+    const data=await readWithTimeout(()=>API.dailyCloses({limit:400}));
+    const history=Array.isArray(data)?data:(data?.rows||data?.items);
+    if(!Array.isArray(history))throw new Error('Invalid Daily Close history');
+    const seen=new Set();
+    for(const r of history){
+      const d=recordDateKey(r);
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||!['closed','reopened','open'].includes(String(r.status).toLowerCase())){
+        throw new Error('Invalid Daily Close record');
+      }
+      if(d<start||d>end)continue;
+      if(seen.has(d))throw new Error('Duplicate Daily Close date');
+      seen.add(d); rows.push(r);
+    }
+  }catch(err){
+    source='preview-fallback'; rows.length=0;
+  }
+  // Check uncovered dates as well as route failures: a capped history response
+  // must not make older closed days look missing. Preview confirms status only.
+  const known=new Set(rows.map(recordDateKey));
+  const uncovered=days.filter(d=>!known.has(d));
+  for(let i=0;i<uncovered.length;i+=4){
+    if(loadId!==LOAD_ID)return {rows:[],unknownDates:[],source:'superseded'};
+    const batch=await Promise.all(uncovered.slice(i,i+4).map(async d=>{
+      try{
+        const p=await readWithTimeout(()=>API.dailyClosePreview(d));
+        const st=String(p?.close_status||(p?.is_closed===true?'closed':p?.is_closed===false?'open':'')).toLowerCase();
+        if(!p||p.error||!['closed','reopened','open'].includes(st)||dateKey(p.date)!==d)throw new Error('Invalid preview');
+        if(st==='open')return {d};
+        return {d,row:{close_id:'CLOSE-'+d.replace(/-/g,''),date:d,status:st,_fallback:true}};
+      }catch(err){return {d,unknown:true};}
+    }));
+    batch.forEach(({d,row,unknown})=>{
+      if(unknown)unknownDates.push(d);
+      if(row){rows.push(row);if(source==='route')source='mixed';}
+    });
+  }
+  return {rows,unknownDates,source};
+}
+
+function closeControl(mk){
+  const bounds=monthBounds(mk);
+  const isCurrent=mk===currentMonthKey();
+  const compareEnd=isCurrent
+    ? new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date(new Date(today()+'T12:00:00+07:00').getTime()-86400000))
+    : bounds.last;
+  const start=bounds.first>OPERATION_START?bounds.first:OPERATION_START;
+  const required=start<=compareEnd?datesBetween(start,compareEnd):[];
+  const map=Object.fromEntries(CLOSES.map(r=>[recordDateKey(r),r]));
+  const missing=required.filter(d=>!UNKNOWN_DATES.includes(d)&&(!map[d]||closeKind(map[d])==='open'));
+  const due=CLOSES.filter(r=>required.includes(recordDateKey(r)));
+  const reopened=CLOSES.filter(r=>closeKind(r)==='reopened');
+  const closed=due.filter(r=>closeKind(r)==='closed').length;
+  const holiday=due.filter(r=>closeKind(r)==='holiday').length;
+  return {required,missing,reopened,closed,holiday,isCurrent,compareEnd};
+}
+
+function closedRecords(){return CLOSES.filter(r=>['closed','holiday'].includes(closeKind(r)));}
+function sumKnown(rows,field){
+  return rows.every(r=>!r._fallback&&hasNumber(r[field]))?rows.reduce((s,r)=>s+Number(r[field]),0):null;
+}
+function paymentVerified(r){
+  return !r._fallback&&hasNumber(r.total_payment_variance)&&CHANNELS.every(x=>hasNumber(r['expected_'+x])&&hasNumber(r['actual_'+x]));
+}
+function hasPaymentVariance(r){
+  return paymentVerified(r)&&(Math.abs(Number(r.total_payment_variance))>0.009||CHANNELS.some(x=>Math.abs(Number(r['actual_'+x])-Number(r['expected_'+x]))>0.009));
+}
+function paymentTotals(){
+  const rows=closedRecords();
+  const complete=!UNKNOWN_DATES.length&&rows.every(paymentVerified);
+  const out={};
+  CHANNELS.forEach(x=>{
+    out[x]={
+      expected:complete?sumKnown(rows,'expected_'+x):null,
+      actual:complete?sumKnown(rows,'actual_'+x):null
+    };
+    out[x].variance=complete?out[x].actual-out[x].expected:null;
+  });
+  out.totalVariance=complete?sumKnown(rows,'total_payment_variance'):null;
+  return out;
+}
+
+function renderFinance(){
+  if(!FIN){
+    $('financeKpis').innerHTML=kpi('Finance','—','โหลดข้อมูลบัญชีไม่สำเร็จ','warn');
+    $('brandGrid').innerHTML=kpi('Brand Performance','—','โหลดข้อมูลบัญชีไม่สำเร็จ','warn');
+    return;
+  }
+  const s=FIN;
+  const rev=n(s.revenue?.total), cogs=n(s.cogs), gp=n(s.gross_profit), opex=n(s.total_expenses), dep=n(s.depreciation), net=n(s.net_profit);
+  $('financeKpis').innerHTML=
+    kpi('Net Sales',fmt(rev),numberText(s.order_count)+' transactions')+
+    kpi('COGS',fmt(cogs),pct(cogs,rev)+'% of Net Sales')+
+    kpi('Gross Profit',fmt(gp),'GP '+n(s.gross_margin_pct).toFixed(1)+'%','good')+
+    kpi('OpEx + Dep.',fmt(opex+dep),'OpEx '+fmt(opex)+' · Dep '+fmt(dep))+
+    kpi('Net Profit',fmt(net),'NP '+n(s.net_margin_pct).toFixed(1)+'%',net>=0?'good':'bad');
+
+  const bb=s.brand?.bb||{revenue:n(s.revenue?.bb)}, hh=s.brand?.hh||{revenue:n(s.revenue?.hh)};
+  const total=Math.max(1,n(bb.revenue)+n(hh.revenue));
+  $('brandGrid').innerHTML=[
+    ['Brain Brew',bb],
+    ['Heng Heng',hh]
+  ].map(([name,b])=>{
+    const share=(n(b.revenue)/total)*100;
+    return `<div class="card">
+      <div class="label">${name}</div><div class="value">${fmt(b.revenue)}</div>
+      <div class="small">COGS ${fmt(b.cogs)} · GP ${fmt(b.gross_profit)} · Margin ${hasNumber(b.gross_margin_pct)?Number(b.gross_margin_pct).toFixed(1)+'%':'—'}</div>
+      <div class="brandBar"><div class="brandFill" style="width:${Math.min(100,Math.max(0,share))}%"></div></div>
+      <div class="small">Revenue share ${share.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCloseControl(mk){
+  const c=closeControl(mk);
+  const completed=c.closed+c.holiday;
+  $('closeKpis').innerHTML=
+    kpi('Closed',c.closed,completed+'/'+c.required.length+' required through '+c.compareEnd,'good')+
+    kpi('Holiday',c.holiday,'วันหยุด / ไม่มีการขาย')+
+    kpi('Missing',c.missing.length,c.missing.length?c.missing.join(', '):UNKNOWN_DATES.length?'มีวันที่ยังตรวจสอบไม่ได้':'ไม่มีวันค้าง',c.missing.length?'bad':UNKNOWN_DATES.length?'warn':'good')+
+    kpi('Reopened',c.reopened.length,c.reopened.length?c.reopened.map(recordDateKey).join(', '):'ไม่มีวันค้าง Reopen',c.reopened.length?'bad':'good');
+  $('historySource').textContent='History: '+(HISTORY_SOURCE==='route'?'saved snapshots':HISTORY_SOURCE==='mixed'?'snapshots + preview status':'preview status only')+(UNKNOWN_DATES.length?' · ตรวจสอบไม่ได้ '+UNKNOWN_DATES.length+' วัน':'');
+}
+
+function renderInventoryHealth(mk){
+  const c=INVENTORY?.counts;
+  if(!c){
+    $('inventoryKpis').innerHTML=
+      kpi('Negative Stock','—','Inventory health unavailable','warn')+
+      kpi('Low Stock','—','Inventory health unavailable','warn')+
+      kpi('Reconciliation','—','Inventory health unavailable','warn')+
+      kpi('Unit Issues','—','Inventory health unavailable','warn');
+    return;
+  }
+  const active=mk===currentMonthKey();
+  $('inventoryKpis').innerHTML=
+    kpi('Negative Stock',n(c.negative),active?'current live stock':'current live stock · informational',n(c.negative)>0?'bad':'good')+
+    kpi('Low Stock',n(c.low),active?'current live stock':'current live stock · informational',n(c.low)>0?'warn':'good')+
+    kpi('Reconciliation',n(c.reconciliation),active?'stock vs latest transaction':'current live check · informational',n(c.reconciliation)>0?'bad':'good')+
+    kpi('Unit Issues',n(c.unit_issues),active?'recipe unit compatibility':'current live check · informational',n(c.unit_issues)>0?'bad':'good');
+}
+
+function renderPayments(){
+  const p=paymentTotals();
+  $('paymentKpis').innerHTML=['cash','qr','transfer','other'].map(x=>{
+    const d=p[x], cls=d.variance===null?'warn':Math.abs(d.variance)>0.009?'bad':'good';
+    return kpi(x.toUpperCase(),fmt(d.actual),'Expected '+fmt(d.expected)+' · Variance '+fmt(d.variance),cls);
+  }).join('');
+}
+
+function renderCashOut(){
+  const s=FIN||{}, by=s.cash_out_by_type||{};
+  const inventory=by.INVENTORY??by.inventory;
+  const capex=by.CAPEX??by.capex;
+  const opex=by.OPEX??by.opex??s.total_expenses;
+  const snapshotSpend=!UNKNOWN_DATES.length?sumKnown(closedRecords(),'inventory_spend'):null;
+  // A reported Finance zero is authoritative. Never replace it with snapshot
+  // cash spending or subtract purchases from profit a second time.
+  $('cashoutKpis').innerHTML=
+    kpi('Inventory Spend',fmt(inventory),'Finance monthly breakdown · ไม่หัก P&L ซ้ำ')+
+    kpi('CAPEX',fmt(capex),'Finance monthly breakdown · เงินออกเพื่อสินทรัพย์')+
+    kpi('Operating Expense',fmt(opex),'หัก P&L ตาม expense classification')+
+    kpi('CAPEX + Inventory',fmt(s.capex_and_inventory_spend),'Finance monthly total')+
+    kpi('Closed-Day Inventory Spend',fmt(snapshotSpend),'เฉพาะ snapshot วันที่ปิดแล้ว · ไม่ใช่ยอดทั้งเดือน');
+}
+
+function collectExceptions(mk){
+  const c=closeControl(mk), out=[];
+  SOURCE_ERRORS.forEach(detail=>out.push({level:'warn',title:'ข้อมูลยังตรวจสอบไม่ได้',detail}));
+  UNKNOWN_DATES.forEach(d=>out.push({level:'warn',title:'Daily Close status unavailable',detail:d}));
+  const unverified=closedRecords().filter(r=>!paymentVerified(r)||!hasNumber(r.negative_stock_count)||!hasNumber(r.unresolved_integrity_events));
+  if(unverified.length)out.push({level:'warn',title:'Snapshot controls unavailable',detail:unverified.map(recordDateKey).join(', ')+' · ยังตรวจยอดรับจริง / variance / integrity ไม่ได้'});
+  c.missing.forEach(d=>out.push({level:'bad',title:'ยังไม่ปิดยอด',detail:d}));
+  c.reopened.forEach(r=>out.push({level:'bad',title:'Reopened แต่ยังไม่ Re-close',detail:recordDateKey(r)}));
+  closedRecords().filter(hasPaymentVariance)
+    .forEach(r=>out.push({level:'warn',title:'Payment variance',detail:recordDateKey(r)+' · รวม '+fmt(r.total_payment_variance)+' · ตรวจส่วนต่างแยกช่องทางรับเงิน'}));
+  closedRecords().filter(r=>!r._fallback&&n(r.negative_stock_count)>0)
+    .forEach(r=>out.push({level:'bad',title:'Negative stock snapshot',detail:recordDateKey(r)+' · '+n(r.negative_stock_count)+' items'}));
+  closedRecords().filter(r=>!r._fallback&&n(r.unresolved_integrity_events)>0)
+    .forEach(r=>out.push({level:'bad',title:'Integrity event',detail:recordDateKey(r)+' · '+n(r.unresolved_integrity_events)+' unresolved'}));
+  const estimated=n(FIN?.cost_quality?.estimated_lines);
+  if(estimated>0)out.push({level:'warn',title:'Estimated cost lines',detail:estimated+' lines ยังไม่ใช่ audited snapshot'});
+
+  // Live inventory เป็น operational control ปัจจุบัน จึงไม่ใช้ย้อนกลับไป block เดือนในอดีต
+  if(mk===currentMonthKey() && INVENTORY?.counts){
+    const ic=INVENTORY.counts;
+    if(n(ic.negative)>0)out.push({level:'bad',title:'Current negative stock',detail:n(ic.negative)+' items'});
+    if(n(ic.reconciliation)>0)out.push({level:'bad',title:'Inventory reconciliation mismatch',detail:n(ic.reconciliation)+' items'});
+    if(n(ic.unit_issues)>0)out.push({level:'bad',title:'Recipe / stock unit issue',detail:n(ic.unit_issues)+' issues'});
+    if(n(ic.low)>0)out.push({level:'warn',title:'Current low stock',detail:n(ic.low)+' items'});
+  }
+  return out;
+}
+
+function renderExceptions(mk){
+  const x=collectExceptions(mk);
+  if(!x.length){
+    $('exceptions').innerHTML='<div class="exception"><span class="dot good"></span><div><strong>ไม่พบ exception สำคัญ</strong><div class="note">Daily Close, payment variance และ integrity checks ผ่านตามข้อมูลที่โหลด</div></div><span class="pill good">CLEAR</span></div>';
+    return;
+  }
+  $('exceptions').innerHTML=x.map(e=>`<div class="exception">
+    <span class="dot ${e.level}"></span>
+    <div><strong>${esc(e.title)}</strong><div class="note">${esc(e.detail)}</div></div>
+    <span class="pill ${e.level}">${e.level==='bad'?'ACTION':'REVIEW'}</span>
+  </div>`).join('');
+}
+
+function renderReadiness(mk){
+  const c=closeControl(mk), x=collectExceptions(mk);
+  const critical=x.filter(e=>e.level==='bad');
+  const warning=x.filter(e=>e.level==='warn');
+  let status='READY FOR REVIEW', cls='good', reason='Daily Close completeness และ critical controls ผ่าน';
+  const incomplete=!FIN||UNKNOWN_DATES.length||closedRecords().some(r=>!paymentVerified(r)||!hasNumber(r.negative_stock_count)||!hasNumber(r.unresolved_integrity_events))||(c.isCurrent&&!INVENTORY);
+  if(!c.required.length&&!c.isCurrent){
+    status='NOT APPLICABLE'; cls='blue'; reason='เดือนนี้อยู่ก่อนวันเริ่มใช้งาน BrewOS';
+  }else if(incomplete){
+    status='UNVERIFIED · DATA INCOMPLETE'; cls='warn'; reason='ข้อมูลสำหรับตรวจเดือนยังไม่ครบ กรุณารีเฟรชและตรวจ Exception Center';
+  }else if(c.isCurrent && critical.length){
+    status='MONTH IN PROGRESS · ACTION NEEDED'; cls='bad';
+    reason='มี '+critical.length+' critical exception ระหว่างเดือนที่ควรแก้ก่อนปิดรอบ';
+  }else if(c.isCurrent && warning.length){
+    status='MONTH IN PROGRESS · REVIEW'; cls='warn';
+    reason='ไม่มี critical exception แต่มี '+warning.length+' warning ระหว่างเดือน';
+  }else if(c.isCurrent){
+    status='MONTH IN PROGRESS'; cls='blue';
+    reason='ปิด Daily Close ครบถึง '+c.compareEnd+' · เดือนยังไม่สิ้นสุด';
+  }else if(critical.length){
+    status='NOT READY'; cls='bad'; reason='มี '+critical.length+' critical exception ที่ต้องแก้ก่อน';
+  }else if(warning.length){
+    status='READY · WITH REVIEW'; cls='warn'; reason='ไม่มี critical exception แต่มี '+warning.length+' warning ที่ควรตรวจ';
+  }
+  $('readiness').innerHTML=`<div style="display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap">
+    <div><div class="label">Month-End Status</div><div class="value ${cls}">${status}</div><div class="small">${esc(reason)}</div></div>
+    <div><span class="pill ${cls}">READ ONLY · NO MONTH LOCK YET</span></div>
+  </div>`;
+}
+
+function renderDailyRows(){
+  if(!CLOSES.length){
+    $('dailyRows').innerHTML='<tr><td colspan="10" class="note">ยังไม่มี Daily Close records ในเดือนนี้</td></tr>';
+    return;
+  }
+  const rows=[...CLOSES].sort((a,b)=>recordDateKey(a).localeCompare(recordDateKey(b)));
+  $('dailyRows').innerHTML=rows.map(r=>{
+    const st=closeKind(r), variance=hasNumber(r.total_payment_variance)?Number(r.total_payment_variance):null;
+    const cls=st==='reopened'?'warn':(st==='closed'||st==='holiday')?'good':'';
+    return `<tr>
+      <td>${esc(recordDateKey(r))}</td><td><span class="pill ${cls}">${esc(st.toUpperCase())}${r._fallback?' · PREVIEW':''}</span></td>
+      <td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.cogs)}</td>
+      <td class="num">${fmt(r.net_profit)}</td><td class="num">${numberText(r.ticket_count)}</td>
+      <td class="num ${Math.abs(variance)>0.009?'bad':''}">${fmt(variance)}</td>
+      <td class="num">${fmt(r.inventory_spend)}</td>
+      <td class="num ${n(r.negative_stock_count)>0?'bad':''}">${numberText(r.negative_stock_count)}</td>
+      <td class="num ${n(r.unresolved_integrity_events)>0?'bad':''}">${numberText(r.unresolved_integrity_events)}</td>
+    </tr>`;
+  }).join('');
+}
+
+async function loadAll(){
+  const loadId=++LOAD_ID;
+  let mk=$('month').value||currentMonthKey();
+  if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(mk)||mk<OPERATION_START.slice(0,7)||mk>currentMonthKey())mk=currentMonthKey();
+  $('month').value=mk;
+  $('refreshBtn').disabled=true;
+  $('status').textContent='กำลังโหลด Finance + Daily Close + operational controls…';
+  FIN=null; CLOSES=[]; INVENTORY=null; UNKNOWN_DATES=[]; SOURCE_ERRORS=[];
+  ['financeKpis','brandGrid','closeKpis','inventoryKpis','paymentKpis','cashoutKpis','exceptions','readiness'].forEach(id=>{
+    $(id).textContent='กำลังโหลด…';
+  });
+  $('periodPill').textContent=mk;
+  $('historySource').textContent='';
+  $('dailyRows').innerHTML='<tr><td colspan="10" class="note">กำลังโหลด…</td></tr>';
+  try{
+    const tasks=await Promise.allSettled([
+      readWithTimeout(()=>API.financeSummary({month:mk})),
+      readWithTimeout(()=>API.inventoryHealth({})),
+      loadHistory(mk,loadId)
+    ]);
+    if(loadId!==LOAD_ID)return;
+    FIN=tasks[0].status==='fulfilled'?tasks[0].value:null;
+    INVENTORY=tasks[1].status==='fulfilled'?tasks[1].value:null;
+    const financeFields=['cogs','gross_profit','total_expenses','depreciation','net_profit','gross_margin_pct','net_margin_pct'];
+    if(!FIN||FIN.error||FIN.month!==mk||!hasNumber(FIN.revenue?.total)||!financeFields.every(f=>hasNumber(FIN[f]))){
+      FIN=null; SOURCE_ERRORS.push('Finance summary unavailable');
+    }
+    if(!INVENTORY||!['negative','low','reconciliation','unit_issues'].every(f=>hasNumber(INVENTORY.counts?.[f]))){
+      INVENTORY=null;
+      if(mk===currentMonthKey())SOURCE_ERRORS.push('Live inventory health unavailable');
+    }
+    if(tasks[2].status==='fulfilled'){
+      CLOSES=tasks[2].value.rows; UNKNOWN_DATES=tasks[2].value.unknownDates; HISTORY_SOURCE=tasks[2].value.source;
+    }else{
+      const b=monthBounds(mk);
+      UNKNOWN_DATES=datesBetween(b.first>OPERATION_START?b.first:OPERATION_START,b.last<today()?b.last:today());
+      HISTORY_SOURCE='unavailable'; SOURCE_ERRORS.push('Daily Close history unavailable');
+    }
+
+    const bounds=monthBounds(mk);
+    const label=(mk===currentMonthKey()?'Month-to-Date':'Full Month')+' · '+bounds.first+' → '+(mk===currentMonthKey()?today():bounds.last);
+    $('periodPill').innerHTML=`<span class="pill blue">${label}</span>`;
+
+    renderFinance();
+    renderCloseControl(mk);
+    renderInventoryHealth(mk);
+    renderPayments();
+    renderCashOut();
+    renderExceptions(mk);
+    renderReadiness(mk);
+    renderDailyRows();
+
+    const partial=SOURCE_ERRORS.length||UNKNOWN_DATES.length||CLOSES.some(r=>r._fallback)||!INVENTORY;
+    $('status').innerHTML=`<span class="${partial?'warn':'good'}"><strong>${partial?'โหลดข้อมูลได้บางส่วน · ตรวจ Exception Center':'Monthly Control loaded'}</strong></span> · ${esc(mk)} · อัปเดต ${esc(new Date().toLocaleString('th-TH',{timeZone:'Asia/Bangkok'}))}`;
+  }catch(err){
+    if(loadId!==LOAD_ID)return;
+    $('status').innerHTML='<span class="bad"><strong>โหลดไม่สำเร็จ:</strong> '+esc(err?.message||err)+'</span>';
+    $('readiness').textContent='UNVERIFIED · โหลดข้อมูลไม่สำเร็จ';
+  }finally{
+    if(loadId===LOAD_ID)$('refreshBtn').disabled=false;
+  }
+}
+
+$('month').value=currentMonthKey();
+$('month').max=currentMonthKey();
+$('month').min=OPERATION_START.slice(0,7);
+$('month').addEventListener('change',loadAll);
+loadAll();
+</script>
+</body>
+</html>
