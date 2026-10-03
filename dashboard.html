@@ -660,6 +660,15 @@ nav::-webkit-scrollbar-thumb,.content::-webkit-scrollbar-thumb{
 
   <div class="content">
 
+    <div class="card" style="margin-bottom:18px">
+      <button class="pos-btn" id="dashboard-retry" onclick="loadDashboard()">โหลดข้อมูลใหม่</button>
+      <div role="status" aria-live="polite">
+        <p id="summary-load-status">ยอดสรุป: รอโหลด</p>
+        <p id="orders-load-status">รายการขาย: รอโหลด</p>
+        <p id="stock-load-status">สต็อก: รอโหลด</p>
+      </div>
+    </div>
+
     <div class="kpi-grid" id="kpi-grid">
       <!-- Injected by JS -->
     </div>
@@ -842,9 +851,7 @@ function renderBestSellers(sellers) {
 // ใน getIngredients() — ของจริงคือ name/min_stock/unit/current_stock) ทำให้ไม่เคยแสดงผลถูกต้อง
 // ตอนนี้ดึงจาก API.ingredients() ตรงๆ แล้ว filter is_low ฝั่ง client (backend ยังไม่มี route
 // get_low_stock แยกต่างหาก)
-async function loadAndRenderLowStock() {
-  try {
-    const ingredients = await API.ingredients();
+function renderLowStock(ingredients) {
     const lowItems = (ingredients || []).filter(i => i.is_low);
     document.getElementById('low-stock-subtitle').textContent = `${lowItems.length} items need reorder`;
     document.getElementById('low-stock-badge').textContent = lowItems.length;
@@ -861,10 +868,6 @@ async function loadAndRenderLowStock() {
         <div class="stock-level">${item.current_stock} ${item.unit}</div>
       </div>
     `).join('');
-  } catch (e) {
-    console.error('❌ loadAndRenderLowStock failed:', e);
-    document.getElementById('stock-alerts').innerHTML = '<div class="empty-note">โหลดไม่สำเร็จ: ' + e.message + '</div>';
-  }
 }
 
 function renderRecentOrders(orders) {
@@ -1031,34 +1034,63 @@ function recomputeForPeriod() {
 // ============================================================
 // INIT / LOAD
 // ============================================================
-async function loadDashboard() {
+let dashboardLoading = false;
+const dashboardUpdatedAt = {};
+
+// Bound read waiting only. Late responses cannot render or replace a newer load.
+// The underlying api.js request is unchanged; never apply this to writes.
+function dashboardRead(read) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('รอนานเกิน 45 วินาที กรุณาลองใหม่')), 45000);
+    Promise.resolve().then(read).then(resolve, reject).finally(() => clearTimeout(timer));
+  });
+}
+
+async function loadDashboardSection(key, label, read, render) {
+  const status = document.getElementById(key + '-load-status');
+  const previous = dashboardUpdatedAt[key];
+  status.textContent = label + ': กำลังโหลด…' + (previous ? ' แสดงข้อมูลเดิม ณ ' + previous : '');
   try {
-    const [summary, orders] = await Promise.all([
-      API.dashboardSummary(),
-      API.ordersToday(),
-    ]);
-
-    ALL_ORDERS_RAW = orders || [];
-
-    // ยอดเมื่อวาน = index รองสุดท้ายของ revenue_trend (7 วันล่าสุด รวมวันนี้)
-    const trend = summary.revenue_trend || [];
-    const prevDayRevenue = trend.length >= 2 ? trend[trend.length - 2] : 0;
-
-    renderKPIs(summary, prevDayRevenue);
-    recomputeForPeriod(); // #FIX — กราฟ/เมนูขายดี/โดนัท คำนวณตามช่วงที่เลือกไว้เสมอ (ไม่ใช่ค่าคงที่จาก backend)
-
-    // Recent orders — เอาแค่วันนี้ เรียงล่าสุดก่อน (ordersToday คืนย้อนกลับมาแล้วจาก backend)
-    const today = new Date(new Date().toLocaleString('en-US', {timeZone:'Asia/Bangkok'}));
-    const todayKey = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const todayOrders = (orders || []).filter(o => String(o.created_at||'').indexOf(todayKey) === 0).slice(0, 6);
-    renderRecentOrders(todayOrders);
-
+    const data = await dashboardRead(read);
+    render(data);
+    dashboardUpdatedAt[key] = new Date().toLocaleTimeString('th-TH', {timeZone:'Asia/Bangkok'});
+    status.textContent = label + ': อัปเดต ' + dashboardUpdatedAt[key];
   } catch (e) {
-    console.error('Dashboard load error:', e);
-    document.getElementById('kpi-grid').innerHTML = '<div class="empty-note">โหลดข้อมูลไม่สำเร็จ: ' + e.message + '</div>';
+    console.error('Dashboard ' + key + ' load error:', e);
+    status.textContent = label + ': โหลดไม่สำเร็จ — ' + e.message +
+      (previous ? ' · ข้อมูลที่แสดงเป็นข้อมูลเดิม ณ ' + previous : ' · ยังไม่มีข้อมูลที่ยืนยันได้') +
+      ' · กดโหลดข้อมูลใหม่เพื่อลองอีกครั้ง';
   }
+}
 
-  await loadAndRenderLowStock();
+async function loadDashboard() {
+  if (dashboardLoading) return;
+  dashboardLoading = true;
+  const retry = document.getElementById('dashboard-retry');
+  retry.disabled = true;
+  try {
+    await Promise.all([
+      loadDashboardSection('summary', 'ยอดสรุป', () => API.dashboardSummary(), summary => {
+        if (!summary || !summary.today) throw new Error('รูปแบบข้อมูลยอดสรุปไม่ถูกต้อง');
+        const trend = summary.revenue_trend || [];
+        renderKPIs(summary, trend.length >= 2 ? trend[trend.length - 2] : 0);
+      }),
+      loadDashboardSection('orders', 'รายการขาย', () => API.ordersToday(), orders => {
+        if (!Array.isArray(orders)) throw new Error('รูปแบบรายการขายไม่ถูกต้อง');
+        ALL_ORDERS_RAW = orders;
+        const todayKey = dateKeyBkkLocal(new Date());
+        renderRecentOrders(orders.filter(o => String(o.created_at||'').indexOf(todayKey) === 0).slice(0, 6));
+        recomputeForPeriod();
+      }),
+      loadDashboardSection('stock', 'สต็อก', () => API.ingredients(), ingredients => {
+        if (!Array.isArray(ingredients)) throw new Error('รูปแบบข้อมูลสต็อกไม่ถูกต้อง');
+        renderLowStock(ingredients);
+      }),
+    ]);
+  } finally {
+    dashboardLoading = false;
+    retry.disabled = false;
+  }
 }
 
 function initUI() {
