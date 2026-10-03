@@ -107,8 +107,9 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 .points-input-row { display:flex; gap:8px; margin-top:12px; }
 .points-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; font-family:'Anuphan','Poppins',sans-serif; outline:none; color:var(--text); }
 </style>
+<link rel="stylesheet" href="navigation.css?v=1">
 </head>
-<body>
+<body class="brewos-classic-nav">
 <div class="app">
   <div class="sidebar">
     <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
@@ -131,6 +132,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   </div>
 
   <div class="main">
+    <nav class="brewos-home-nav" aria-label="กลับหน้าหลัก"><a class="brewos-home-link" href="dashboard.html">← หน้าหลัก</a></nav>
     <div class="topbar">
       <div class="topbar-top">
         <div class="topbar-title">CRM / Customers</div>

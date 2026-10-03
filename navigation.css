@@ -1,0 +1,35 @@
+/* Shared, script-free navigation. Keep the home link usable while APIs load. */
+a.brewos-home-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 8px 14px;
+  flex: 0 0 auto;
+  gap: 6px;
+  border: 1px solid #c9d8cc;
+  border-radius: 10px;
+  background: #fffdf9;
+  color: #143d2b;
+  font: 600 14px/1.4 system-ui, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+}
+a.brewos-home-link:hover { background: #edf4ee; color: #143d2b; }
+a.brewos-home-link:focus-visible { outline: 3px solid #f26c21; outline-offset: 3px; }
+.brewos-home-nav {
+  flex: 0 0 auto;
+  padding: 10px 24px;
+  background: #fbf7ef;
+  border-bottom: 1px solid #e8e1d6;
+}
+.brewos-classic-nav .main { min-width: 0; }
+@media (max-width: 760px) {
+  .brewos-home-nav { padding: 8px 14px; }
+  /* These older pages have no mobile sidebar toggle. Keep the home link in view. */
+  .brewos-classic-nav .sidebar { display: none; }
+}
+@media print {
+  .brewos-home-nav, .brewos-home-link { display: none !important; }
+}

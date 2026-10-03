@@ -130,8 +130,9 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
 .ing-line-remove:hover { background:#FEE2E2; }
 .ing-lines-header { display:grid; grid-template-columns:2fr 1fr 0.8fr auto; gap:8px; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:700; margin-bottom:8px; }
 </style>
+<link rel="stylesheet" href="navigation.css?v=1">
 </head>
-<body>
+<body class="brewos-classic-nav">
 
 <div class="app">
   <div class="sidebar">
@@ -155,6 +156,7 @@ html, body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background
   </div>
 
   <div class="main">
+    <nav class="brewos-home-nav" aria-label="กลับหน้าหลัก"><a class="brewos-home-link" href="dashboard.html">← หน้าหลัก</a></nav>
     <div class="topbar">
       <div class="topbar-top">
         <div class="topbar-title">Recipes & Costing</div>
