@@ -462,6 +462,14 @@ button{cursor:pointer}
 // API.customers() แทน — field name เหมือนกัน (name/phone/points) เปลี่ยนแค่ตัวฟังก์ชันเรียก
 // ═══════════════════════════════════════════════════════════
 const cart={};
+// Browser confirmation for refresh, back, closing the tab and ordinary home links.
+// Warn only; do not persist or replay an order/payment automatically.
+function guardUnsavedCart(event) {
+  if (!Object.keys(cart).length) return;
+  event.preventDefault();
+  event.returnValue = '';
+}
+window.addEventListener('beforeunload', guardUnsavedCart);
 let pendingModifierMenu=null;
 let payMethod='cash', discType='pct', discValue=0, discReasonTxt='',
     orderNote='', selectedMember=null, MENUS=[], CATS=[], lastData=null, currentCat='all';
