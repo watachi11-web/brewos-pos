@@ -77,6 +77,8 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 <div class="toolbar"><strong>รายการรับเข้า</strong><span class="muted">กรอก “จำนวนแพ็ก × ขนาดต่อแพ็ก × ราคา/แพ็ก” ระบบแปลงเป็นหน่วยฐานและคำนวณ WAC ให้</span><div class="spacer"></div><button class="btn ghost sm" onclick="addPurchaseLine()">+ เพิ่มรายการ</button></div>
 <div class="tablewrap"><table><thead><tr><th style="min-width:230px">วัตถุดิบ</th><th>จำนวนแพ็ก</th><th>ขนาด/แพ็ก</th><th>หน่วยแพ็ก</th><th>ราคา/แพ็ก</th><th>ส่วนลดบรรทัด</th><th>รับเข้าหน่วยฐาน</th><th class="num">สุทธิ</th><th></th></tr></thead><tbody id="purchaseBody"></tbody></table></div>
 <div class="summary"><div>Subtotal <strong id="rSubtotal">฿0.00</strong></div><div>Discount <strong id="rDiscountShow">฿0.00</strong></div><div>Total <strong id="rTotal">฿0.00</strong></div><button class="btn orange" id="receiveBtn" onclick="submitPurchase()">รับสินค้า + อัปเดต WAC</button></div>
+<div id="purchaseStatus" class="muted" role="status" aria-live="polite"></div>
+<button id="verifyPurchaseBtn" class="btn ghost sm" onclick="verifyPendingPurchase()" hidden>ตรวจสถานะใบรับเดิม (ไม่รับซ้ำ)</button>
 </div>
 <div class="card"><div style="font-size:12px;color:var(--muted)">ตัวอย่าง Kewpie 2 ขวด × 1,000 ml @ ฿249: จำนวนแพ็ก = 2, ขนาด/แพ็ก = 1000, หน่วย = ml, ราคา/แพ็ก = 249 → รับเข้า 2,000 ml และ WAC คำนวณอัตโนมัติ</div></div>
 </section>
@@ -96,7 +98,7 @@ const fmt=n=>new Intl.NumberFormat('th-TH',{minimumFractionDigits:2,maximumFract
 const money=n=>'฿'+fmt(n);
 function todayBkk(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 async function get(action,p={}){const u=new URL(API_BASE);u.searchParams.set('action',action);Object.entries(p).forEach(([k,v])=>{if(v!==''&&v!=null)u.searchParams.set(k,v)});u.searchParams.set('_ts',Date.now());const r=await fetch(u,{cache:'no-store'});const j=await r.json();if(!j.success)throw Error(j.error||action);return j.data;}
-async function post(action,b={}){const r=await fetch(API_BASE,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...b,action})});const j=await r.json();if(!j.success)throw Error(j.error||action);return j.data;}
+async function post(action,b={}){const r=await fetch(API_BASE,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...b,action}),signal:AbortSignal.timeout(90000)});if(!r.ok)throw Error('HTTP '+r.status);const j=await r.json();if(!j.success||j.data?.success===false){const e=Error(j.error||j.data?.error||action);e.result=j.data;throw e;}return j.data;}
 function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';setTimeout(()=>t.classList.remove('show'),3200)}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('panel-'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='history')loadHistory();});
 function unitOptions(base){base=String(base||'');let a=[base];if(base==='g')a.push('kg');if(base==='ml')a.push('L');return [...new Set(a)].map(x=>`<option value="${x}">${x}</option>`).join('');}
@@ -109,7 +111,67 @@ function removeLine(i){purchaseLines.splice(i,1);if(!purchaseLines.length)addPur
 function setLine(i,k,v){purchaseLines[i][k]=v;if(k==='ingredient_id'){const ing=ING.find(x=>x.ingredient_id===v);purchaseLines[i].pack_unit=ing?ing.unit:'';purchaseLines[i].pack_size=1;}renderPurchaseLines();}
 function renderPurchaseLines(){const opts='<option value="">เลือกวัตถุดิบ</option>'+ING.map(i=>`<option value="${i.ingredient_id}">${i.name} · ${i.unit}</option>`).join('');document.getElementById('purchaseBody').innerHTML=purchaseLines.map((l,i)=>{const ing=ING.find(x=>x.ingredient_id===l.ingredient_id);if(ing&&!l.pack_unit)l.pack_unit=ing.unit;const bq=baseQty(l),gross=Number(l.purchase_qty||0)*Number(l.price_per_pack||0),net=Math.max(0,gross-Number(l.line_discount||0));return `<tr><td><select onchange="setLine(${i},'ingredient_id',this.value)">${opts.replace(`value="${l.ingredient_id}"`,`value="${l.ingredient_id}" selected`)}</select></td><td><input type="number" min=".001" step=".001" value="${l.purchase_qty}" onchange="setLine(${i},'purchase_qty',this.value)"></td><td><input type="number" min=".001" step=".001" value="${l.pack_size}" onchange="setLine(${i},'pack_size',this.value)"></td><td><select onchange="setLine(${i},'pack_unit',this.value)">${ing?unitOptions(ing.unit).replace(`value="${l.pack_unit}"`,`value="${l.pack_unit}" selected`):'<option></option>'}</select></td><td><input type="number" min="0" step=".01" value="${l.price_per_pack}" onchange="setLine(${i},'price_per_pack',this.value)"></td><td><input type="number" min="0" step=".01" value="${l.line_discount||0}" onchange="setLine(${i},'line_discount',this.value)"></td><td>${bq==null?'<span style="color:#b42318">หน่วยไม่ตรง</span>':`${fmt(bq)} ${ing?.unit||''}`}</td><td class="num line-total">${money(net)}</td><td><button class="btn danger sm" onclick="removeLine(${i})">×</button></td></tr>`;}).join('');recalcReceipt();}
 function recalcReceipt(){let sub=0,ld=0;purchaseLines.forEach(l=>{sub+=Number(l.purchase_qty||0)*Number(l.price_per_pack||0);ld+=Number(l.line_discount||0)});const rd=Number(document.getElementById('rDiscount').value||0),disc=ld+rd,total=Math.max(0,sub-disc);document.getElementById('rSubtotal').textContent=money(sub);document.getElementById('rDiscountShow').textContent=money(disc);document.getElementById('rTotal').textContent=money(total);}
-async function submitPurchase(){try{const lines=purchaseLines.filter(l=>l.ingredient_id).map(l=>({ingredient_id:l.ingredient_id,purchase_qty:Number(l.purchase_qty),pack_size:Number(l.pack_size),pack_unit:l.pack_unit,price_per_pack:Number(l.price_per_pack),line_discount:Number(l.line_discount||0)}));if(!lines.length)throw Error('กรุณาเพิ่มรายการรับเข้า');if(lines.some(l=>baseQty(l)===null))throw Error('มีรายการที่หน่วยแปลงไม่ได้');const b=document.getElementById('receiveBtn');b.disabled=true;b.textContent='กำลังรับเข้า…';const sid=document.getElementById('rSupplier').value,sup=SUP.find(s=>s.supplier_id===sid);const r=await post('receive_purchase',{date:document.getElementById('rDate').value,supplier_id:sid,supplier_name:sup?.company_name||'',invoice_no:document.getElementById('rInvoice').value,payment_method:document.getElementById('rPayment').value,discount:Number(document.getElementById('rDiscount').value||0),notes:document.getElementById('rNotes').value,lines});toast(`รับเข้าสำเร็จ ${r.receipt_id} · ${money(r.total_amount)}`);purchaseLines=[];addPurchaseLine();document.getElementById('rInvoice').value='';document.getElementById('rDiscount').value='0';document.getElementById('rNotes').value='';await reloadAll();}catch(e){toast(e.message,'err')}finally{const b=document.getElementById('receiveBtn');b.disabled=false;b.textContent='รับสินค้า + อัปเดต WAC';}}
+const PURCHASE_PENDING_KEY='brewos.purchase.pending.v1';
+let purchaseBusy=false, purchaseChecking=false;
+function pendingPurchase(){const raw=localStorage.getItem(PURCHASE_PENDING_KEY);return raw?JSON.parse(raw):null;}
+function purchaseNotice(message){document.getElementById('purchaseStatus').textContent=message;}
+function syncPurchaseGuard(){
+  let pending=true;
+  try{pending=!!pendingPurchase();}catch(e){purchaseNotice('อ่านสถานะใบรับเดิมไม่ได้ กรุณาตรวจสอบก่อนรับสินค้าใหม่');}
+  document.getElementById('receiveBtn').disabled=purchaseBusy||pending;
+  document.getElementById('receiveBtn').textContent=purchaseBusy?'กำลังรับเข้า…':pending?'รอตรวจใบรับเดิม':'รับสินค้า + อัปเดต WAC';
+  document.getElementById('verifyPurchaseBtn').hidden=!pending;
+  document.getElementById('verifyPurchaseBtn').disabled=purchaseBusy||purchaseChecking;
+}
+function clearPurchaseForm(){purchaseLines=[];addPurchaseLine();for(const id of ['rInvoice','rNotes'])document.getElementById(id).value='';document.getElementById('rDiscount').value='0';}
+async function submitPurchase(){
+  if(!navigator.locks){purchaseNotice('เบราว์เซอร์นี้ไม่รองรับการป้องกันรับซ้ำ กรุณาใช้เบราว์เซอร์รุ่นปัจจุบัน');return;}
+  return navigator.locks.request('brewos-purchase-submit',{ifAvailable:true},async lock=>{if(lock)return submitPurchaseLocked();});
+}
+async function submitPurchaseLocked(){
+  if(purchaseBusy)return;
+  purchaseBusy=true;
+  try{
+    if(pendingPurchase())throw Error('มีใบรับที่ยังไม่ยืนยันผล กรุณาตรวจสถานะใบรับเดิม ห้ามรับซ้ำ');
+    const lines=purchaseLines.filter(l=>l.ingredient_id).map(l=>({ingredient_id:l.ingredient_id,purchase_qty:Number(l.purchase_qty),pack_size:Number(l.pack_size),pack_unit:l.pack_unit,price_per_pack:Number(l.price_per_pack),line_discount:Number(l.line_discount||0)}));
+    if(!lines.length)throw Error('กรุณาเพิ่มรายการรับเข้า');
+    if(lines.some(l=>baseQty(l)===null||!Number.isFinite(baseQty(l))||baseQty(l)<=0||!Number.isFinite(l.price_per_pack)||l.price_per_pack<0||!Number.isFinite(l.line_discount)||l.line_discount<0))throw Error('จำนวน ราคา หรือหน่วยไม่ถูกต้อง');
+    const discount=Number(document.getElementById('rDiscount').value||0);
+    if(!Number.isFinite(discount)||discount<0)throw Error('ส่วนลดไม่ถูกต้อง');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(document.getElementById('rDate').value))throw Error('กรุณาเลือกวันที่รับสินค้า');
+    const sid=document.getElementById('rSupplier').value,sup=SUP.find(s=>s.supplier_id===sid);
+    const payload={receipt_id:'PUR-WEB-'+crypto.randomUUID(),date:document.getElementById('rDate').value,supplier_id:sid,supplier_name:sup?.company_name||'',invoice_no:document.getElementById('rInvoice').value,payment_method:document.getElementById('rPayment').value,discount,notes:document.getElementById('rNotes').value,lines};
+    // Persist BEFORE sending. A lost response must never silently become another receipt.
+    localStorage.setItem(PURCHASE_PENDING_KEY,JSON.stringify(payload));
+    syncPurchaseGuard();purchaseNotice('กำลังบันทึกใบรับ '+payload.receipt_id+' — อย่ารับรายการนี้จากหน้าต่างอื่น');
+    const r=await post('receive_purchase',payload);
+    if(r?.success!==true||r.receipt_id!==payload.receipt_id||!r.expense_id||!Number.isFinite(r.total_amount))throw Error('ยังยืนยันรายจ่ายของใบรับไม่ได้');
+    localStorage.removeItem(PURCHASE_PENDING_KEY);clearPurchaseForm();
+    purchaseNotice('รับเข้าสำเร็จ '+r.receipt_id+' · รายจ่าย '+r.expense_id+' · '+money(r.total_amount));
+    toast('รับสินค้าและรายจ่ายครบแล้ว');await reloadAll();
+  }catch(e){
+    // Only a backend guarantee of NO stock writes permits a fresh submission.
+    if(e.result?.stock_may_have_changed===false&&e.result?.do_not_retry===false)localStorage.removeItem(PURCHASE_PENDING_KEY);
+    purchaseNotice(e.message+' — หากผลไม่ชัดเจน ห้ามรับซ้ำ ให้ตรวจใบรับและรายจ่ายก่อน');toast(e.message,'err');
+  }finally{purchaseBusy=false;syncPurchaseGuard();}
+}
+async function verifyPendingPurchase(){
+  if(purchaseBusy||purchaseChecking)return;
+  purchaseChecking=true;syncPurchaseGuard();
+  try{
+    const p=pendingPurchase();if(!p)return;
+    const [receipts,expenses]=await Promise.all([get('get_purchase_receipts',{limit:1000}),get('get_expenses',{include_void:true})]);
+    if(!Array.isArray(receipts)||!Array.isArray(expenses))throw Error('อ่านประวัติไม่ครบ');
+    const rows=receipts.filter(r=>r.receipt_id===p.receipt_id),linked=expenses.filter(e=>e.source_ref===p.receipt_id);
+    const r=rows[0],e=linked[0];
+    if(rows.length!==1||linked.length!==1||r.status!=='received'||r.date!==p.date||e.status!=='posted'||e.expense_type!=='INVENTORY'||e.category!=='inventory_purchase'||e.date!==p.date||e.payment_method!==p.payment_method||!Number.isFinite(Number(r.total_amount))||Math.abs(Number(e.amount)-Number(r.total_amount))>=0.005||!Number.isFinite(Number(e.amount)))throw Error('ยังยืนยันใบรับและรายจ่ายครบคู่ไม่ได้ ห้ามรับซ้ำ ให้ผู้ดูแลตรวจ '+p.receipt_id);
+    localStorage.removeItem(PURCHASE_PENDING_KEY);clearPurchaseForm();
+    purchaseNotice('ยืนยันสำเร็จ '+p.receipt_id+' · '+e.expense_id+' (อ่านประวัติเท่านั้น ไม่รับสินค้าเพิ่ม)');await reloadAll();
+  }catch(e){purchaseNotice(e.message);toast(e.message,'err');}
+  finally{purchaseChecking=false;syncPurchaseGuard();}
+}
+window.addEventListener('storage',e=>{if(e.key===PURCHASE_PENDING_KEY)syncPurchaseGuard();});
+syncPurchaseGuard();
 async function stocktake(id){const ing=ING.find(x=>x.ingredient_id===id);const v=prompt(`นับสต๊อกจริง: ${ing.name}\nหน่วย: ${ing.unit}\nปัจจุบันในระบบ: ${ing.current_stock}\n\nกรอกจำนวนที่นับได้`,ing.current_stock);if(v===null)return;const n=Number(v);if(!Number.isFinite(n)||n<0)return toast('จำนวนไม่ถูกต้อง','err');const reason=prompt('หมายเหตุ Stocktake','ตรวจนับสต๊อกจริง')||'ตรวจนับสต๊อกจริง';try{await post('stocktake',{ingredient_id:id,counted_qty:n,reason});toast('บันทึก Stocktake แล้ว');await reloadAll();}catch(e){toast(e.message,'err')}}
 async function adjust(id){const ing=ING.find(x=>x.ingredient_id===id);const v=prompt(`ปรับจำนวนแบบ Delta สำหรับ ${ing.name}\nใส่ +5 เพื่อเพิ่ม หรือ -3 เพื่อลด`,0);if(v===null)return;const d=Number(v);if(!Number.isFinite(d)||d===0)return;const reason=prompt('เหตุผลการปรับ','ของเสีย / แก้ไขสต๊อก')||'Manual adjustment';try{await post('adjust_stock',{ingredient_id:id,adjust_type:d>0?'add':'subtract',amount:Math.abs(d),reason});toast('ปรับสต๊อกแล้ว');await reloadAll();}catch(e){toast(e.message,'err')}}
 async function loadHistory(){try{[RECEIPTS,TXNS]=await Promise.all([get('get_purchase_receipts',{limit:100}),get('get_inventory_transactions',{limit:200})]);document.getElementById('receiptBody').innerHTML=RECEIPTS.length?RECEIPTS.map(r=>`<tr><td>${r.date}</td><td class="mono">${r.receipt_id}</td><td>${r.supplier_name||'—'}</td><td class="num"><b>${money(r.total_amount)}</b></td><td>${r.invoice_no||'—'}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">ยังไม่มี purchase receipt</td></tr>';document.getElementById('txnBody').innerHTML=TXNS.length?TXNS.map(t=>`<tr><td>${(t.created_at||'').replace('T',' ')}</td><td class="mono">${t.ingredient_id}</td><td>${t.txn_type}</td><td class="num">${fmt(t.quantity_change)} ${t.unit_type||''}</td><td class="num">${fmt(t.qty_before)}</td><td class="num">${fmt(t.qty_after)}</td><td class="mono">${t.source_doc_id||t.reference_id||''}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">ไม่มีข้อมูล</td></tr>';}catch(e){toast(e.message,'err')}}
