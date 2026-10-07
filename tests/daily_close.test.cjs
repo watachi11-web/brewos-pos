@@ -16,7 +16,7 @@ const preview=(date,extra={})=>({date,net_sales:123,cogs:23,gross_profit:100,net
   expected_payment:{cash:100,qr:23,transfer:0,other:0},close_status:'open',can_close:true,...extra});
 const response=data=>({ok:true,json:async()=>({success:true,data})});
 
-async function setup(handle=null){
+async function setup(handle=null,timers={setTimeout,clearTimeout}){
   const elements=new Map();
   function element(id){
     let markup='',isHTML=false;
@@ -39,7 +39,7 @@ async function setup(handle=null){
   for(const match of html.matchAll(/\bid="([^"]+)"/g))element(match[1]);
   const calls=[];
   const state={handle};
-  const context=vm.createContext({console,URL,URLSearchParams,Intl,setTimeout,clearTimeout,
+  const context=vm.createContext({console,URL,URLSearchParams,Intl,...timers,
     Date:class extends Date{constructor(...args){super(...(args.length?args:['2026-09-24T05:00:00Z']));}},
     document:{getElementById:id=>elements.get(id)||null,createElement:()=>({}),head:{appendChild(){}}},
     window:{location:{search:''},scrollTo(){}},
@@ -172,4 +172,102 @@ test('error text is rendered as text, not HTML',async()=>{
   await p.reload();assertUnavailable(p);assert.match(p.el('status').textContent,/<img/);
   assert.doesNotMatch(p.el('status').innerHTML,/<img/);
   assert.match(inline,/\$\('status'\)\.textContent=\(err\.message/);
+});
+
+test('failed fallback days stay unknown, not overdue; reopened days count as overdue',async()=>{
+  const p=await setup();
+  p.state.handle=c=>c.action==='get_daily_closes'?{ok:false,status:404}:
+    c.action==='get_daily_close_preview'&&c.date==='2026-09-13'?{ok:false,status:404}:
+    c.action==='get_daily_close_preview'&&c.date==='2026-09-14'?response(preview(c.date,{close_status:'closed'})):
+    c.action==='get_daily_close_preview'&&c.date==='2026-09-15'?response(preview(c.date,{close_status:'reopened'})):undefined;
+  await p.run('loadHistory()');
+  assert.equal(p.run("HISTORY_KNOWN.has('2026-09-13')"),false);
+  assert.match(p.el('calendar').innerHTML,/day unknown[^]*?selectDate\('2026-09-13'\)[^]*?ตรวจสอบไม่ได้/);
+  assert.match(p.el('opsSummary').innerHTML,/ยังไม่ปิดย้อนหลัง \(ยืนยัน\)<\/div><div class="value">11</);
+  assert.match(p.el('opsSummary').innerHTML,/ตรวจสอบไม่ได้<\/div><div class="value">1</);
+  assert.equal(p.calls.filter(c=>c.method==='POST').length,0);
+});
+
+test('all failed or malformed previews do not invent open days or confirmed zero history',async()=>{
+  const p=await setup();
+  p.state.handle=c=>c.action==='get_daily_closes'?response({unexpected:true}):
+    c.action==='get_daily_close_preview'?response(c.date.endsWith('13')?preview('2026-09-01'):{}):undefined;
+  await p.run('loadHistory()');
+  assert.equal(p.run('HISTORY_KNOWN.size'),0);
+  assert.doesNotMatch(p.el('calendar').innerHTML,/class="day overdue/);
+  assert.match(p.el('historyBody').textContent,/ยังไม่ถือว่าเปิดหรือปิด/);
+});
+
+test('capped history does not label earlier missing days overdue or pre-start',async()=>{
+  const p=await setup();
+  const rows=Array.from({length:120},(_,i)=>({date:new Date(Date.UTC(2026,8,20+i)).toISOString().slice(0,10),status:'closed'}));
+  p.state.handle=c=>c.action==='get_daily_closes'?response(rows):undefined;
+  await p.run('loadHistory()');
+  assert.equal(p.run("HISTORY_KNOWN.has('2026-09-13')"),false);
+  assert.equal(p.run("HISTORY_KNOWN.has('2026-09-20')"),true);
+  assert.match(p.el('calendar').innerHTML,/day unknown[^]*?selectDate\('2026-09-11'\)/);
+  assert.match(p.el('historyBody').textContent,/120/);
+});
+
+test('late history and fallback cannot overwrite the newly selected month',async()=>{
+  for(const fallback of [false,true]){
+    const p=await setup(),old=deferred();
+    p.state.handle=c=>fallback?
+      (c.action==='get_daily_closes'?{ok:false,status:404}:c.action==='get_daily_close_preview'?old.promise:undefined):
+      (c.action==='get_daily_closes'?old.promise:undefined);
+    const loading=p.run('loadHistory()');await flush();
+    p.el('month').value='2026-10';p.state.handle=null;await p.run('loadHistory()');
+    const calendar=p.el('calendar').innerHTML;
+    old.resolve(response(fallback?preview('2026-09-11',{close_status:'closed'}):[{date:'2026-09-11',status:'closed'}]));
+    await loading;
+    assert.equal(p.el('calendar').innerHTML,calendar);
+    assert.equal(p.run('CLOSES.length'),0);
+  }
+});
+
+for(const action of ['close_day','reopen_day'])test(action+' remains single-flight through history refresh and read-back',async()=>{
+  const p=await setup(),write=deferred(),readback=deferred();
+  if(action==='reopen_day')p.run("P.is_closed=true; P.close_status='closed'; LOCK.locked=true;setButtons()");
+  const fn=action==='close_day'?'closeDay()':'reopenDay()';
+  p.state.handle=c=>c.action===action?write.promise:undefined;
+  const saving=p.run(fn);await p.run(fn);await p.run('loadHistory()');
+  p.run('setButtons()');assert.equal(p.el('closeBtn').disabled,true);assert.equal(p.el('reopenBtn').disabled,true);
+  const count=p.calls.length;await p.reload();p.run("selectDate('2026-09-13')");
+  assert.equal(p.calls.length,count);assert.equal(p.el('date').value,'2026-09-24');
+  p.state.handle=c=>c.action==='get_daily_close_preview'?readback.promise:undefined;
+  write.resolve(response({success:true,close_id:'CLOSE-20260924',variance:{total:0}}));await flush();
+  await p.run(fn);assert.equal(p.calls.filter(c=>c.method==='POST').length,1);
+  assert.equal(p.el('date').disabled,true);
+  readback.resolve(response(preview('2026-09-24')));await saving;
+  assert.equal(p.el('date').disabled,false);assert.equal(p.run('WRITE_PENDING'),false);
+  assert.match(p.el('result').textContent,action==='close_day'?/ปิดยอดแล้ว/:/Reopen แล้ว/);
+});
+
+for(const action of ['close_day','reopen_day'])test(action+' uncertain response invalidates preview, never retries writes or diagnoses a missing route',async()=>{
+  const p=await setup();
+  if(action==='reopen_day')p.run("P.is_closed=true; P.close_status='closed'; LOCK.locked=true;setButtons()");
+  p.state.handle=c=>c.action===action?{ok:false,status:404}:undefined;
+  const fn=action==='close_day'?'closeDay()':'reopenDay()';await p.run(fn);await p.run(fn);
+  assertUnavailable(p);assert.equal(p.calls.filter(c=>c.method==='POST').length,1);
+  assert.match(p.el('result').textContent,/ยังยืนยันผลการบันทึกไม่ได้/);
+  assert.doesNotMatch(p.el('result').textContent,/ไม่มี route/);
+});
+
+test('read timeout permits retry and late data cannot overwrite a new preview',async()=>{
+  const timers=new Map();let timerId=0;
+  const p=await setup(null,{setTimeout:fn=>{timers.set(++timerId,fn);return timerId;},clearTimeout:id=>timers.delete(id)});
+  const old=deferred();p.state.handle=c=>c.action==='get_daily_close_preview'?old.promise:undefined;
+  const loading=p.reload('2026-09-23');await flush();
+  for(const fn of [...timers.values()])fn();await loading;assertUnavailable(p);
+  assert.match(p.el('status').textContent,/45 วินาที/);
+  p.state.handle=null;await p.reload('2026-09-24');old.resolve(response(preview('2026-09-23')));await flush();
+  assert.equal(p.run('P.date'),'2026-09-24');assert.equal(timers.size,0);
+});
+
+test('history warnings and notes escape backend markup',async()=>{
+  const p=await setup();p.state.handle=c=>{if(c.action==='get_daily_closes')throw new Error('<img src=x onerror=alert(1)>');};
+  await p.run('loadHistory()');assert.doesNotMatch(p.el('historyBody').innerHTML,/<img/);
+  p.state.handle=c=>c.action==='get_daily_closes'?response([{date:'2026-09-13',status:'closed',notes:'<img src=x>'}]):undefined;
+  await p.run('loadHistory()');assert.doesNotMatch(p.el('historyBody').innerHTML,/<img/);
+  assert.match(p.el('historyBody').innerHTML,/&lt;img/);
 });
