@@ -5,16 +5,17 @@ const source=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>
 function setup(response,stored=null){
   const elements=new Map([...html.matchAll(/\bid="([^"]+)"/g)].map(m=>[m[1],{value:'',textContent:'',innerHTML:'',disabled:false,hidden:false,classList:{remove(){}}}]));
   elements.get('rDate').value='2026-10-04';elements.get('rPayment').value='cash';
-  const storage=new Map(stored?[['brewos.purchase.pending.v1',stored]]:[]),calls=[];
+  const storage=new Map(stored?[['brewos.purchase.pending.v1',stored]]:[]),calls=[],confirmations=[];
   let lockHeld=false;
   const context=vm.createContext({URL,Intl,Date,AbortSignal,console,crypto:{randomUUID:()=> 'test-id'},setTimeout(){},window:{addEventListener(){}},
+    confirm:message=>{confirmations.push(message);return true;},
     navigator:{locks:{async request(_key,_options,fn){if(lockHeld)return fn(null);lockHeld=true;try{return await fn({});}finally{lockHeld=false;}}}},
     document:{getElementById:id=>elements.get(id),querySelectorAll:()=>[]},
     localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v),removeItem:k=>storage.delete(k)},
     fetch:async(url,opts)=>{calls.push({url,opts});if(typeof response==='function')return response(url,opts);return {ok:true,json:async()=>response};}
   });
-  const run=c=>vm.runInContext(c,context);run(source);run("ING=[{ingredient_id:'ING-001',unit:'g'}];purchaseLines=[{ingredient_id:'ING-001',purchase_qty:1,pack_size:100,pack_unit:'g',price_per_pack:10}];reloadAll=async()=>{};");
-  return {run,context,calls,storage,el:id=>elements.get(id)};
+  const run=c=>vm.runInContext(c,context);run(fs.readFileSync(path.join(__dirname,'../purchase-review.js'),'utf8'));run(source);run("ING=[{ingredient_id:'ING-001',unit:'g'}];purchaseLines=[{ingredient_id:'ING-001',purchase_qty:1,pack_size:100,pack_unit:'g',price_per_pack:10}];reloadAll=async()=>{};");
+  return {run,context,calls,storage,confirmations,el:id=>elements.get(id)};
 }
 const success={success:true,data:{success:true,receipt_id:'PUR-WEB-test-id',expense_id:'EXP-TEST',total_amount:10}};
 test('valid receipt requires linked expense before clearing form and pending record',async()=>{
@@ -44,4 +45,22 @@ test('unresolved read-back never resends or clears pending record',async()=>{
 test('storage failure and invalid input prevent every POST',async()=>{
   const p=setup(success);p.context.localStorage.setItem=()=>{throw Error('disk full');};await p.run('submitPurchase()');assert.equal(p.calls.length,0);
   const q=setup(success);q.run('purchaseLines[0].pack_size=-1');await q.run('submitPurchase()');assert.equal(q.calls.length,0);
+});
+
+test('declining purchase review writes nothing and preserves the form',async()=>{
+  const p=setup(success);p.context.confirm=()=>false;await p.run('submitPurchase()');
+  assert.equal(p.calls.length,0);assert.equal(p.storage.size,0);
+  assert.equal(p.run('purchaseLines[0].pack_size'),100);assert.equal(p.el('receiveBtn').disabled,false);
+  assert.match(p.el('purchaseStatus').textContent,/ยังไม่ได้ส่ง/);
+});
+test('purchase review displays full pack calculation before unchanged payload is sent',async()=>{
+  const p=setup(success);await p.run('submitPurchase()');assert.equal(p.confirmations.length,1);
+  assert.match(p.confirmations[0],/1 แพ็ก × 100 g = 100 g/);
+  const body=JSON.parse(p.calls[0].opts.body);assert.equal(body.lines[0].pack_size,100);assert.equal(body.lines[0].price_per_pack,10);
+});
+test('negative factors and excessive discounts never reach confirmation or POST',async()=>{
+  for(const change of ["purchaseLines[0].pack_size=-100;purchaseLines[0].purchase_qty=-1","purchaseLines[0].line_discount=11","document.getElementById('rDiscount').value='11'"]){
+    const p=setup(success);p.run(change);await p.run('submitPurchase()');
+    assert.equal(p.calls.length,0);assert.equal(p.confirmations.length,0);assert.equal(p.storage.size,0);
+  }
 });
