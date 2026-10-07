@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BrewOS · Daily Close v6.2.6</title>
+<title>BrewOS · Daily Close v6.2.7</title>
 <style>
 :root{--g:#143D2B;--d:#0D2F21;--o:#F26C21;--p:#FFFDF9;--c:#F7E9D6;--s:#A7C48D;--gold:#EED29A;--m:#6b756f;--line:#eadfce;--red:#B42318;--amber:#9A6700;--blue:#2457A7}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,'Noto Sans Thai',sans-serif;background:var(--p);color:var(--d)}header{padding:24px 5vw;background:linear-gradient(120deg,var(--d),var(--g));color:#fff}h1{margin:0;font-size:24px}.sub{opacity:.72;margin-top:4px}.wrap{max-width:1180px;margin:auto;padding:24px}.bar,.grid,.payments,.statusGrid{display:grid;gap:14px}.bar{grid-template-columns:1fr auto}.grid{grid-template-columns:repeat(4,1fr);margin:18px 0}.payments{grid-template-columns:repeat(4,1fr)}.statusGrid{grid-template-columns:repeat(4,1fr);margin:16px 0}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 4px 18px #143d2b0b}.label{font-size:12px;color:var(--m)}.value{font-size:24px;font-weight:700;margin-top:6px}.btn{border:0;background:var(--o);color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;cursor:pointer}.btn.secondary{background:var(--g)}.btn:disabled{opacity:.45;cursor:not-allowed}.input{width:100%;padding:11px;border:1px solid #d8d4cc;border-radius:10px;font-size:16px;margin-top:6px;background:#fff}.ok{color:#177a45}.bad{color:var(--red)}.warn{color:var(--amber)}.note{font-size:13px;color:var(--m);margin-top:12px}.topnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.topnav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);padding:8px 12px;border-radius:10px;font-size:13px}.topnav a.active{background:var(--o);border-color:var(--o)}.topnav a:hover{background:rgba(255,255,255,.15)}
 .sectionTitle{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:26px 0 10px}.sectionTitle h2{margin:0;font-size:19px}.sectionTitle .right{min-width:180px}.legend{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:12px;font-weight:700}.pill.closed{background:#e9f6ee;color:#177a45}.pill.holiday{background:#fff0e7;color:#b24d0c}.pill.reopened{background:#f4e8d8;color:#8b5e34}.pill.open{background:#e8f0ff;color:#2457A7}.pill.overdue{background:#fdecec;color:#B42318}.pill.future{background:#f1f2f1;color:#7a817d}
 .calendarWrap{overflow:auto}.calendar{display:grid;grid-template-columns:repeat(7,minmax(110px,1fr));gap:8px;min-width:780px}.dow{font-size:12px;font-weight:700;color:var(--m);padding:8px;text-align:center}.day{min-height:92px;border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff;cursor:pointer;position:relative;transition:.15s}.day:hover{transform:translateY(-1px);box-shadow:0 4px 14px #143d2b12}.day.blank{visibility:hidden;cursor:default}.day.future{background:#fafafa;color:#9a9f9c;cursor:default}.day.prestart{background:#fbfbfa;color:#aaa;cursor:default}.day.overdue{border-color:#f2b8b5;background:#fff8f8}.day.today{outline:2px solid var(--o);outline-offset:1px}.daynum{font-size:17px;font-weight:800}.daymeta{font-size:11px;color:var(--m);margin-top:9px;line-height:1.35}.day .pill{position:absolute;right:8px;top:8px;padding:4px 7px;font-size:10px}.dayAmount{font-size:14px;font-weight:700;margin-top:10px}
 .tableWrap{overflow:auto;border:1px solid var(--line);border-radius:14px}.history{width:100%;border-collapse:collapse;min-width:800px;background:#fff}.history th,.history td{padding:11px 12px;border-bottom:1px solid #f0e8dd;text-align:left;font-size:13px;white-space:nowrap}.history th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--m);background:#fbf7ef;position:sticky;top:0}.history tr.clickable{cursor:pointer}.history tr.clickable:hover td{background:#fffaf3}.num{text-align:right!important;font-variant-numeric:tabular-nums}.muted{color:var(--m)}
+.statusGrid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}.pill.unknown{background:#f1f2f1;color:#626a65}.day.unknown{border-style:dashed}
 @media(max-width:800px){.grid,.payments,.statusGrid{grid-template-columns:1fr 1fr}.bar{grid-template-columns:1fr}.sectionTitle{align-items:stretch;flex-direction:column}.sectionTitle .right{min-width:0;width:100%}}@media(max-width:500px){.grid,.payments,.statusGrid{grid-template-columns:1fr}.wrap{padding:16px}}
 </style>
 <link rel="stylesheet" href="navigation.css?v=1">
@@ -17,11 +18,11 @@
 <body>
 <header>
   <h1>Daily Close & Reconciliation</h1>
-  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.6</div>
+  <div class="sub">BrewOS · Brain Brew × Heng Heng · Phase 13 · v6.2.7</div>
   <nav class="topnav"><a class="brewos-home-link" href="dashboard.html">← หน้าหลัก</a><a href="finance.html">Finance</a><a class="active" href="daily_close.html">Daily Close</a><a href="monthly_control.html">Monthly Control</a></nav>
 </header>
 <div class="wrap">
-  <div class="bar"><input id="date" class="input" type="date"><button class="btn" onclick="loadPreview()">โหลดสรุปวันที่เลือก</button></div>
+  <div class="bar"><input id="date" class="input" type="date"><button id="previewBtn" class="btn" onclick="loadPreview()">โหลดสรุปวันที่เลือก</button></div>
   <div id="status" class="note" role="status" aria-live="polite">กำลังโหลด…</div>
   <div class="note">ระบบจะปิดยอดตาม <strong>วันที่ที่เลือกด้านบน</strong> ไม่ใช่วันที่ปัจจุบันโดยอัตโนมัติ</div>
   <div id="kpi" class="grid"></div>
@@ -48,7 +49,7 @@
   </div>
   <div id="opsSummary" class="statusGrid"></div>
   <div class="legend">
-    <span class="pill closed">CLOSED</span><span class="pill holiday">HOLIDAY</span><span class="pill reopened">REOPENED</span><span class="pill open">OPEN</span><span class="pill overdue">ยังไม่ปิด</span>
+    <span class="pill closed">CLOSED</span><span class="pill holiday">HOLIDAY</span><span class="pill reopened">REOPENED</span><span class="pill open">OPEN</span><span class="pill overdue">ยังไม่ปิด</span><span class="pill unknown">ตรวจสอบไม่ได้</span>
   </div>
   <div class="card calendarWrap"><div id="calendar" class="calendar"></div></div>
 
@@ -62,12 +63,21 @@
 </div>
 <script src="api.js"></script>
 <script>
-// BrewOS Daily Close v6.2.6 — Reopen reliability: closed-day detection can fall back to Daily Close history
+// BrewOS Daily Close v6.2.7 — explicit unknown history and single-flight day actions
 let P=null, LOCK=null, CLOSES=[];
 let PREVIEW_REQUEST=0, PREVIEW_DATE='';
 let HISTORY_SOURCE='route';
+let HISTORY_REQUEST=0, HISTORY_KNOWN=new Set(), WRITE_PENDING=false;
 const OPERATION_START='2026-09-11';
 const $=id=>document.getElementById(id);
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Bound reads only. Writes are never timed out or automatically retried here.
+function readWithTimeout(read){
+  let timer;
+  return Promise.race([Promise.resolve().then(read),new Promise((_,reject)=>{
+    timer=setTimeout(()=>reject(new Error('โหลดข้อมูลเกิน 45 วินาที กรุณาลองใหม่')),45000);
+  })]).finally(()=>clearTimeout(timer));
+}
 const fmt=n=>'฿'+Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2});
 function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date())}
 function monthKey(d=today()){return String(d).slice(0,7)}
@@ -100,7 +110,7 @@ function displayDateTime(v){
 function isZeroSalesDay(){return !!P && Number(P.ticket_count||0)===0 && Number(P.net_sales||0)===0 && Number(P.gross_sales||0)===0;}
 function hasCurrentPreview(){return !!P && PREVIEW_DATE===$('date').value;}
 function canCloseSelectedDay(){
-  if(!hasCurrentPreview())return false; if(LOCK&&LOCK.locked)return false; if(String(P.close_status||'').toLowerCase()==='closed')return false; if(Number(P.unresolved_integrity_events||0)>0)return false; if(P.can_close===false)return false; return true;
+  if(!hasCurrentPreview())return false; if(selectedDayIsClosed())return false; if(Number(P.unresolved_integrity_events||0)>0)return false; if(P.can_close===false)return false; return true;
 }
 function selectedHistoryRecord(){
   const d=$('date').value;
@@ -127,6 +137,8 @@ function selectedDayIsClosed(){
   return !!(LOCK&&LOCK.locked) || !!(P&&P.is_closed) || selectedDayStatus()==='closed' || hs==='closed' || hs==='holiday';
 }
 function setButtons(){
+  $('date').disabled=WRITE_PENDING; $('previewBtn').disabled=WRITE_PENDING;
+  if(WRITE_PENDING){$('closeBtn').disabled=true; $('reopenBtn').disabled=true; return;}
   // History may finish after a failed preview; it must not re-enable day actions.
   if(!hasCurrentPreview()){
     $('closeBtn').style.display='inline-block'; $('closeBtn').disabled=true;
@@ -147,7 +159,8 @@ function clearPreview(){
   $('kpi').innerHTML=['Net Sales','COGS','Gross Profit','Net Profit','Tickets','Low Stock','Negative Stock','Integrity Errors'].map(label=>k(label,'—')).join('');
   $('payments').textContent='ยังไม่มีข้อมูลยอดรับเงินที่ยืนยันสำหรับวันที่เลือก';
 }
-async function loadPreview(){
+async function loadPreview(afterWrite=false){
+  if(WRITE_PENDING&&afterWrite!==true)return;
   const d=$('date').value, request=++PREVIEW_REQUEST;
   const isCurrent=()=>request===PREVIEW_REQUEST && d===$('date').value;
   clearPreview();
@@ -156,11 +169,11 @@ async function loadPreview(){
   $('result').textContent='';
   if(!d)return;
   try{
-    const preview=await API.dailyClosePreview(d);
+    const preview=await readWithTimeout(()=>API.dailyClosePreview(d));
     if(!isCurrent())return;
     if(!preview || dateKey(preview.date)!==d)throw new Error('วันที่ในข้อมูลสรุปไม่ตรงกับวันที่เลือก กรุณาโหลดใหม่');
     let lock;
-    try{lock=await API.dayLockStatus(d)}catch(lockErr){lock={date:d,locked:(String(preview.close_status||'').toLowerCase()==='closed'||!!preview.is_closed),status:String(preview.close_status||(preview.is_closed?'closed':'open')).toLowerCase()||'open',warning:lockErr?.message||''}}
+    try{lock=await readWithTimeout(()=>API.dayLockStatus(d))}catch(lockErr){lock={date:d,locked:(String(preview.close_status||'').toLowerCase()==='closed'||!!preview.is_closed),status:String(preview.close_status||(preview.is_closed?'closed':'open')).toLowerCase()||'open',warning:lockErr?.message||''}}
     if(!isCurrent())return;
     // Publish preview and lock together, only for the latest selected date.
     P=preview; LOCK=lock; PREVIEW_DATE=d;
@@ -181,45 +194,46 @@ async function loadPreview(){
 }
 function inputValue(id,fallback=0){const el=$(id); if(!el||el.value==='')return fallback; const n=Number(el.value); return Number.isFinite(n)?n:fallback}
 async function closeDay(){
-  if(!P||!canCloseSelectedDay())return; $('closeBtn').disabled=true; $('result').textContent='กำลังปิดยอด…';
+  if(WRITE_PENDING||!P||!canCloseSelectedDay())return;
+  WRITE_PENDING=true; setButtons(); $('result').textContent='กำลังปิดยอด…';
   try{
     const zero=isZeroSalesDay(), autoNote=zero?'วันหยุด / ไม่มีการขาย':'';
     const data=await API.closeDay({date:P.date,actual_cash:inputValue('a_cash',0),actual_qr:inputValue('a_qr',0),actual_transfer:inputValue('a_transfer',0),actual_other:inputValue('a_other',0),notes:String($('notes').value||autoNote),closed_by:'owner'});
-    if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Close failed')+'</span>';$('closeBtn').disabled=false;return}
-    const v=data.variance||{}; $('result').innerHTML=`<span class="ok">${data.reclosed?'ปิดยอดใหม่แล้ว':(zero?'บันทึกวันหยุดแล้ว':'ปิดยอดแล้ว')} ${data.close_id}</span> · variance รวม ${fmt(v.total||0)}`;
-    await Promise.all([loadPreview(),loadHistory()]);
+    if(!data?.success)throw new Error(data?.error||'Close failed');
+    const v=data.variance||{}, message=`${data.reclosed?'ปิดยอดใหม่แล้ว':(zero?'บันทึกวันหยุดแล้ว':'ปิดยอดแล้ว')} ${data.close_id} · variance รวม ${fmt(v.total||0)}`;
+    clearPreview();
+    await Promise.all([loadPreview(true),loadHistory()]);
+    $('result').textContent=message;
   }catch(err){
-    const msg=err?.message||'Close failed';
-    $('result').innerHTML='<span class="bad">'+msg+'</span>'+(msg.includes('HTTP 404')?'<br><span class="note">Backend deployment ยังไม่มี route close_day — ให้ตรวจ deployment เดิม/เวอร์ชัน backend ก่อน ไม่ต้องสร้าง deployment ใหม่</span>':'');
-    $('closeBtn').disabled=false;
-  }
+    clearPreview();
+    $('result').textContent=(err?.message||'Close failed')+' · ยังยืนยันผลการบันทึกไม่ได้ ระบบไม่ส่งซ้ำ กรุณาโหลดสรุปใหม่เพื่อตรวจสถานะก่อนดำเนินการต่อ';
+  }finally{WRITE_PENDING=false; setButtons();}
 }
 async function reopenDay(){
-  if(!hasCurrentPreview()||!selectedDayIsClosed()) return;
+  if(WRITE_PENDING||!hasCurrentPreview()||!selectedDayIsClosed()) return;
   const reason=prompt('เหตุผลที่ต้อง Reopen Day (อย่างน้อย 5 ตัวอักษร):'); if(reason===null)return;
   if(String(reason).trim().length<5){$('result').innerHTML='<span class="bad">กรุณาระบุเหตุผลอย่างน้อย 5 ตัวอักษร</span>';return}
-  $('reopenBtn').disabled=true; $('result').textContent='กำลัง Reopen…';
+  WRITE_PENDING=true; setButtons(); $('result').textContent='กำลัง Reopen…';
   const reopenDate=(LOCK&&LOCK.date)||(P&&P.date)||$('date').value;
   try{
     const data=await API.reopenDay({date:reopenDate,reason:String(reason).trim(),reopened_by:'owner'});
-    if(!data?.success){$('result').innerHTML='<span class="bad">'+(data?.error||'Reopen failed')+'</span>';$('reopenBtn').disabled=false;return}
-    $('result').innerHTML='<span class="ok">Reopen แล้ว — สามารถลง Purchase / Expense ย้อนวันที่นี้ได้</span>';
-    await loadHistory();
-    await loadPreview();
+    if(!data?.success)throw new Error(data?.error||'Reopen failed');
+    clearPreview();
+    await Promise.all([loadHistory(),loadPreview(true)]);
+    $('result').textContent='Reopen แล้ว — สามารถลง Purchase / Expense ย้อนวันที่นี้ได้';
   } catch(err){
-    const msg=err?.message||'Reopen failed';
-    $('result').innerHTML='<span class="bad">'+msg+'</span>'+(msg.includes('HTTP 404')?'<br><span class="note">Backend deployment ยังไม่มี route reopen_day — ต้องอัปเดต deployment เดิม ไม่ใช่สร้าง deployment ใหม่</span>':'');
-    $('reopenBtn').disabled=false;
-  }
+    clearPreview();
+    $('result').textContent=(err?.message||'Reopen failed')+' · ยังยืนยันผลการบันทึกไม่ได้ ระบบไม่ส่งซ้ำ กรุณาโหลดสรุปใหม่เพื่อตรวจสถานะก่อนดำเนินการต่อ';
+  }finally{WRITE_PENDING=false; setButtons();}
 }
 function closeStatus(rec){
   const st=String(rec?.status||'').toLowerCase(); if(st==='reopened')return 'reopened';
   const note=String(rec?.notes||''); if(st==='closed'&&Number(rec?.ticket_count||0)===0&&Number(rec?.net_sales||0)===0&&(note.includes('วันหยุด')||note.includes('ไม่มีการขาย')))return 'holiday';
   if(st==='closed')return 'closed'; return st||'open';
 }
-function statusLabel(s){return ({closed:'CLOSED',holiday:'HOLIDAY',reopened:'REOPENED',open:'OPEN',overdue:'ยังไม่ปิด',future:'อนาคต'})[s]||String(s||'').toUpperCase()}
+function statusLabel(s){return ({closed:'CLOSED',holiday:'HOLIDAY',reopened:'REOPENED',open:'OPEN',overdue:'ยังไม่ปิด',future:'อนาคต',unknown:'ตรวจสอบไม่ได้'})[s]||String(s||'').toUpperCase()}
 function statusPill(s){return `<span class="pill ${s}">${statusLabel(s)}</span>`}
-function firstOperationalDate(){const ds=CLOSES.map(recordDateKey).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d)).sort(); return ds[0]||OPERATION_START}
+function firstOperationalDate(){return OPERATION_START}
 function datesBetween(start,end){const out=[]; let d=new Date(start+'T12:00:00+07:00'), e=new Date(end+'T12:00:00+07:00'); while(d<=e){out.push(new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(d)); d=new Date(d.getTime()+86400000)} return out}
 function renderOpsSummary(){
   const map=Object.fromEntries(CLOSES.map(r=>[recordDateKey(r),r]));
@@ -232,13 +246,14 @@ function renderOpsSummary(){
   const yestDate=new Date(t+'T12:00:00+07:00'); yestDate.setDate(yestDate.getDate()-1);
   const yest=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(yestDate);
   const end=monthLast<yest?monthLast:yest;
-  const overdue=start<=end?datesBetween(start,end).filter(d=>!map[d]).length:0;
+  const pastDays=start<=end?datesBetween(start,end):[];
+  const unknown=pastDays.filter(d=>!HISTORY_KNOWN.has(d)).length;
+  const overdue=pastDays.filter(d=>HISTORY_KNOWN.has(d)&&(!map[d]||['open','reopened'].includes(closeStatus(map[d])))).length;
   const inMonth=CLOSES.filter(r=>recordDateKey(r).startsWith(mk));
   const closed=inMonth.filter(r=>closeStatus(r)==='closed').length;
   const holiday=inMonth.filter(r=>closeStatus(r)==='holiday').length;
-  const reopened=inMonth.filter(r=>closeStatus(r)==='reopened').length;
-  const source=HISTORY_SOURCE==='route'?'History route':'Preview fallback';
-  $('opsSummary').innerHTML=k('ปิดยอดแล้ว',closed)+k('วันหยุด',holiday)+k('ยังไม่ปิดย้อนหลัง',overdue)+k('แหล่งข้อมูล',source);
+  const source=HISTORY_SOURCE==='loading'?'กำลังโหลด…':(HISTORY_SOURCE==='route'?'History route':'Preview fallback');
+  $('opsSummary').innerHTML=k('ปิดยอดแล้ว (ยืนยัน)',closed)+k('วันหยุด (ยืนยัน)',holiday)+k('ยังไม่ปิดย้อนหลัง (ยืนยัน)',overdue)+k('ตรวจสอบไม่ได้',unknown)+k('แหล่งข้อมูล',source);
 }
 function renderCalendar(){
   const mk=$('month').value||monthKey(); const [y,m]=mk.split('-').map(Number); const first=new Date(Date.UTC(y,m-1,1,12)), lastDay=new Date(Date.UTC(y,m,0,12)).getUTCDate(); const startDow=first.getUTCDay();
@@ -246,17 +261,17 @@ function renderCalendar(){
   let html=['อา','จ','อ','พ','พฤ','ศ','ส'].map(x=>`<div class="dow">${x}</div>`).join(''); for(let i=0;i<startDow;i++)html+='<div class="day blank"></div>';
   for(let day=1;day<=lastDay;day++){
     const d=`${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const rec=map[d]; let s='open', extra='';
-    if(d<start)s='prestart'; else if(d>t)s='future'; else if(rec)s=closeStatus(rec); else if(d<t)s='overdue'; else s='open';
+    if(d<start)s='prestart'; else if(d>t)s='future'; else if(!HISTORY_KNOWN.has(d))s='unknown'; else if(rec)s=closeStatus(rec); else if(d<t)s='overdue'; else s='open';
     const cls=['day',s,d===t?'today':''].join(' '); const clickable=!['future','prestart'].includes(s); const pill=['prestart'].includes(s)?'':statusPill(s);
     if(rec)extra=`<div class="dayAmount">${fmt(rec.net_sales)}</div><div class="daymeta">NP ${fmt(rec.net_profit)} · ${Number(rec.ticket_count||0)} tickets</div>`;
-    else if(s==='overdue')extra='<div class="daymeta bad">ควรปิดย้อนหลัง</div>'; else if(s==='open')extra='<div class="daymeta">วันกำลังเปิดอยู่</div>'; else extra='';
+    else if(s==='unknown')extra='<div class="daymeta warn">ยังยืนยันสถานะไม่ได้ · กดโหลดสรุป</div>'; else if(s==='overdue')extra='<div class="daymeta bad">ควรปิดย้อนหลัง</div>'; else if(s==='open')extra='<div class="daymeta">วันกำลังเปิดอยู่</div>'; else extra='';
     html+=`<div class="${cls}" ${clickable?`onclick="selectDate('${d}')"`:''}><div class="daynum">${day}</div>${pill}${extra}</div>`;
   }
   $('calendar').innerHTML=html;
 }
-function selectDate(d){$('date').value=d; loadPreview(); window.scrollTo({top:0,behavior:'smooth'})}
+function selectDate(d){if(WRITE_PENDING)return; $('date').value=d; loadPreview(); window.scrollTo({top:0,behavior:'smooth'})}
 function renderHistory(){
-  if(!CLOSES.length){$('historyBody').innerHTML='<tr><td colspan="8" class="muted">ยังไม่มี Daily Close ในช่วงที่โหลด</td></tr>';return}
+  if(!CLOSES.length){$('historyBody').innerHTML='<tr><td colspan="8" class="muted">ไม่พบรายการปิดยอดในข้อมูลที่โหลดสำเร็จ · วันที่ตรวจสอบไม่ได้ยังไม่ถือว่าเปิดหรือปิด</td></tr>';return}
   const rows=[...CLOSES].sort((a,b)=>recordDateKey(b).localeCompare(recordDateKey(a)));
   $('historyBody').innerHTML=rows.map(r=>{
     const d=recordDateKey(r),s=closeStatus(r);
@@ -264,7 +279,7 @@ function renderHistory(){
     const varianceClass=!r._fallback&&Math.abs(Number(r.total_payment_variance||0))>0.009?'bad':'';
     const closedAt=r._fallback?'—':displayDateTime(r.closed_at);
     const note=String(r.notes||'')||(r._fallback?'Preview fallback':'—');
-    return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${varianceClass}">${variance}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${closedAt}</td><td class="muted">${note}</td></tr>`;
+    return `<tr class="clickable" onclick="selectDate('${d}')"><td>${displayDate(d)}</td><td>${statusPill(s)}</td><td class="num">${fmt(r.net_sales)}</td><td class="num">${fmt(r.net_profit)}</td><td class="num ${varianceClass}">${variance}</td><td class="num">${Number(r.ticket_count||0)}</td><td>${esc(closedAt)}</td><td class="muted">${esc(note)}</td></tr>`;
   }).join('');
 }
 function pseudoCloseFromPreview(d,p){
@@ -278,47 +293,65 @@ function pseudoCloseFromPreview(d,p){
     total_payment_variance:null,closed_at:'',notes:zero&&st==='closed'?'วันหยุด / ไม่มีการขาย':'',_fallback:true
   };
 }
-async function loadHistoryFromPreview(){
-  HISTORY_SOURCE='preview-fallback';
-  const mk=$('month').value||monthKey();
+function historyDays(mk){
   const [y,m]=mk.split('-').map(Number);
   const monthStart=`${y}-${String(m).padStart(2,'0')}-01`;
   const lastDay=new Date(Date.UTC(y,m,0,12)).getUTCDate();
   const monthEnd=`${y}-${String(m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
   const start=monthStart>OPERATION_START?monthStart:OPERATION_START;
   const end=monthEnd<today()?monthEnd:today();
-  if(start>end){CLOSES=[];renderOpsSummary();renderCalendar();renderHistory();return;}
-  const days=datesBetween(start,end), rows=[];
+  return start>end?[]:datesBetween(start,end);
+}
+function validHistoryRows(data){
+  const rows=Array.isArray(data)?data:(data?.rows||data?.items);
+  if(!Array.isArray(rows)||rows.some(r=>!r||!/^\d{4}-\d{2}-\d{2}$/.test(recordDateKey(r))||!['closed','reopened','open'].includes(String(r.status||'').toLowerCase())))throw new Error('รูปแบบประวัติปิดยอดไม่ถูกต้อง');
+  return rows;
+}
+async function loadHistoryFromPreview(mk,request){
+  const isCurrent=()=>request===HISTORY_REQUEST&&mk===($('month').value||monthKey());
+  const days=historyDays(mk), rows=[], known=new Set();
   for(let i=0;i<days.length;i+=4){
+    if(!isCurrent())return null;
     const batch=days.slice(i,i+4);
-    const results=await Promise.all(batch.map(async d=>{try{return {d,p:await API.dailyClosePreview(d)}}catch(e){return {d,p:null}}}));
-    results.forEach(({d,p})=>{const r=pseudoCloseFromPreview(d,p);if(r)rows.push(r)});
+    const results=await Promise.all(batch.map(async d=>{try{
+      const p=await readWithTimeout(()=>API.dailyClosePreview(d));
+      if(!p||dateKey(p.date)!==d||!['open','closed','reopened'].includes(String(p.close_status||'').toLowerCase()))return {d,p:null};
+      return {d,p};
+    }catch(e){return {d,p:null}}}));
+    if(!isCurrent())return null;
+    results.forEach(({d,p})=>{if(!p)return;known.add(d);const r=pseudoCloseFromPreview(d,p);if(r)rows.push(r)});
   }
-  CLOSES=rows;
-  renderOpsSummary();renderCalendar();renderHistory();setButtons();
+  return {rows,known};
 }
 async function loadHistory(){
+  const mk=$('month').value||monthKey(),request=++HISTORY_REQUEST;
+  const isCurrent=()=>request===HISTORY_REQUEST&&mk===($('month').value||monthKey());
+  CLOSES=[]; HISTORY_KNOWN=new Set(); HISTORY_SOURCE='loading';
+  renderOpsSummary();renderCalendar();
+  $('historyBody').innerHTML='<tr><td colspan="8" class="muted">กำลังตรวจสอบประวัติ…</td></tr>';
+  let warning='';
   try{
-    const data=await API.dailyCloses({limit:120});
-    CLOSES=Array.isArray(data)?data:(data?.rows||data?.items||[]);
+    const rows=validHistoryRows(await readWithTimeout(()=>API.dailyCloses({limit:120})));
+    if(!isCurrent())return;
+    CLOSES=rows;
+    // The route is capped at 120 records. Absence before its earliest row is not proof of an open day.
+    const earliest=rows.map(recordDateKey).sort()[0];
+    HISTORY_KNOWN=new Set(historyDays(mk).filter(d=>rows.length<120||d>=earliest));
     HISTORY_SOURCE='route';
-    renderOpsSummary(); renderCalendar(); renderHistory(); setButtons();
+    if(historyDays(mk).some(d=>!HISTORY_KNOWN.has(d)))warning='ประวัติถึงขีดจำกัด 120 รายการ · วันที่นอกช่วงข้อมูลแสดง “ตรวจสอบไม่ได้”';
   }catch(err){
-    // Phase 13 safe fallback: active backend may not expose GET get_daily_closes.
-    // Do not redeploy/regress the purchase-cashflow backend just for calendar/history.
-    try{
-      await loadHistoryFromPreview();
-      $('historyBody').insertAdjacentHTML('afterbegin','<tr><td colspan="8" class="warn" style="white-space:normal">History route ใช้ไม่ได้ ('+(err.message||'HTTP 404')+') — แสดงข้อมูลเดือนนี้จาก Daily Close Preview แทนชั่วคราว</td></tr>');
-    }catch(fallbackErr){
-      CLOSES=[]; HISTORY_SOURCE='preview-fallback';
-      $('opsSummary').innerHTML=k('สถานะ History','โหลดไม่ได้')+k('ปิดยอดวันนี้','ดูจากส่วนบน')+k('ข้อมูลบัญชี','ไม่กระทบ')+k('Route','Preview');
-      $('calendar').innerHTML='<div class="note bad" style="grid-column:1/-1;padding:12px">โหลด Store Calendar ไม่ได้: '+(fallbackErr.message||err.message||'ไม่ทราบสาเหตุ')+'</div>';
-      $('historyBody').innerHTML='<tr><td colspan="8" class="bad">โหลด History ไม่สำเร็จ</td></tr>';
-    }
+    if(!isCurrent())return;
+    const fallback=await loadHistoryFromPreview(mk,request);
+    if(!isCurrent()||!fallback)return;
+    CLOSES=fallback.rows; HISTORY_KNOWN=fallback.known; HISTORY_SOURCE='preview-fallback';
+    warning='โหลด History ไม่สำเร็จ ('+(err.message||'ไม่ทราบสาเหตุ')+') — ใช้ Preview เฉพาะวันที่ตรวจสอบสำเร็จ วันที่เหลือยังไม่ยืนยันสถานะ';
   }
+  if(!isCurrent())return;
+  renderOpsSummary();renderCalendar();renderHistory();setButtons();
+  if(warning)$('historyBody').insertAdjacentHTML('afterbegin','<tr><td colspan="8" class="warn" style="white-space:normal">'+esc(warning)+'</td></tr>');
 }
 $('date').addEventListener('change',loadPreview);
-$('month').addEventListener('change',()=>{if(HISTORY_SOURCE==='preview-fallback')loadHistoryFromPreview();else{renderOpsSummary();renderCalendar();}});
+$('month').addEventListener('change',loadHistory);
 // Loading history must not trigger another preview that overwrites the user's selection/inputs.
 clearPreview();
 const loadInitialPreview=()=>{if(PREVIEW_REQUEST===0)return loadPreview();};
