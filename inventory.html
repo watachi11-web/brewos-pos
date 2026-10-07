@@ -91,6 +91,7 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 </section>
 </main>
 <div id="toast" class="toast"></div>
+<script src="purchase-review.js?v=1"></script>
 <script>
 const API_BASE='https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
 let ING=[], SUP=[], STATS={}, HEALTH={}, RECEIPTS=[], TXNS=[], purchaseLines=[];
@@ -133,7 +134,17 @@ async function submitPurchaseLocked(){
   purchaseBusy=true;
   try{
     if(pendingPurchase())throw Error('มีใบรับที่ยังไม่ยืนยันผล กรุณาตรวจสถานะใบรับเดิม ห้ามรับซ้ำ');
-    const lines=purchaseLines.filter(l=>l.ingredient_id).map(l=>({ingredient_id:l.ingredient_id,purchase_qty:Number(l.purchase_qty),pack_size:Number(l.pack_size),pack_unit:l.pack_unit,price_per_pack:Number(l.price_per_pack),line_discount:Number(l.line_discount||0)}));
+    // Read the visible controls, even when an input's change event has not fired.
+    // Confirmation and POST must share this exact snapshot, not an older model.
+    const rows=Array.from(document.querySelectorAll('#purchaseBody tr'));
+    if(rows.length!==purchaseLines.length)throw Error('แบบฟอร์มรับสินค้าไม่ครบ กรุณาโหลดหน้าใหม่ก่อนบันทึก');
+    const lines=rows.map(row=>{
+      const selects=row.querySelectorAll('select'),inputs=row.querySelectorAll('input');
+      if(selects.length!==2||inputs.length!==4)throw Error('อ่านรายการรับสินค้าไม่ได้');
+      const values=Array.from(inputs,i=>i.value);
+      if(selects[0].value&&values.slice(0,3).some(v=>String(v).trim()===''))throw Error('กรุณากรอกจำนวน ขนาด และราคาต่อแพ็กให้ครบ');
+      return {ingredient_id:selects[0].value,purchase_qty:Number(values[0]),pack_size:Number(values[1]),pack_unit:selects[1].value,price_per_pack:Number(values[2]),line_discount:Number(values[3]||0)};
+    }).filter(l=>l.ingredient_id);
     if(!lines.length)throw Error('กรุณาเพิ่มรายการรับเข้า');
     if(lines.some(l=>baseQty(l)===null||!Number.isFinite(baseQty(l))||baseQty(l)<=0||!Number.isFinite(l.price_per_pack)||l.price_per_pack<0||!Number.isFinite(l.line_discount)||l.line_discount<0))throw Error('จำนวน ราคา หรือหน่วยไม่ถูกต้อง');
     const discount=Number(document.getElementById('rDiscount').value||0);
@@ -141,6 +152,8 @@ async function submitPurchaseLocked(){
     if(!/^\d{4}-\d{2}-\d{2}$/.test(document.getElementById('rDate').value))throw Error('กรุณาเลือกวันที่รับสินค้า');
     const sid=document.getElementById('rSupplier').value,sup=SUP.find(s=>s.supplier_id===sid);
     const payload={receipt_id:'PUR-WEB-'+crypto.randomUUID(),date:document.getElementById('rDate').value,supplier_id:sid,supplier_name:sup?.company_name||'',invoice_no:document.getElementById('rInvoice').value,payment_method:document.getElementById('rPayment').value,discount,notes:document.getElementById('rNotes').value,lines};
+    const review=PurchaseReview.build(payload,ING);
+    if(!confirm(review.message)){purchaseNotice('ยกเลิกการยืนยัน — ยังไม่ได้ส่งใบรับหรือเพิ่มสต็อก');return;}
     // Persist BEFORE sending. A lost response must never silently become another receipt.
     localStorage.setItem(PURCHASE_PENDING_KEY,JSON.stringify(payload));
     syncPurchaseGuard();purchaseNotice('กำลังบันทึกใบรับ '+payload.receipt_id+' — อย่ารับรายการนี้จากหน้าต่างอื่น');
