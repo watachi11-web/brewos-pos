@@ -15,6 +15,7 @@ function setup(response,stored=null){
     fetch:async(url,opts)=>{calls.push({url,opts});if(typeof response==='function')return response(url,opts);return {ok:true,json:async()=>response};}
   });
   const run=c=>vm.runInContext(c,context);run(fs.readFileSync(path.join(__dirname,'../purchase-review.js'),'utf8'));run(source);run("ING=[{ingredient_id:'ING-001',unit:'g'}];purchaseLines=[{ingredient_id:'ING-001',purchase_qty:1,pack_size:100,pack_unit:'g',price_per_pack:10}];reloadAll=async()=>{};");
+  context.document.querySelectorAll=selector=>selector==='#purchaseBody tr'?Array.from(run('purchaseLines'),l=>({querySelectorAll:tag=>(tag==='select'?[l.ingredient_id,l.pack_unit]:[l.purchase_qty,l.pack_size,l.price_per_pack,l.line_discount??0]).map(value=>({value:String(value)}))})):[];
   return {run,context,calls,storage,confirmations,el:id=>elements.get(id)};
 }
 const success={success:true,data:{success:true,receipt_id:'PUR-WEB-test-id',expense_id:'EXP-TEST',total_amount:10}};
@@ -62,5 +63,19 @@ test('negative factors and excessive discounts never reach confirmation or POST'
   for(const change of ["purchaseLines[0].pack_size=-100;purchaseLines[0].purchase_qty=-1","purchaseLines[0].line_discount=11","document.getElementById('rDiscount').value='11'"]){
     const p=setup(success);p.run(change);await p.run('submitPurchase()');
     assert.equal(p.calls.length,0);assert.equal(p.confirmations.length,0);assert.equal(p.storage.size,0);
+  }
+});
+test('confirmation and POST use visible fields even without a change event',async()=>{
+  const p=setup(success);
+  p.context.document.querySelectorAll=()=>[{querySelectorAll:tag=>(tag==='select'?['ING-001','g']:['4','165','37','0']).map(value=>({value}))}];
+  await p.run('submitPurchase()');
+  assert.match(p.confirmations[0],/4 แพ็ก × 165 g = 660 g/);
+  const line=JSON.parse(p.calls[0].opts.body).lines[0];
+  assert.equal(line.purchase_qty,4);assert.equal(line.pack_size,165);assert.equal(line.price_per_pack,37);
+});
+test('incomplete DOM or blank price never confirms or posts',async()=>{
+  for(const mode of ['missing','blank']){
+    const p=setup(success);p.context.document.querySelectorAll=()=>mode==='missing'?[]:[{querySelectorAll:tag=>(tag==='select'?['ING-001','g']:['4','165','','0']).map(value=>({value}))}];
+    await p.run('submitPurchase()');assert.equal(p.calls.length,0);assert.equal(p.confirmations.length,0);assert.equal(p.storage.size,0);
   }
 });

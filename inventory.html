@@ -134,7 +134,17 @@ async function submitPurchaseLocked(){
   purchaseBusy=true;
   try{
     if(pendingPurchase())throw Error('มีใบรับที่ยังไม่ยืนยันผล กรุณาตรวจสถานะใบรับเดิม ห้ามรับซ้ำ');
-    const lines=purchaseLines.filter(l=>l.ingredient_id).map(l=>({ingredient_id:l.ingredient_id,purchase_qty:Number(l.purchase_qty),pack_size:Number(l.pack_size),pack_unit:l.pack_unit,price_per_pack:Number(l.price_per_pack),line_discount:Number(l.line_discount||0)}));
+    // Read the visible controls, even when an input's change event has not fired.
+    // Confirmation and POST must share this exact snapshot, not an older model.
+    const rows=Array.from(document.querySelectorAll('#purchaseBody tr'));
+    if(rows.length!==purchaseLines.length)throw Error('แบบฟอร์มรับสินค้าไม่ครบ กรุณาโหลดหน้าใหม่ก่อนบันทึก');
+    const lines=rows.map(row=>{
+      const selects=row.querySelectorAll('select'),inputs=row.querySelectorAll('input');
+      if(selects.length!==2||inputs.length!==4)throw Error('อ่านรายการรับสินค้าไม่ได้');
+      const values=Array.from(inputs,i=>i.value);
+      if(selects[0].value&&values.slice(0,3).some(v=>String(v).trim()===''))throw Error('กรุณากรอกจำนวน ขนาด และราคาต่อแพ็กให้ครบ');
+      return {ingredient_id:selects[0].value,purchase_qty:Number(values[0]),pack_size:Number(values[1]),pack_unit:selects[1].value,price_per_pack:Number(values[2]),line_discount:Number(values[3]||0)};
+    }).filter(l=>l.ingredient_id);
     if(!lines.length)throw Error('กรุณาเพิ่มรายการรับเข้า');
     if(lines.some(l=>baseQty(l)===null||!Number.isFinite(baseQty(l))||baseQty(l)<=0||!Number.isFinite(l.price_per_pack)||l.price_per_pack<0||!Number.isFinite(l.line_discount)||l.line_discount<0))throw Error('จำนวน ราคา หรือหน่วยไม่ถูกต้อง');
     const discount=Number(document.getElementById('rDiscount').value||0);
