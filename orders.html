@@ -90,7 +90,7 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
 .modal-overlay.open{display:flex;}
-.modal{background:#fff;border-radius:20px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
+.modal{background:#fff;border-radius:20px;width:520px;max-width:95vw;max-height:94vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2);}
 .modal-header{padding:24px 24px 0;display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:600;}
 .modal-close{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
@@ -278,13 +278,15 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
   </div>
 </div>
 
-<!-- Cancel Modal — #FIX: เดิมเป็น "Refund" ที่ local-only ไม่บันทึกกลับ Sheet เลย
-     เปลี่ยนมาใช้ cancelOrder() ที่มีอยู่แล้วใน รหัส.gs (คืนสต๊อกเต็มจำนวน + กันคืนซ้ำ +
-     รองรับออเดอร์ผสมแบรนด์) แทน เพื่อให้การยกเลิกออเดอร์คงอยู่ถาวรจริงหลัง refresh -->
+<div style="padding:12px 24px;text-align:right">
+  <span id="refundPendingGlobal" role="status"></span>
+  <button class="btn btn-outline btn-sm" onclick="recoverRefund()">ตรวจผลคืนเงินค้าง</button>
+</div>
+<!-- Full, same-day refund. Original ledger only; never current-recipe restock. -->
 <div class="modal-overlay" id="cancelModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">⚠️ Cancel Order / ยกเลิกออเดอร์</div>
+      <div class="modal-title">คืนเงินเต็มบิล / Refund</div>
       <button class="modal-close" onclick="closeCancelModal()">×</button>
     </div>
     <div class="modal-body">
@@ -293,16 +295,30 @@ select.sel{padding:7px 10px;border:1px solid var(--border);border-radius:8px;fon
         <label class="form-label">Reason / เหตุผล</label>
         <textarea class="form-control" id="cancelReason" rows="3" placeholder="e.g. Customer cancelled, wrong order... / เช่น ลูกค้ายกเลิก, สั่งผิด"></textarea>
       </div>
-      <div style="font-size:11px;color:var(--muted)">คืนสต๊อกวัตถุดิบให้อัตโนมัติตามสูตรของออเดอร์นี้ทันที</div>
+      <div class="form-group">
+        <label class="form-label" for="refundDisposition">สถานะสินค้า (ทั้งบิล รวมทุกแบรนด์)</label>
+        <select class="form-control" id="refundDisposition" onchange="invalidateRefundPreview()">
+          <option value="">กรุณาเลือก</option>
+          <option value="prepared">ทำสินค้าแล้ว — ไม่คืนสต็อก และคงต้นทุนที่ใช้ไป</option>
+          <option value="unprepared">ยังไม่ได้ทำทุกชิ้น — คืนสต็อกจากรายการตัดเดิม</option>
+        </select>
+      </div>
+      <p style="font-size:12px">รองรับเฉพาะบิลวันนี้ที่ยังไม่ปิดยอด และคืนเต็มบิลผ่านช่องทางเดิม ระบบนี้ไม่โอนเงินให้ลูกค้า</p>
+      <button class="btn btn-outline" id="previewRefundBtn" onclick="previewRefund()">ตรวจยอดก่อนคืนเงิน</button>
+      <div id="refundPreview" role="status" aria-live="polite" style="white-space:pre-wrap;margin:12px 0"></div>
+      <label><input type="checkbox" id="refundConfirmed"> คืนเงินให้ลูกค้าตามยอดและช่องทางที่ตรวจแล้ว</label>
+      <div id="refundPending" role="status" style="margin-top:12px"></div>
+      <button class="btn btn-outline" onclick="recoverRefund()">ตรวจผลรายการค้าง (ไม่ส่งคืนเงินใหม่)</button>
     </div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeCancelModal()">Back / กลับ</button>
-      <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()">Cancel Order / ยืนยันยกเลิก</button>
+      <button class="btn btn-danger" id="confirmCancelBtn" onclick="confirmCancelOrder()" disabled>บันทึกการคืนเงิน</button>
     </div>
   </div>
 </div>
 
 <script src="api.js"></script>
+<script src="refund-client.js"></script>
 <script>
 /**
  * BrewOS — Orders v6.2.1
@@ -324,6 +340,9 @@ let ALL_ORDERS = [];
 let activeOrderId = null;
 let statusFilter = 'all';
 let lockCheckSeq = 0;
+let refundPreviewState = null;
+let refundBusy = false;
+const refundClient = BrewRefundClient.create(API, localStorage, navigator.locks, () => crypto.randomUUID());
 
 function fmt(n) {
   return '฿' + Number(n || 0).toLocaleString('th-TH', { maximumFractionDigits: 2 });
@@ -578,6 +597,13 @@ async function refreshCancelAvailability(o) {
     return;
   }
 
+  if (o.dateKey !== todayKeyBkk()) {
+    btn.style.display = 'inline-flex';btn.disabled = true;
+    btn.textContent = 'คืนเงินได้เฉพาะบิลวันนี้';
+    lockMsg.textContent = 'ยังไม่รองรับคืนเงินย้อนหลัง — ไม่ต้อง Reopen วันเก่าเพื่อทำรายการนี้';
+    return;
+  }
+
   btn.style.display = 'inline-flex';
   btn.disabled = true;
   btn.textContent = '⏳ Checking day status...';
@@ -590,7 +616,7 @@ async function refreshCancelAvailability(o) {
       btn.disabled = true;
       btn.textContent = '🔒 Closed Day / ปิดยอดแล้ว';
       lockMsg.className = 'lock-note closed';
-      lockMsg.textContent = `วันที่ ${o.dateKey} ปิดยอดแล้ว หากต้องยกเลิกออเดอร์ย้อนหลัง ให้ Reopen Day จากหน้า Daily Close ก่อน`;
+      lockMsg.textContent = `วันที่ ${o.dateKey} ปิดยอดแล้ว ไม่สามารถคืนเงินจากหน้านี้ได้`;
     } else {
       btn.disabled = false;
       btn.textContent = '✕ Cancel Order / ยกเลิกออเดอร์';
@@ -603,10 +629,10 @@ async function refreshCancelAvailability(o) {
     if (seq !== lockCheckSeq || activeOrderId !== o.id) return;
     console.warn('dayLockStatus failed:', e);
     // Backend still enforces the real guard. Do not falsely claim the day is open.
-    btn.disabled = false;
+    btn.disabled = true;
     btn.textContent = '✕ Cancel Order / ยกเลิกออเดอร์';
     lockMsg.className = 'lock-note closed';
-    lockMsg.textContent = 'ตรวจสถานะ Closed Day จากหน้าเว็บไม่ได้ชั่วคราว — backend จะตรวจซ้ำก่อนยกเลิกจริง';
+    lockMsg.textContent = 'ตรวจสถานะวันไม่ได้ กรุณาโหลดใหม่ก่อนทำรายการคืนเงิน';
   }
 }
 
@@ -636,30 +662,74 @@ function openCancelModal() {
   if (!o || btn.disabled || o.status === 'cancelled') return;
   document.getElementById('cancelOrderInfo').textContent = `Order ${o.id} — ${o.customer} — ${fmt(o.total)}`;
   document.getElementById('cancelReason').value = '';
+  document.getElementById('cancelReason').oninput = invalidateRefundPreview;
+  document.getElementById('refundDisposition').value = '';
+  invalidateRefundPreview();
+  showRefundPending();
   document.getElementById('cancelModal').classList.add('open');
 }
 function closeCancelModal() {
+  if (refundBusy) return;
   document.getElementById('cancelModal').classList.remove('open');
 }
 
-async function confirmCancelOrder() {
-  if (!activeOrderId) return;
-  const reason = document.getElementById('cancelReason').value.trim();
-  const btn = document.getElementById('confirmCancelBtn');
-  UI.loading(btn, true);
-
+function showRefundPending() {
   try {
-    const result = await API.cancelOrder(activeOrderId, reason);
-    if (!result || !result.success) throw new Error((result && result.error) || 'ยกเลิกไม่สำเร็จ');
-    showToast('✅ ยกเลิกออเดอร์สำเร็จ — คืนสต๊อกแล้ว');
+    const pending=refundClient.pending();
+    document.getElementById('refundPending').textContent=pending?`รายการรอตรวจ: ${pending.operation_id} / ${pending.order_id} — ห้ามคืนเงินหรือส่งซ้ำ`:'';
+    document.getElementById('refundPendingGlobal').textContent=pending?`มีคืนเงินรอตรวจ: ${pending.order_id}`:'';
+  } catch(e) {document.getElementById('refundPending').textContent='อ่านรายการค้างไม่ได้ กรุณาหยุดทำรายการและตรวจข้อมูลเครื่องนี้';}
+}
+document.addEventListener('DOMContentLoaded',showRefundPending);
+function invalidateRefundPreview() {
+  refundPreviewState=null;
+  document.getElementById('refundPreview').textContent='';
+  document.getElementById('refundConfirmed').checked=false;
+  document.getElementById('confirmCancelBtn').disabled=true;
+}
+async function previewRefund() {
+  if(refundBusy)return;
+  const order=ALL_ORDERS.find(o=>o.id===activeOrderId);if(!order)return;
+  const root=order.id.replace(/-(BB|HH)$/,'');
+  const mode=document.getElementById('refundDisposition').value;
+  const reason=document.getElementById('cancelReason').value;
+  invalidateRefundPreview();refundBusy=true;
+  try {
+    const preview=await refundClient.preview(root,mode,reason);
+    if(activeOrderId!==order.id||document.getElementById('refundDisposition').value!==mode||document.getElementById('cancelReason').value!==reason)throw Error('ข้อมูลเปลี่ยน กรุณาตรวจยอดอีกครั้ง');
+    refundPreviewState=preview;
+    const p=preview.plan;
+    document.getElementById('refundPreview').textContent=`ทั้งบิล ${p.order_id} (${p.order_ids.join(', ')})\nคืนเงิน ${fmt(p.refund_amount)}\n`+Object.entries(p.refund_by_payment).map(([k,v])=>`${k.toUpperCase()}: ${fmt(v)}`).join('\n')+`\nต้นทุนคงเหลือจากสินค้าที่ทำแล้ว ${fmt(p.accounting.consumed_cost_retained)}\n`+(mode==='prepared'?'ไม่คืนสต็อก':`คืนวัตถุดิบ ${p.stock_moves.length} รายการตามรายการตัดเดิม`);
+    document.getElementById('confirmCancelBtn').disabled=false;
+  } catch(e){showToast('❌ '+e.message);} finally{refundBusy=false;showRefundPending();}
+}
+
+async function confirmCancelOrder() {
+  if(refundBusy||!refundPreviewState||!activeOrderId)return;
+  const preview=refundPreviewState;
+  if(!document.getElementById('refundConfirmed').checked){showToast('กรุณายืนยันว่าคืนเงินจริงผ่านช่องทางเดิมแล้ว');return;}
+  if(document.getElementById('cancelReason').value.trim()!==preview.request.reason||document.getElementById('refundDisposition').value!==preview.request.disposition||activeOrderId.replace(/-(BB|HH)$/,'')!==preview.request.order_id){invalidateRefundPreview();return;}
+  const btn = document.getElementById('confirmCancelBtn');
+  refundBusy=true;UI.loading(btn, true);
+  try {
+    const result = await refundClient.commit(preview);
+    showToast(result.disposition==='prepared'?'✅ บันทึกคืนเงินแล้ว — ไม่คืนสต็อก คงต้นทุนสินค้า':'✅ บันทึกคืนเงินและคืนสต็อกตามรายการเดิมแล้ว');
+    refundBusy=false;
     closeCancelModal();
     await loadOrders();
   } catch(e) {
     console.error('confirmCancelOrder failed:', e);
-    showToast('❌ ยกเลิกไม่สำเร็จ: ' + e.message);
+    showToast('❌ ' + e.message + ' — หากผลไม่ชัดเจน ให้ตรวจผลรายการค้าง ห้ามส่งซ้ำ');
   } finally {
-    UI.loading(btn, false);
+    refundBusy=false;UI.loading(btn, false);invalidateRefundPreview();showRefundPending();
   }
+}
+
+async function recoverRefund() {
+  if(refundBusy)return;refundBusy=true;
+  try {await refundClient.recover();showToast('✅ ตรวจพบการคืนเงินเดิมสำเร็จแล้ว ไม่มีการคืนซ้ำ');await loadOrders();}
+  catch(e){showToast('❌ '+e.message);}
+  finally{refundBusy=false;invalidateRefundPreview();showRefundPending();}
 }
 
 function printReceipt() {
