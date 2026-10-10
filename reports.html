@@ -200,7 +200,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   </div>
 </div>
 
-<script src="api.js"></script>
+<script src="api.js?v=6.2.4-refund"></script>
 <script>
 // #ACCOUNTING CORE v5.6.0 — Reports ดึงตาม date range จาก backend และรับ canonical created_at
 // (field name ที่ใช้ตรงกับ getOrdersFromSheet() อยู่แล้ว ไม่มี logic bug ต้องแก้)
@@ -284,31 +284,39 @@ function setReportLoadState(message) {
 }
 
 async function loadReportData() {
+  const seq=++reportLoadSeq;
+  REPORT_READY=false;
   setReportLoadState('กำลังโหลดข้อมูลจริงจาก Google Sheet…');
 
   try {
     const params = reportQueryParams();
 
+    let snapshot;
     if (typeof google !== 'undefined' && google.script && google.script.run) {
-      ALL_ORDERS = await new Promise((resolve, reject) => {
+      snapshot = await new Promise((resolve, reject) => {
         google.script.run
           .withSuccessHandler(resolve)
           .withFailureHandler(reject)
-          .getOrdersFromSheet(params);
+          .getRefundAwareReport(params);
       });
     } else if (typeof API !== 'undefined' && (API.orders || API.ordersToday)) {
-      const orderFn = API.orders || API.ordersToday;
-      ALL_ORDERS = await orderFn(params);
+      snapshot = await API.refundReport(params);
     } else {
       throw new Error('ไม่พบ API.orders / google.script.run');
     }
 
-    if (!Array.isArray(ALL_ORDERS)) ALL_ORDERS = [];
+    if(seq!==reportLoadSeq)return;
+    if(!snapshot||!Array.isArray(snapshot.orders)||!Array.isArray(snapshot.refund_cost_rows))throw Error('ข้อมูลรายงานไม่ครบ');
+    ALL_ORDERS=snapshot.orders;
+    REFUND_COST_ROWS=snapshot.refund_cost_rows;
+    REPORT_READY=true;
     renderAll();
 
   } catch(e) {
+    if(seq!==reportLoadSeq)return;
     console.error('loadReportData:', e);
     ALL_ORDERS = [];
+    REFUND_COST_ROWS=[];REPORT_READY=false;
 
     setReportLoadState('โหลดข้อมูลไม่สำเร็จ — ' + (e.message || 'Unknown error'));
 
@@ -323,6 +331,15 @@ async function loadReportData() {
   }
 }
 document.addEventListener('DOMContentLoaded', loadReportData);
+
+let REFUND_COST_ROWS=[];
+let REPORT_READY=false;
+let reportLoadSeq=0;
+function refundCostRows(brand) {
+  const to=todayKeyBkkReport(),from=PERIOD_DAYS===0?'1900-01-01':addDaysToKey(to,-(PERIOD_DAYS-1));
+  return REFUND_COST_ROWS.filter(r=>r.date_key>=from&&r.date_key<=to&&(!brand||r.brand_id===brand));
+}
+function refundConsumedCost(brand) {return refundCostRows(brand).reduce((n,r)=>n+Number(r.consumed_cost),0);}
 
 function setPeriod(days, btn) {
   PERIOD_DAYS = days;
@@ -368,7 +385,7 @@ function renderAll() {
 
 function renderKPIs(orders) {
   const netSales = orders.reduce((s,o) => s + Number(o.total_amount||0), 0);
-  const cogs = orders.reduce((s,o) => s + Number(o.cogs||0), 0);
+  const cogs = orders.reduce((s,o) => s + Number(o.cogs||0), 0)+refundConsumedCost();
   const grossProfit = netSales - cogs;
   const gpPct = netSales > 0 ? grossProfit / netSales * 100 : 0;
 
@@ -389,7 +406,7 @@ function renderKPIs(orders) {
 
   document.getElementById('chart-period-label').textContent = periodLabel;
   document.getElementById('daily-sub').textContent = `${txns} transactions · ${periodLabel}`;
-  document.getElementById('top-menu-sub').textContent = `Net Sales + GP · ${periodLabel}`;
+  document.getElementById('top-menu-sub').textContent = `เฉพาะยอดขายที่ไม่คืนเงิน · ${periodLabel} · ต้นทุนสินค้าคืนที่ทำแล้ว ${fmt(refundConsumedCost())} รวมในกำไรรวม`;
 }
 
 function renderRevenueChart(orders) {
@@ -403,6 +420,10 @@ function renderRevenueChart(orders) {
     dayMap[k].profit += Number(o.gross_profit || 0);
   });
 
+  refundCostRows().forEach(r=>{
+    if(!dayMap[r.date_key])dayMap[r.date_key]={rev:0,profit:0};
+    dayMap[r.date_key].profit-=Number(r.consumed_cost);
+  });
   let labels = [], revenue = [], profit = [];
 
   if (PERIOD_DAYS === 0) {
@@ -518,16 +539,16 @@ function renderTopMenu(orders) {
 }
 
 function renderBrandCompare(orders) {
-  function stats(rows) {
+  function stats(rows,brand) {
     const rev=rows.reduce((s,o)=>s+Number(o.total_amount||0),0);
-    const cost=rows.reduce((s,o)=>s+Number(o.cogs||0),0);
+    const cost=rows.reduce((s,o)=>s+Number(o.cogs||0),0)+refundConsumedCost(brand);
     const gp=rev-cost;
     const txns=new Set(rows.map(o=>o.transaction_id||String(o.order_id||'').replace(/-(BB|HH)$/,''))).size;
     return {rev,cost,gp,gpPct:rev>0?gp/rev*100:0,txns};
   }
 
-  const bb=stats(orders.filter(o=>o.brand_id==='BB'));
-  const hh=stats(orders.filter(o=>o.brand_id==='HH'));
+  const bb=stats(orders.filter(o=>o.brand_id==='BB'),'BB');
+  const hh=stats(orders.filter(o=>o.brand_id==='HH'),'HH');
 
   const card=(name,cls,icon,d)=>`
     <div class="brand-card ${cls}">
@@ -555,6 +576,10 @@ function renderDailyBreakdown(orders) {
     dayMap[k].cost += Number(o.cogs||0);
   });
 
+  refundCostRows().forEach(r=>{
+    if(!dayMap[r.date_key])dayMap[r.date_key]={txnIds:{},rev:0,cost:0};
+    dayMap[r.date_key].cost+=Number(r.consumed_cost);
+  });
   const sorted=Object.entries(dayMap).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,60);
   const body=document.getElementById('daily-body');
   if (!sorted.length) {
@@ -580,6 +605,7 @@ function renderDailyBreakdown(orders) {
 }
 
 function exportReport() {
+  if(!REPORT_READY){if(window.UI)UI.toast('กรุณาโหลดรายงานให้สำเร็จก่อนส่งออก','error');return;}
   const orders = getFilteredOrders().filter(o =>
     String(o.order_status||'').toLowerCase() !== 'cancelled' &&
     String(o.payment_status||'paid').toLowerCase() === 'paid'
@@ -601,6 +627,7 @@ function exportReport() {
     o.items_count||0
   ]));
 
+  refundCostRows().forEach(r=>rows.push([r.date_key,r.operation_id,r.order_id,r.brand_id,'REFUND_CONSUMED_COST (not a sale)',0,Number(r.consumed_cost),-Number(r.consumed_cost),0,'NON-CASH',0]));
   const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
