@@ -1,16 +1,12 @@
 # Refund rollout — v6.2.4-REFUND-GUARD
 
-## Validated release (2026-10-09)
+## Production backend release (2026-10-10)
 
-**Production rollout is blocked, not complete.** Activation failed before the
-schema batch was committed (`The caller does not have permission`). The production
-Google Sheet displays `Can't create, edit, or upload` / `Not enough storage`.
-The owner must free storage and restore editing first; do not purchase storage,
-delete personal files, bypass this check, deploy the backend, or merge the
-dependent frontend while blocked. Existing deployed version remains unchanged.
-After storage is resolved, recheck file access, rerun activation and verify the
-empty journal, then deploy the exact tested release without the editor runner,
-merge the frontend, and compare production accounting/stock before and after.
+The owner resolved the Google storage restriction. Activation succeeded with an
+empty refund journal and no changes to business rows. The exact tested backend
+was published as **deployment version 118** using the existing URL and access
+settings, after removing the temporary editor runner. Frontend rollout follows
+successful read-only comparison of the production responses.
 
 Validation completed before production rollout:
 
