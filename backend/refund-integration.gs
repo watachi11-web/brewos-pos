@@ -4,18 +4,24 @@ var brewRefundLockState_;
 function brewRefundSharedLock_() {
   if (!brewRefundLockState_) brewRefundLockState_={native:LockService.getScriptLock(),depth:0};
   var state=brewRefundLockState_,held=false;
-  return {
+  var handle={
     tryLock:function(ms){
       if(held)return true;
       if(state.depth===0&&!state.native.tryLock(ms))return false;
       state.depth++;held=true;return true;
     },
+    waitLock:function(ms){if(!handle.tryLock(ms))throw Error('WRITE_LOCK_TIMEOUT');},
+    hasLock:function(){return held;},
     releaseLock:function(){
       if(!held)return;
       held=false;state.depth--;
-      if(state.depth===0){delete state.operations;state.native.releaseLock();}
+      if(state.depth===0){
+        delete state.operations;
+        try{SpreadsheetApp.flush();}finally{state.native.releaseLock();}
+      }
     }
   };
+  return handle;
 }
 
 function brewRefundOperations_() {

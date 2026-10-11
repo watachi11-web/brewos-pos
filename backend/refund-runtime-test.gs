@@ -28,6 +28,15 @@ function brewRefundIsolatedSelfTest_() {
       var total=r.orders.filter(isPaidActiveOrder_).reduce(function(n,o){return n+o.cogs;},0)+r.refund_cost_rows.reduce(function(n,o){return n+o.consumed_cost;},0);
       check_('report '+revenue,total,cost);
     }
+    // Exercise the existing waitLock inventory entry points in ISOLATED storage.
+    check_('legacy adjust lock',adjustStock({}).error,'ingredient_id is required');
+    check_('legacy stocktake lock',stocktakeIngredient({}).error,'ingredient_id is required');
+    check_('legacy purchase lock',receivePurchase({lines:[{}]}).error,'รายการที่ 1: ไม่มี ingredient_id');
+    var outer=brewRefundSharedLock_(),inner=brewRefundSharedLock_();
+    outer.waitLock(30000);inner.waitLock(30000);
+    check_('nested wait locks held',outer.hasLock()&&inner.hasLock(),true);
+    inner.releaseLock();check_('inner release preserves outer',outer.hasLock()&&!inner.hasLock(),true);
+    outer.releaseLock();check_('outer released',outer.hasLock(),false);
     report_(100,35);
     var p={order_id:'TEST1',operation_id:'RFD-TEST-PREPARED-0001',disposition:'prepared',reason:'SYNTHETIC TEST ONLY',refund_confirmed:true};
     check_('prepared commit',brewRefundOrder_(p).success,true);

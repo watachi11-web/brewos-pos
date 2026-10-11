@@ -1,18 +1,20 @@
 # Refund rollout — v6.2.4-REFUND-GUARD
 
-## Production backend release (2026-10-10)
+## Production rollout (2026-10-11)
 
 The owner resolved the Google storage restriction. Activation succeeded with an
-empty refund journal and no changes to business rows. The exact tested backend
-was published as **deployment version 118** using the existing URL and access
-settings, after removing the temporary editor runner. Frontend rollout follows
-successful read-only comparison of the production responses.
+empty refund journal and no changes to business rows. Version 118 was temporarily
+rolled back to 117 after finding missing legacy `waitLock` compatibility in the
+lock adapter. The corrected adapter implements `waitLock` and `hasLock`, retains
+nested lock ownership and flushes pending spreadsheet changes before release.
+The corrected release must replace 117 before merging this frontend. Preserve
+the existing URL/access settings and remove the temporary editor runner.
 
 Validation completed before production rollout:
 
-- 116 local tests passed, with no skips in the reviewed production workspace.
-- 25 checks passed in an isolated Google Sheets runtime on 2026-10-09, including report consistency, duplicate prevention, pending-operation recovery, and atomic batch rejection. No real sales/refunds were used as tests.
-- Tested release fingerprint: `1fa8ca59ba49daf24c5c7f5b701ea426c2b8e7d2387c510362728ba3415e07af`.
+- 118 local tests passed, with no skips in the reviewed production workspace.
+- 31 checks passed in an isolated Google Sheets runtime on 2026-10-10, including original inventory lock entry points, nested locks, report consistency, duplicate prevention, pending-operation recovery, and atomic batch rejection. No real sales/refunds were used as tests.
+- Tested release fingerprint: `44984f1eeee181d54b49584cc77efc547d714fcb09dcacd20362138894ccdb94`.
 
 Implementation:
 

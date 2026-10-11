@@ -64,3 +64,23 @@ integrationTest('legacy cancellation is retired and disabled feature performs no
  h.props.delete('BREWOS_REFUND_ENABLED');assert.equal(h.run('brewRefundOrder_({})').code,'REFUNDS_NOT_ENABLED');assert.equal(JSON.stringify(h.data),original);
 });
 test('release builder refuses a changed baseline instead of patching blindly',()=>{assert.throws(()=>build(source),/Baseline changed/);});
+
+integrationTest('legacy waitLock callers reach original input validation without changing data',()=>{
+ const h=setup(),before=JSON.stringify(h.data);
+ assert.equal(h.run('adjustStock({})').error,'ingredient_id is required');
+ assert.equal(h.run('stocktakeIngredient({})').error,'ingredient_id is required');
+ assert.match(h.run('receivePurchase({lines:[{}]})').error,/ไม่มี ingredient_id/);
+ assert.equal(JSON.stringify(h.data),before);assert.equal(h.counts().held,false);
+});
+test('lock adapter supports the full native interface, nesting, timeout and flush-before-release',()=>{
+ const calls=[];let acquired=false,allow=true;
+ const c=vm.createContext({LockService:{getScriptLock:()=>({tryLock(){calls.push('acquire');if(!allow||acquired)return false;acquired=true;return true;},releaseLock(){calls.push('release');acquired=false;}})},SpreadsheetApp:{flush(){calls.push('flush');}}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../backend/refund-integration.gs'),'utf8'),c);
+ const run=s=>vm.runInContext(s,c);
+ run('var a=brewRefundSharedLock_(),b=brewRefundSharedLock_();');
+ assert.equal(run('a.hasLock()'),false);run('a.waitLock(1);b.waitLock(1);b.waitLock(1);');
+ assert.equal(run('a.hasLock()&&b.hasLock()'),true);assert.deepEqual(calls,['acquire']);
+ run('b.releaseLock();b.releaseLock();');assert.equal(acquired,true);assert.equal(run('b.hasLock()'),false);
+ run('a.releaseLock()');assert.deepEqual(calls,['acquire','flush','release']);assert.equal(acquired,false);
+ allow=false;assert.equal(run('a.tryLock(1)'),false);assert.throws(()=>run('a.waitLock(1)'),/WRITE_LOCK_TIMEOUT/);assert.equal(run('a.hasLock()'),false);
+});
