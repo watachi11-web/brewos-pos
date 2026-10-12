@@ -1,14 +1,19 @@
 # Refund rollout — v6.2.4-REFUND-GUARD
 
-## Production rollout (2026-10-11)
+## Production rollout (2026-10-12)
 
 The owner resolved the Google storage restriction. Activation succeeded with an
 empty refund journal and no changes to business rows. Version 118 was temporarily
 rolled back to 117 after finding missing legacy `waitLock` compatibility in the
 lock adapter. The corrected adapter implements `waitLock` and `hasLock`, retains
 nested lock ownership and flushes pending spreadsheet changes before release.
-The corrected release must replace 117 before merging this frontend. Preserve
-the existing URL/access settings and remove the temporary editor runner.
+The corrected release was deployed as version 119 on October 12, preserving the
+existing URL/access settings. The temporary editor runner was removed and the
+saved source matched the generated release exactly. Live ping confirmed the
+release fingerprint below and `refund_enabled: true`. Sequential read-only
+checks matched the pre-release Finance, Daily Close, inventory, orders,
+ingredients and expenses responses; the new refund report matched the same
+orders with zero refund-cost rows. No real refund/sale was used as a test.
 
 Validation completed before production rollout:
 
