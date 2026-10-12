@@ -11,7 +11,7 @@ function setup(answers=[],options={}){
     confirm:message=>{confirmations.push(message);return options.confirm!==false;},
     fetch:async(url,opts)=>{calls.push({url,opts});if(options.fetch)return options.fetch(url,opts);return {ok:true,json:async()=>({success:true,data:{success:true}})};}
   });
-  const run=c=>vm.runInContext(c,context);run(source);run("ING=[{ingredient_id:'I1',name:'นม',unit:'g',current_stock:100,unit_cost:2}]");
+  const run=c=>vm.runInContext(c,context);run(fs.readFileSync(path.join(__dirname,'../range-paging.js'),'utf8'));run(source);run("ING=[{ingredient_id:'I1',name:'นม',unit:'g',current_stock:100,unit_cost:2}]");
   context.refreshed=()=>refreshes++;run('reloadAll=async()=>refreshed()');
   return {run,context,calls,prompts,confirmations,buttons,el:id=>elements.get(id),refreshes:()=>refreshes};
 }

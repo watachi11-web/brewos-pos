@@ -84,14 +84,26 @@ button,input,select,textarea{font:inherit} button{cursor:pointer}
 </section>
 
 <section class="panel" id="panel-history">
+<div class="card"><div class="toolbar">
+<label>จากวันที่ <input type="date" id="historyFrom" onchange="invalidateHistory()"></label>
+<label>ถึงวันที่ <input type="date" id="historyTo" onchange="invalidateHistory()"></label>
+<button class="btn" onclick="loadHistory()">ค้นหาช่วงวันที่</button>
+<button class="btn ghost" onclick="allHistory()">ทุกช่วงเวลา</button>
+<label>ค้นหา <input id="historySearch" placeholder="เลขใบรับ / Invoice / ผู้ขาย / วัตถุดิบ / อ้างอิง" oninput="filterHistory()"></label>
+</div><p class="muted">แบ่งแสดงหน้าละ 25 รายการ · หากข้อมูลชนเพดาน API ให้ลดช่วงวันที่เพื่อดูข้อมูลครบ ไม่แก้ข้อมูลจริง</p></div>
 <div class="grid2">
 <div class="card"><div class="toolbar"><strong>Purchase Receipts</strong><button class="btn ghost sm" onclick="loadHistory()">↻</button></div><div class="tablewrap"><table style="min-width:650px"><thead><tr><th>วันที่</th><th>Receipt</th><th>Supplier</th><th class="num">ยอด</th><th>Invoice</th></tr></thead><tbody id="receiptBody"></tbody></table></div></div>
 <div class="card"><div class="toolbar"><strong>Inventory Transactions</strong></div><div class="tablewrap"><table style="min-width:760px"><thead><tr><th>เวลา</th><th>วัตถุดิบ</th><th>ประเภท</th><th class="num">Δ</th><th class="num">ก่อน</th><th class="num">หลัง</th><th>Ref</th></tr></thead><tbody id="txnBody"></tbody></table></div></div>
+</div>
+<div class="grid2">
+<div class="toolbar"><button id="receiptPrev" class="btn ghost sm" onclick="historyPage('receipt',-1)" disabled>ใบรับ: ก่อนหน้า</button><span id="receiptPageStatus" role="status">เลือกช่วงวันที่แล้วค้นหา</span><button id="receiptNext" class="btn ghost sm" onclick="historyPage('receipt',1)" disabled>ใบรับ: ถัดไป</button></div>
+<div class="toolbar"><button id="txnPrev" class="btn ghost sm" onclick="historyPage('txn',-1)" disabled>สต็อก: ก่อนหน้า</button><span id="txnPageStatus" role="status">เลือกช่วงวันที่แล้วค้นหา</span><button id="txnNext" class="btn ghost sm" onclick="historyPage('txn',1)" disabled>สต็อก: ถัดไป</button></div>
 </div>
 </section>
 </main>
 <div id="toast" class="toast"></div>
 <script src="purchase-review.js?v=1"></script>
+<script src="range-paging.js?v=1"></script>
 <script>
 const API_BASE='https://script.google.com/macros/s/AKfycbxw8XBigvESVUCugH7CNUnTWel_s_oMdRrJ4Bbyeb43wF5gwrUaOXrzKIUADUsPR52Pdg/exec';
 let ING=[], SUP=[], STATS={}, HEALTH={}, RECEIPTS=[], TXNS=[], purchaseLines=[];
@@ -221,8 +233,43 @@ async function reviewStockWrite(id,mode){
   }catch(e){toast(e.message+(sent?' — หากผลไม่ชัดเจน ห้ามส่งซ้ำ ให้ตรวจประวัติสต็อกก่อน':''),'err');}
   finally{stockButtonsBusy(false);}
 }
-async function loadHistory(){try{[RECEIPTS,TXNS]=await Promise.all([get('get_purchase_receipts',{limit:100}),get('get_inventory_transactions',{limit:200})]);document.getElementById('receiptBody').innerHTML=RECEIPTS.length?RECEIPTS.map(r=>`<tr><td>${htmlText(r.date)}</td><td class="mono">${htmlText(r.receipt_id)}</td><td>${htmlText(r.supplier_name||'—')}</td><td class="num"><b>${money(r.total_amount)}</b></td><td>${htmlText(r.invoice_no||'—')}</td></tr>`).join(''):'<tr><td colspan="5" class="empty">ยังไม่มี purchase receipt</td></tr>';document.getElementById('txnBody').innerHTML=TXNS.length?TXNS.map(t=>`<tr><td>${htmlText(String(t.created_at||'').replace('T',' '))}</td><td class="mono">${htmlText(t.ingredient_id)}</td><td>${htmlText(t.txn_type)}</td><td class="num">${fmt(t.quantity_change)} ${htmlText(t.unit_type)}</td><td class="num">${fmt(t.qty_before)}</td><td class="num">${fmt(t.qty_after)}</td><td class="mono">${htmlText(t.source_doc_id||t.reference_id)}</td></tr>`).join(''):'<tr><td colspan="7" class="empty">ไม่มีข้อมูล</td></tr>';}catch(e){toast(e.message,'err')}}
+let historySeq=0;
+const historyState={receipt:{rows:[],page:0,ready:false},txn:{rows:[],page:0,ready:false}};
+function historyMessage(kind,message){
+  const s=historyState[kind];s.ready=false;s.rows=[];s.page=0;
+  document.getElementById(kind+'Body').innerHTML=`<tr><td colspan="${kind==='receipt'?5:7}" class="empty">${htmlText(message)}</td></tr>`;
+  document.getElementById(kind+'PageStatus').textContent=message;
+  document.getElementById(kind+'Prev').disabled=true;document.getElementById(kind+'Next').disabled=true;
+}
+function invalidateHistory(){historySeq++;['receipt','txn'].forEach(k=>historyMessage(k,'ช่วงวันที่เปลี่ยน กรุณากดค้นหา'));}
+function allHistory(){document.getElementById('historyFrom').value='1900-01-01';document.getElementById('historyTo').value=todayBkk();return loadHistory();}
+function filterHistory(){['receipt','txn'].forEach(k=>{historyState[k].page=0;renderHistory(k);});}
+function historyPage(kind,delta){if(!historyState[kind]?.ready)return;historyState[kind].page+=delta;renderHistory(kind);}
+function renderHistory(kind){
+  const s=historyState[kind];if(!s.ready)return;
+  const query=document.getElementById('historySearch').value.trim().toLowerCase();
+  const rows=s.rows.filter(r=>!query||Object.values(r).join(' ').toLowerCase().includes(query)||(kind==='txn'&&String(ING.find(i=>i.ingredient_id===r.ingredient_id)?.name||'').toLowerCase().includes(query)));
+  const page=RangePaging.page(rows,s.page,25);s.page=page.index;
+  document.getElementById(kind+'PageStatus').textContent=s.range+' · '+page.label;
+  document.getElementById(kind+'Prev').disabled=!page.previous;document.getElementById(kind+'Next').disabled=!page.next;
+  document.getElementById(kind+'Body').innerHTML=page.rows.length?page.rows.map(r=>kind==='receipt'?`<tr><td>${htmlText(r.date)}</td><td class="mono">${htmlText(r.receipt_id)}</td><td>${htmlText(r.supplier_name||'—')}</td><td class="num"><b>${money(r.total_amount)}</b></td><td>${htmlText(r.invoice_no||'—')}</td></tr>`:`<tr><td>${htmlText(String(r.created_at||'').replace('T',' '))}</td><td>${htmlText(r.ingredient_id)}</td><td>${htmlText(r.txn_type)}</td><td class="num">${fmt(r.quantity_change)} ${htmlText(r.unit_type)}</td><td class="num">${fmt(r.qty_before)}</td><td class="num">${fmt(r.qty_after)}</td><td class="mono">${htmlText(r.source_doc_id||r.reference_id)}</td></tr>`).join(''):`<tr><td colspan="${kind==='receipt'?5:7}" class="empty">ไม่พบรายการในช่วง/คำค้นนี้</td></tr>`;
+}
+async function loadHistory(){
+  const seq=++historySeq;let range;
+  ['receipt','txn'].forEach(k=>historyMessage(k,'กำลังโหลดประวัติ…'));
+  try{range=RangePaging.range(document.getElementById('historyFrom').value,document.getElementById('historyTo').value);}
+  catch(e){['receipt','txn'].forEach(k=>historyMessage(k,e.message));return;}
+  await Promise.all([['receipt','get_purchase_receipts',2000],['txn','get_inventory_transactions',5000]].map(async([kind,action,limit])=>{
+    try{
+      const rows=await get(action,{...range,limit});if(seq!==historySeq)return;
+      if(!Array.isArray(rows))throw Error('ข้อมูลประวัติไม่ครบ กรุณาลองโหลดใหม่');
+      if(rows.length>=limit)throw Error(`ข้อมูลถึงเพดาน ${limit.toLocaleString('en-US')} รายการ อาจไม่ครบ กรุณาลดช่วงวันที่`);
+      historyState[kind]={rows,page:0,ready:true,range:range.date_from+' → '+range.date_to};renderHistory(kind);
+    }catch(e){if(seq===historySeq)historyMessage(kind,'โหลดไม่สำเร็จ — '+e.message);}
+  }));
+}
 async function reloadAll(){try{[ING,SUP,STATS,HEALTH]=await Promise.all([get('get_ingredients'),get('get_suppliers'),get('get_inventory_stats'),get('get_inventory_health')]);renderStock();renderKpis();supplierOptions();renderPurchaseLines();}catch(e){toast(e.message,'err')}}
+document.getElementById('historyFrom').value=todayBkk().slice(0,7)+'-01';document.getElementById('historyTo').value=todayBkk();
 document.getElementById('rDate').value=todayBkk();addPurchaseLine();reloadAll();
 </script>
 </body></html>
