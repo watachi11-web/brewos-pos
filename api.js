@@ -101,6 +101,10 @@ const API = {
   ordersToday:  (p = {}) => apiGet('get_orders_sheet', p),
   submitOrder:  (data)   => apiPost('submit_order', data),
   cancelOrder:  (order_id, reason) => apiPost('cancel_order', { order_id, reason }),
+  refundPreview: (data) => apiPost('preview_refund', data),
+  refundOrder: (data) => apiPost('refund_order', data),
+  refundStatus: (operation_id) => apiGet('get_refund_status', {operation_id}),
+  refundReport: (p = {}) => apiGet('get_refund_report', p),
 
   // Inventory / Ingredients / Packaging
   ingredients:      (p = {}) => apiGet('get_ingredients', p),
