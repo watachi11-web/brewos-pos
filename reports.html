@@ -122,6 +122,13 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <button class="btn btn-ghost" onclick="exportReport()">⬇ Export CSV</button>
         </div>
       </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px">
+        <label>จากวันที่ <input type="date" id="reportFrom" onchange="reportRangeEdited()"></label>
+        <label>ถึงวันที่ <input type="date" id="reportTo" onchange="reportRangeEdited()"></label>
+        <button class="btn btn-ghost" onclick="applyReportRange()">ค้นหาช่วงวันที่</button>
+        <span id="reportStatus" role="status" aria-live="polite"></span>
+      </div>
+      <p style="font-size:12px">ยอดรวมและ CSV ครอบคลุมทั้งช่วงที่โหลดสำเร็จ ไม่ใช่เฉพาะหน้าตาราง · ช่วงที่มี 5,000 ออเดอร์ขึ้นไปต้องลดช่วงวันที่ก่อน</p>
     </div>
 
     <div class="content">
@@ -195,12 +202,18 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
           <div>Date</div><div>Txns</div><div>Net Sales</div><div>COGS</div><div>Gross Profit</div><div>GP</div>
         </div>
         <div id="daily-body"><div class="loading-text">Loading…</div></div>
+        <div style="display:flex;gap:12px;align-items:center;padding:12px;flex-wrap:wrap">
+          <button id="dailyPrev" class="btn btn-ghost" onclick="changeDailyPage(-1)" disabled>หน้าก่อนหน้า</button>
+          <span id="dailyPageStatus" role="status"></span>
+          <button id="dailyNext" class="btn btn-ghost" onclick="changeDailyPage(1)" disabled>หน้าถัดไป</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <script src="api.js?v=6.2.4-refund"></script>
+<script src="range-paging.js?v=1"></script>
 <script>
 // #ACCOUNTING CORE v5.6.0 — Reports ดึงตาม date range จาก backend และรับ canonical created_at
 // (field name ที่ใช้ตรงกับ getOrdersFromSheet() อยู่แล้ว ไม่มี logic bug ต้องแก้)
@@ -259,16 +272,10 @@ function addDaysToKey(key, delta) {
 }
 
 function reportQueryParams() {
-  if (PERIOD_DAYS === 0) return { limit: 5000 };
-
-  const dateTo = todayKeyBkkReport();
-  const dateFrom = addDaysToKey(dateTo, -(PERIOD_DAYS - 1));
-
-  return {
-    date_from: dateFrom,
-    date_to: dateTo,
-    limit: 5000
-  };
+  const to=todayKeyBkkReport();
+  const from=PERIOD_DAYS===0?'1900-01-01':addDaysToKey(to,-(PERIOD_DAYS-1));
+  const range=PERIOD_DAYS===-1?RangePaging.range(document.getElementById('reportFrom').value,document.getElementById('reportTo').value):RangePaging.range(from,to);
+  return {...range,limit:5000};
 }
 
 function setReportLoadState(message) {
@@ -279,8 +286,13 @@ function setReportLoadState(message) {
   ].filter(Boolean);
 
   els.forEach(el => {
-    el.innerHTML = `<div class="loading-text">${message}</div>`;
+    el.textContent = message;
   });
+  document.getElementById('reportStatus').textContent=message;
+  ['r-revenue','r-orders','r-avg','r-top'].forEach(id=>document.getElementById(id).textContent='—');
+  ['r-revenue-sub','r-orders-sub','r-top-sub','daily-sub','brand-legend','dailyPageStatus'].forEach(id=>document.getElementById(id).textContent='');
+  document.getElementById('dailyPrev').disabled=true;document.getElementById('dailyNext').disabled=true;
+  if(revenueChart){revenueChart.destroy();revenueChart=null;}if(brandDonut){brandDonut.destroy();brandDonut=null;}
 }
 
 async function loadReportData() {
@@ -307,10 +319,13 @@ async function loadReportData() {
 
     if(seq!==reportLoadSeq)return;
     if(!snapshot||!Array.isArray(snapshot.orders)||!Array.isArray(snapshot.refund_cost_rows))throw Error('ข้อมูลรายงานไม่ครบ');
+    if(snapshot.orders.length>=5000)throw Error('ข้อมูลถึงเพดาน 5,000 ออเดอร์ กรุณาลดช่วงวันที่ก่อนดูยอดหรือส่งออก');
     ALL_ORDERS=snapshot.orders;
     REFUND_COST_ROWS=snapshot.refund_cost_rows;
+    LOADED_RANGE={date_from:params.date_from,date_to:params.date_to};dailyPage=0;
     REPORT_READY=true;
     renderAll();
+    document.getElementById('reportStatus').textContent=`โหลดสำเร็จ ${params.date_from} → ${params.date_to} · ${snapshot.orders.length} ออเดอร์ (ก่อนกรองสถานะ)`;
 
   } catch(e) {
     if(seq!==reportLoadSeq)return;
@@ -318,7 +333,7 @@ async function loadReportData() {
     ALL_ORDERS = [];
     REFUND_COST_ROWS=[];REPORT_READY=false;
 
-    setReportLoadState('โหลดข้อมูลไม่สำเร็จ — ' + (e.message || 'Unknown error'));
+    setReportLoadState('โหลดข้อมูลไม่สำเร็จ — ' + (String(e.message).includes('REPORT_RANGE_TOO_LARGE')?'ช่วงนี้มีข้อมูลถึงเพดาน 5,000 ออเดอร์ กรุณาลดช่วงวันที่ — ยังไม่มีรายงานหรือ CSV ที่ครบถ้วน':(e.message || 'Unknown error')));
 
     document.getElementById('r-revenue').textContent = '—';
     document.getElementById('r-orders').textContent = '—';
@@ -335,14 +350,25 @@ document.addEventListener('DOMContentLoaded', loadReportData);
 let REFUND_COST_ROWS=[];
 let REPORT_READY=false;
 let reportLoadSeq=0;
+let LOADED_RANGE=null,dailyPage=0;
+function reportRangeEdited(){
+  PERIOD_DAYS=-1;reportLoadSeq++;REPORT_READY=false;LOADED_RANGE=null;dailyPage=0;
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  setReportLoadState('ช่วงวันที่เปลี่ยน กรุณากดค้นหาช่วงวันที่');
+}
+function applyReportRange(){reportRangeEdited();return loadReportData();}
+function changeDailyPage(delta){if(!REPORT_READY)return;dailyPage+=delta;renderDailyBreakdown(getFilteredOrders().filter(o=>String(o.order_status||'').toLowerCase()!=='cancelled'&&String(o.payment_status||'paid').toLowerCase()==='paid'));}
 function refundCostRows(brand) {
-  const to=todayKeyBkkReport(),from=PERIOD_DAYS===0?'1900-01-01':addDaysToKey(to,-(PERIOD_DAYS-1));
+  if(!LOADED_RANGE)return [];
+  const {date_from:from,date_to:to}=LOADED_RANGE;
   return REFUND_COST_ROWS.filter(r=>r.date_key>=from&&r.date_key<=to&&(!brand||r.brand_id===brand));
 }
 function refundConsumedCost(brand) {return refundCostRows(brand).reduce((n,r)=>n+Number(r.consumed_cost),0);}
 
 function setPeriod(days, btn) {
   PERIOD_DAYS = days;
+  const range=reportQueryParams();
+  document.getElementById('reportFrom').value=range.date_from;document.getElementById('reportTo').value=range.date_to;
 
   document.querySelectorAll('.period-btn').forEach(b => {
     b.classList.remove('active');
@@ -350,15 +376,14 @@ function setPeriod(days, btn) {
 
   if (btn) btn.classList.add('active');
 
-  loadReportData();
+  return loadReportData();
 }
 
 function getFilteredOrders() {
   let rows = Array.isArray(ALL_ORDERS) ? ALL_ORDERS : [];
 
-  if (PERIOD_DAYS !== 0) {
-    const dateTo = todayKeyBkkReport();
-    const dateFrom = addDaysToKey(dateTo, -(PERIOD_DAYS - 1));
+  if (LOADED_RANGE) {
+    const {date_to:dateTo,date_from:dateFrom}=LOADED_RANGE;
 
     rows = rows.filter(o => {
       const key = o.date_key || dateKeyBkk(o.created_at);
@@ -391,7 +416,7 @@ function renderKPIs(orders) {
 
   const txns = new Set(orders.map(o => o.transaction_id || String(o.order_id||'').replace(/-(BB|HH)$/,''))).size;
   const estimatedLines = orders.reduce((s,o) => s + Number(o.cost_quality?.estimated_lines||0),0);
-  const periodLabel = PERIOD_DAYS === 0 ? 'All time' : `Last ${PERIOD_DAYS} days`;
+  const periodLabel = LOADED_RANGE?`${LOADED_RANGE.date_from} → ${LOADED_RANGE.date_to}`:'';
 
   document.getElementById('r-revenue').textContent = fmt(netSales);
   document.getElementById('r-revenue-sub').textContent = periodLabel;
@@ -404,7 +429,7 @@ function renderKPIs(orders) {
   document.getElementById('r-top-sub').textContent =
     estimatedLines > 0 ? `⚠ ${estimatedLines} cost lines estimated` : 'Cost snapshot complete';
 
-  document.getElementById('chart-period-label').textContent = periodLabel;
+  document.getElementById('chart-period-label').textContent = periodLabel+' · กราฟแสดงไม่เกิน 60 วันล่าสุด ตารางดูได้ทุกหน้า';
   document.getElementById('daily-sub').textContent = `${txns} transactions · ${periodLabel}`;
   document.getElementById('top-menu-sub').textContent = `เฉพาะยอดขายที่ไม่คืนเงิน · ${periodLabel} · ต้นทุนสินค้าคืนที่ทำแล้ว ${fmt(refundConsumedCost())} รวมในกำไรรวม`;
 }
@@ -426,7 +451,7 @@ function renderRevenueChart(orders) {
   });
   let labels = [], revenue = [], profit = [];
 
-  if (PERIOD_DAYS === 0) {
+  if (PERIOD_DAYS === 0 || PERIOD_DAYS === -1) {
     const keys = Object.keys(dayMap).sort().slice(-60);
     labels = keys.map(key => {
       const [y,m,d] = key.split('-');
@@ -435,7 +460,7 @@ function renderRevenueChart(orders) {
     revenue = keys.map(key => dayMap[key]?.rev || 0);
     profit = keys.map(key => dayMap[key]?.profit || 0);
   } else {
-    const dateTo = todayKeyBkkReport();
+    const dateTo = LOADED_RANGE.date_to;
     const displayDays = Math.min(PERIOD_DAYS, 60);
     const firstKey = addDaysToKey(dateTo, -(displayDays - 1));
 
@@ -580,14 +605,17 @@ function renderDailyBreakdown(orders) {
     if(!dayMap[r.date_key])dayMap[r.date_key]={txnIds:{},rev:0,cost:0};
     dayMap[r.date_key].cost+=Number(r.consumed_cost);
   });
-  const sorted=Object.entries(dayMap).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,60);
+  const sorted=Object.entries(dayMap).sort((a,b)=>b[0].localeCompare(a[0]));
+  const page=RangePaging.page(sorted,dailyPage,25);dailyPage=page.index;
+  document.getElementById('dailyPageStatus').textContent=page.label+' · เรียงวันใหม่ไปเก่า';
+  document.getElementById('dailyPrev').disabled=!page.previous;document.getElementById('dailyNext').disabled=!page.next;
   const body=document.getElementById('daily-body');
   if (!sorted.length) {
     body.innerHTML='<div class="empty-state">No data for selected period</div>';
     return;
   }
 
-  body.innerHTML=sorted.map(([date,d])=>{
+  body.innerHTML=page.rows.map(([date,d])=>{
     const [y,m,dd]=date.split('-');
     const label=`${dd} ${MONTHS[parseInt(m)-1]} ${y}`;
     const gp=d.rev-d.cost;
@@ -631,10 +659,11 @@ function exportReport() {
   const csv=rows.map(row=>row.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
-  const period=PERIOD_DAYS===0?'all-time':`last-${PERIOD_DAYS}d`;
+  const period=LOADED_RANGE?`${LOADED_RANGE.date_from}_${LOADED_RANGE.date_to}`:'unknown';
   a.download=`report_${period}_${todayKeyBkkReport()}.csv`;
   a.click();
 }
+document.getElementById('reportFrom').value=addDaysToKey(todayKeyBkkReport(),-29);document.getElementById('reportTo').value=todayKeyBkkReport();
 </script>
 </body>
 </html>
