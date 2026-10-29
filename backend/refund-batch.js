@@ -22,7 +22,9 @@ var BrewRefundBatch = (function () {
   function set(t,r,key,value){return {updateCells:{start:{sheetId:t.sheetId,rowIndex:r._row,columnIndex:t.headers.indexOf(key)},rows:[{values:[cell(value)]}],fields:'userEnteredValue'}};}
   function append(t,object){return {appendCells:{sheetId:t.sheetId,rows:[{values:t.headers.map(function(h){return cell(Object.prototype.hasOwnProperty.call(object,h)?object[h]:'');})}],fields:'userEnteredValue'}};}
   function prepare(plan,result,fingerprint,tables,now){
-    var orders=table(tables.orders,['order_id','order_status','payment_status','notes','updated_at']);
+    var orders=table(tables.orders,['order_id','order_status','payment_status','notes']);
+    var updatedColumn=orders.headers.indexOf('updated_at')>=0?'updated_at':orders.headers.indexOf('completed_at')>=0?'completed_at':null;
+    if(!updatedColumn)fail('MISSING_ORDER_TIMESTAMP_COLUMN');
     var ingredients=table(tables.ingredients,['ingredient_id','current_stock','unit_cost','unit']);
     var transactions=table(tables.transactions,['txn_id','ingredient_id','txn_type','quantity_change','unit_type','qty_before','qty_after','reference_id','notes','created_at','unit_cost_before','unit_cost_after','unit_price','transaction_value','source_doc_type','source_doc_id']);
     var operations=table(tables.operations,operationHeaders),requests=[];
@@ -31,7 +33,9 @@ var BrewRefundBatch = (function () {
     plan.order_ids.forEach(function(id){
       var r=row(orders,'order_id',id);
       if(r.order_status!=='completed'||r.payment_status!=='paid')fail('ORDER_CHANGED');
-      requests.push(set(orders,r,'order_status','cancelled'),set(orders,r,'payment_status','refunded'),set(orders,r,'updated_at',now),set(orders,r,'notes',String(r.notes||'')+' [refund '+plan.operation_id+'; '+plan.disposition+'; '+plan.reason+']'));
+      requests.push(set(orders,r,'order_status','cancelled'),set(orders,r,'payment_status','refunded'),set(orders,r,'notes',String(r.notes||'')+' [refund '+plan.operation_id+'; '+plan.disposition+'; '+plan.reason+']'));
+      // completed_at is the original sale completion, not a refund timestamp.
+      if(updatedColumn==='updated_at')requests.push(set(orders,r,updatedColumn,now));
     });
     plan.stock_moves.forEach(function(m,index){
       var r=row(ingredients,'ingredient_id',m.ingredient_id);

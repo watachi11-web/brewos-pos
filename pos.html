@@ -362,6 +362,10 @@ button{cursor:pointer}
       </div>
     </div>
     <div class="rp-foot">
+      <div id="salePending" hidden role="status" style="padding:10px;margin-bottom:10px;background:#fff3df;border-radius:10px;font-size:12px">
+        <div id="salePendingText"></div>
+        <button type="button" id="saleRecover" onclick="recoverSale()" style="margin-top:8px;padding:8px">ตรวจผลบิลค้าง</button>
+      </div>
       <button class="btn-pay" id="btnPay" onclick="doCheckout()">
         <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
         ชำระเงิน (Enter)
@@ -453,6 +457,7 @@ button{cursor:pointer}
 <div class="toast" id="toastEl"></div>
 
 <script src="api.js"></script>
+<script src="sale-client.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // #NOAUTH — ตัด Auth/login gate ทิ้งทั้งหมด (Auth object ไม่มีอยู่จริงแล้วใน api.js —
@@ -776,7 +781,38 @@ function calcChange() {
 }
 
 // ── CHECKOUT ──
+let saleClient, saleBusy=false;
+function getSaleClient(){
+  if(!saleClient)saleClient=BrewSaleClient.create({submitOrder:API.submitOrder,saleStatus:p=>apiPost('get_sale_status',p)},localStorage,navigator.locks);
+  return saleClient;
+}
+function refreshSalePending(){
+  const panel=document.getElementById('salePending'),text=document.getElementById('salePendingText');
+  try{
+    const pending=getSaleClient().pending();panel.hidden=!pending;
+    text.textContent=pending?'บิล '+pending.request.receipt_id+' รอตรวจสอบผล ห้ามรับเงินหรือบันทึกซ้ำ':'';
+    document.getElementById('btnPay').disabled=saleBusy||!!pending;
+  }catch(e){panel.hidden=false;text.textContent='อ่านบิลค้างในเครื่องไม่ได้: '+e.message;document.getElementById('btnPay').disabled=true;}
+  document.getElementById('saleRecover').disabled=saleBusy;
+}
+async function recoverSale(){
+  if(saleBusy)return;saleBusy=true;refreshSalePending();showLoad();
+  try{const recovered=await getSaleClient().recover();lastData=recovered.receipt;clearCart();showSuccess(lastData);toast2('ยืนยันบิลเดิมสำเร็จ ไม่ต้องรับเงินซ้ำ');}
+  catch(e){toast2(e.message);}
+  finally{saleBusy=false;hideLoad();refreshSalePending();}
+}
+window.addEventListener('storage',e=>{
+  if(e.key!==BrewSaleClient.KEY)return;
+  try{if(e.oldValue&&!e.newValue){const old=JSON.parse(e.oldValue),done=JSON.parse(localStorage.getItem(BrewSaleClient.COMPLETED_KEY)||'null');
+    if(done&&done.order_id===old.request.receipt_id){clearCart();lastData=done.receipt;toast2('บิลยืนยันแล้วจากอีกแท็บ เริ่มบิลใหม่ได้');}
+  }}catch(_e){}
+  refreshSalePending();
+});
 async function doCheckout() {
+  if(saleBusy)return;
+  if(!window.crypto||typeof window.crypto.randomUUID!=='function'){toast2('กรุณาเปิด POS ผ่าน HTTPS ในเบราว์เซอร์รุ่นล่าสุด');return;}
+  try{if(getSaleClient().pending()){refreshSalePending();toast2('กรุณาตรวจผลบิลค้างก่อน');return;}}
+  catch(e){refreshSalePending();toast2(e.message);return;}
   const items = Object.values(cart);
   if (!items.length) { toast2('⚠️ กรุณาเลือกเมนูก่อน'); return; }
   const grand = getGrand(), recv = parseFloat(document.getElementById('recvInput').value)||0;
@@ -785,13 +821,14 @@ async function doCheckout() {
   const btnPay = document.getElementById('btnPay');
   if (btnPay.disabled) return;
   btnPay.disabled = true;
+  saleBusy = true;
   showLoad();
 
   const bkk = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Bangkok'}));
   const p = n => String(n).padStart(2,'0');
   const ds = bkk.getFullYear()+'-'+p(bkk.getMonth()+1)+'-'+p(bkk.getDate());
   const ts = p(bkk.getHours())+':'+p(bkk.getMinutes());
-  const rcpId = 'RCP-'+ds.replace(/-/g,'')+'-'+p(bkk.getHours())+p(bkk.getMinutes())+p(bkk.getSeconds());
+  const rcpId = 'RCP-'+ds.replace(/-/g,'')+'-'+crypto.randomUUID();
   const payLabels = {cash:'เงินสด', qr:'QR Code', card:'บัตรเครดิต', transfer:'โอนเงิน'};
 
   const custNameInput = document.getElementById('custNameInput');
@@ -805,7 +842,11 @@ async function doCheckout() {
   const data = { items, sub, disc, grand, recv, change: recv-grand, payMethod, payLabel: payLabels[payMethod], note: orderNote, member: selectedMember, dateStr: ds, timeStr: ts, rcpId };
 
   try {
-    const result = await API.submitOrder({
+    // Require the matching backend before saving any intent or submitting.
+    const readiness=await apiGet('ping');
+    if(readiness.atomic_sales!==true)throw Error('ระบบขายรุ่นใหม่ยังไม่พร้อม กรุณาติดต่อผู้ดูแลก่อนบันทึก');
+    const saved = await getSaleClient().commit({
+      sale_client_version: 'atomic-v1',
       customer_name: custName,
       room: '',
       pickup_time: '',
@@ -819,13 +860,15 @@ async function doCheckout() {
       receipt_id: rcpId,
       discount: discountPayload,
       payment_method: payMethod,
-    });
+    },data);
+    const result=saved.result;
 
     if (!result || !result.success) {
       throw new Error((result && result.error) || 'บันทึกออเดอร์ไม่สำเร็จ');
     }
 
     lastData = data;
+    clearCart();
     hideLoad();
     showSuccess(data);
     const shortages = result && result.stock && Array.isArray(result.stock.shortages) ? result.stock.shortages : [];
@@ -838,11 +881,13 @@ async function doCheckout() {
   } catch(e) {
     console.error('❌ doCheckout failed:', e);
     hideLoad();
-    toast2('❌ บันทึกออเดอร์ไม่สำเร็จ: ' + e.message);
+    let unresolved=true;try{unresolved=!!getSaleClient().pending();}catch(_e){}
+    toast2(unresolved?'ยังยืนยันผลบิลไม่ได้ กรุณากดตรวจผลบิลค้าง ห้ามรับเงินซ้ำ':'ยังไม่ได้บันทึก: '+e.message);
     // #FIX — ไม่โชว์ใบเสร็จ/ล้างตะกร้าถ้า backend fail จริง (เดิม optimistic UI ทำให้พนักงาน
     // เข้าใจผิดว่าออเดอร์บันทึกสำเร็จ ทั้งที่ Sheet ไม่มีข้อมูลออเดอร์นั้นเลย)
   } finally {
-    btnPay.disabled = false;
+    saleBusy = false;
+    refreshSalePending();
   }
 }
 
@@ -885,6 +930,7 @@ document.addEventListener('keydown', e => {
 document.querySelectorAll('.modal-bg').forEach(bg => bg.addEventListener('click', e => { if(e.target===bg) bg.classList.remove('open'); }));
 
 // ── INIT ──
+refreshSalePending();
 loadMenus();
 </script>
 </body>
