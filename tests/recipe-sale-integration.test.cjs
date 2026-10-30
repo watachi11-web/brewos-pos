@@ -5,6 +5,7 @@ const source=fs.existsSync(baseline)?build(fs.readFileSync(baseline,'utf8')):'';
 const integration=source?test:(name,fn)=>test(name,{skip:'Private reviewed baseline required'},fn);
 function setup(){
  const data={
+  customers:[['customer_id','full_name','brand_id','is_active'],['CUS-001','<Example & Co.>','SHARED',true]],
   orders:[columns.orders],order_lines:[columns.order_lines],order_line_modifiers:[columns.order_line_modifiers],sale_operations:[columns.sale_operations],
   refund_operations:[['operation_id','order_id','business_date','status','request_json','plan_json','result_json','created_at']],
   ingredients:[['ingredient_id','unit','current_stock','unit_cost'],['ING-001','g',1000,0.1],['PKG-001','pcs',100,2]],
@@ -91,4 +92,19 @@ test('candidate build rejects an unreviewed source',()=>{assert.throws(()=>build
 integration('cached legacy clients are rejected before writes after activation',()=>{
  const h=setup();delete h.body.sale_client_version;assert.equal(h.submit().code,'SALE_CLIENT_UPGRADE_REQUIRED');assert.equal(h.counts().commits,0);
  assert.equal(h.run('submitOrder()').code,'SALE_CLIENT_UPGRADE_REQUIRED');
+});
+
+integration('verified customer ID and canonical name persist in every brand order',()=>{
+ const h=setup();h.body.customer_id='CUS-001';h.body.customer_name='untrusted display name';h.body.items.push({id:'PRD-002',name:'Coffee',qty:1,price:40});h.body.grand=100;
+ assert.equal(h.submit().success,true);for(const row of h.data.orders.slice(1)){assert.equal(row[6],'CUS-001');assert.equal(row[7],'<Example & Co.>');}
+ assert.equal(h.run('brewSaleStatus_('+JSON.stringify(h.body)+')').verified,true);
+ h.data.customers[1][1]='renamed later';assert.equal(h.submit().idempotent,true);
+ h.body.customer_id='CUS-OTHER';assert.equal(h.submit().code,'ORDER_ID_COLLISION');
+});
+integration('unknown, inactive and mismatched-brand customers fail before all writes',()=>{
+ for(const mutation of [h=>h.body.customer_id='BAD',h=>h.data.customers[1][3]=false,h=>h.data.customers[1][2]='BB']){const h=setup();h.body.customer_id='CUS-001';mutation(h);assert.equal(h.submit().success,false);assert.equal(h.counts().commits,0);assert.equal(h.data.orders.length,1);}
+});
+integration('empty customer field preserves old pending fingerprint shape',()=>{
+ const h=setup(),args=['Test','','','',h.body.items,60,h.body.receipt_id,h.body.datetime,null,'qr'];
+ const old=h.run('brewSaleRequest_('+JSON.stringify(args)+')');args.push('');assert.deepEqual(h.run('brewSaleRequest_('+JSON.stringify(args)+')'),old);assert.equal(Object.hasOwn(old,'customer_id'),false);
 });

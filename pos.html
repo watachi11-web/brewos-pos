@@ -456,6 +456,7 @@ button{cursor:pointer}
 
 <div class="toast" id="toastEl"></div>
 
+<script src="ui-safe.js?v=1"></script>
 <script src="api.js"></script>
 <script src="sale-client.js"></script>
 <script>
@@ -548,7 +549,7 @@ async function loadMenus() {
     renderMenus(MENUS);
   } catch(e) {
     console.error('loadMenus error:', e.message);
-    document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">โหลดเมนูไม่ได้ — ' + e.message + '</div>';
+    document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">โหลดเมนูไม่ได้ — ' + escHtml(e.message) + '</div>';
   } finally {
     if (catBarEl) { catBarEl.style.opacity = '1'; catBarEl.style.pointerEvents = 'auto'; }
   }
@@ -586,7 +587,7 @@ function renderMenus(items) {
     const emoji = escHtml(m.e || '🍽');
     const img = escHtml(m.imgUrl || '');
     return `
-    <div class="mc" onclick="addToCart('${id}')" title="${name}">
+    <div class="mc" data-menu-id="${id}" title="${name}">
       <div class="mc-photo">
         ${img ? `<img src="${img}" alt="${name}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : ''}
         <div class="mc-emoji" style="${img?'display:none':'display:flex'}">${emoji}</div>
@@ -725,16 +726,16 @@ function renderCart() {
     <div class="ci">
       <div class="ci-img">${i.menu.imgUrl ? `<img src="${escHtml(i.menu.imgUrl)}" alt="${escHtml(i.menu.name)}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span class="ci-fallback" style="display:none">${escHtml(i.menu.e)}</span>` : `<span class="ci-fallback">${escHtml(i.menu.e)}</span>`}</div>
       <div class="ci-info">
-        <div class="ci-name">${i.menu.name}</div>
-        ${(i.modifiers||[]).length ? `<div class="ci-mod">${(i.modifiers||[]).map(m=>modifierOptionName(i.menu,m.option_id)).join(' · ')}</div>` : ''}
+        <div class="ci-name">${escHtml(i.menu.name)}</div>
+        ${(i.modifiers||[]).length ? `<div class="ci-mod">${escHtml((i.modifiers||[]).map(m=>modifierOptionName(i.menu,m.option_id)).join(' · '))}</div>` : ''}
         <div class="ci-price">฿${getCartUnitPrice(i)} × ${i.qty}</div>
       </div>
       <div class="ci-right">
         <div class="ci-total">฿${getCartUnitPrice(i) * i.qty}</div>
         <div class="ci-stepper">
-          <button class="cs-btn" onclick="chgQty('${i.key}',-1)">−</button>
+          <button class="cs-btn" data-cart-key="${escHtml(i.key)}" data-qty-delta="-1">−</button>
           <span class="cs-val">${i.qty}</span>
-          <button class="cs-btn" onclick="chgQty('${i.key}',1)">+</button>
+          <button class="cs-btn" data-cart-key="${escHtml(i.key)}" data-qty-delta="1">+</button>
         </div>
       </div>
     </div>`).join('');
@@ -747,26 +748,30 @@ function applyDisc() { const v = parseFloat(document.getElementById('discInput')
 function clearDisc() { discValue = 0; discReasonTxt = ''; renderCart(); }
 
 // ── NOTE ──
+document.getElementById('menuGrid').addEventListener('click',e=>{const card=e.target.closest('[data-menu-id]');if(card)addToCart(card.dataset.menuId);});
+document.getElementById('cartItems').addEventListener('click',e=>{const btn=e.target.closest('[data-cart-key]');if(btn)chgQty(btn.dataset.cartKey,Number(btn.dataset.qtyDelta));});
 function openNoteModal() { om('noteModal'); document.getElementById('noteInput').value = orderNote; }
 function applyNote() { orderNote = document.getElementById('noteInput').value.trim(); cm('noteModal'); renderCart(); if(orderNote) toast2('📝 บันทึกหมายเหตุแล้ว'); }
 
 // ── MEMBER (ตอนนี้ใช้ customers แทน members ที่ตัดทิ้งไปแล้ว) ──
 let _customersCache = null;
 function openMemberModal() { om('memberModal'); document.getElementById('mSearch').value = ''; document.getElementById('mResults').innerHTML = ''; }
+let memberSearchVersion=0;
 async function searchMember(q) {
-  if (!q.trim()) { document.getElementById('mResults').innerHTML = ''; return; }
+  const version=++memberSearchVersion, box=document.getElementById('mResults');
+  box.replaceChildren();if(!q.trim())return;
   try {
-    if (!_customersCache) _customersCache = await API.customers();
-    const hits = (_customersCache||[]).filter(c => (c.name||'').includes(q) || (c.phone||'').includes(q));
-    document.getElementById('mResults').innerHTML = hits.length
-      ? hits.slice(0,5).map(c => `<div style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);" onclick='pickMember(${JSON.stringify(c)})'>${c.name}<div style="font-size:10px;color:var(--text-l)">📞 ${c.phone||'-'} · แต้ม ${c.points||0}</div></div>`).join('')
-      : '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ไม่พบลูกค้า</div>';
-  } catch(e) {
-    document.getElementById('mResults').innerHTML = '<div style="padding:8px 12px;font-size:12px;color:var(--text-l)">ค้นหาไม่สำเร็จ: ' + e.message + '</div>';
-  }
+    if (!_customersCache) _customersCache=(await API.customers()).map(BrewUI.customer);
+    if(version!==memberSearchVersion)return;
+    const query=q.trim().toLocaleLowerCase();
+    const hits=_customersCache.filter(c=>c.full_name.toLocaleLowerCase().includes(query)||c.phone.includes(query));
+    if(!hits.length){box.textContent='ไม่พบลูกค้า';return;}
+    hits.slice(0,5).forEach(c=>{const button=document.createElement('button');button.type='button';button.style.cssText='display:block;padding:8px 12px;width:100%;text-align:left';button.textContent=c.full_name+' · '+(c.phone||'-')+' · แต้ม '+(Number(c.points)||0);button.addEventListener('click',()=>pickMember(c));box.append(button);});
+  }catch(e){if(version===memberSearchVersion)box.textContent='ค้นหาไม่สำเร็จ: '+e.message;}
 }
-function pickMember(m) { selectedMember = m; document.getElementById('custText').textContent = '👤 ' + m.name; document.getElementById('custNameInput').value = m.name; cm('memberModal'); toast2('👤 เลือก ' + m.name); }
-function selectMember(m) { selectedMember = m; if(!m) document.getElementById('custText').textContent = 'ลูกค้าทั่วไป'; cm('memberModal'); }
+function pickMember(value) {const m=BrewUI.customer(value);if(!m.customer_id)return;selectedMember=m;document.getElementById('custText').textContent='👤 '+m.full_name;document.getElementById('custNameInput').value=m.full_name;cm('memberModal');toast2('👤 เลือก '+m.full_name);}
+function selectMember(m) {if(m){pickMember(m);return;}selectedMember=null;document.getElementById('custText').textContent='ลูกค้าทั่วไป';document.getElementById('custNameInput').value='';cm('memberModal');}
+document.getElementById('custNameInput').addEventListener('input',()=>{if(selectedMember&&document.getElementById('custNameInput').value!==selectedMember.full_name){selectedMember=null;document.getElementById('custText').textContent='ลูกค้าทั่วไป';}});
 
 // ── OTHER ──
 function openOtherModal() { om('otherModal'); }
@@ -834,7 +839,7 @@ async function doCheckout() {
   const custNameInput = document.getElementById('custNameInput');
   const custName = (custNameInput && custNameInput.value.trim())
     ? custNameInput.value.trim()
-    : (selectedMember ? selectedMember.name : 'Walk-in');
+    : (selectedMember ? selectedMember.full_name : 'Walk-in');
 
   const sub = getSub(), disc = getDisc();
   const discountPayload = { type: discType, value: discValue, amount: disc, reason: discReasonTxt };
@@ -844,10 +849,12 @@ async function doCheckout() {
   try {
     // Require the matching backend before saving any intent or submitting.
     const readiness=await apiGet('ping');
+    if(selectedMember&&readiness.customer_linking!==true)throw Error('ระบบเชื่อมสมาชิกยังไม่พร้อม กรุณาอัปเดตระบบก่อนขายแบบสมาชิก');
     if(readiness.atomic_sales!==true)throw Error('ระบบขายรุ่นใหม่ยังไม่พร้อม กรุณาติดต่อผู้ดูแลก่อนบันทึก');
     const saved = await getSaleClient().commit({
       sale_client_version: 'atomic-v1',
       customer_name: custName,
+      ...(selectedMember ? {customer_id:selectedMember.customer_id} : {}),
       room: '',
       pickup_time: '',
       note: orderNote,
@@ -892,13 +899,13 @@ async function doCheckout() {
 }
 
 function showSuccess(d) {
-  let html = d.items.map(i => { const mt=(i.modifiers||[]).map(m=>modifierOptionName(i.menu,m.option_id)).join(' · '); return `<div class="rcpt-row"><span>${i.menu.name} ×${i.qty}${mt?`<span class="rcpt-mod">${mt}</span>`:''}</span><span>฿${getCartUnitPrice(i)*i.qty}</span></div>`; }).join('');
+  let html = d.items.map(i => { const mt=(i.modifiers||[]).map(m=>modifierOptionName(i.menu,m.option_id)).join(' · '); return `<div class="rcpt-row"><span>${escHtml(i.menu.name)} ×${i.qty}${mt?`<span class="rcpt-mod">${escHtml(mt)}</span>`:''}</span><span>฿${getCartUnitPrice(i)*i.qty}</span></div>`; }).join('');
   html += '<div class="rcpt-div"></div>';
   if (d.disc > 0) html += `<div class="rcpt-row"><span>ส่วนลด</span><span style="color:var(--orange)">-฿${d.disc}</span></div>`;
   html += `<div class="rcpt-row"><span>ยอดสุทธิ</span><span>฿${d.grand}</span></div>`;
   if (d.payLabel === 'เงินสด') html += `<div class="rcpt-row"><span>รับเงิน</span><span>฿${d.recv}</span></div><div class="rcpt-row"><span>เงินทอน</span><span>฿${Math.max(0,d.change).toFixed(0)}</span></div>`;
-  html += `<div class="rcpt-div"></div><div class="rcpt-row" style="font-size:10px;color:var(--text-l)"><span>${d.rcpId}</span><span>${d.dateStr} ${d.timeStr}</span></div>`;
-  if (d.note) html += `<div class="rcpt-row" style="font-size:11px"><span>📝 ${d.note}</span></div>`;
+  html += `<div class="rcpt-div"></div><div class="rcpt-row" style="font-size:10px;color:var(--text-l)"><span>${escHtml(d.rcpId)}</span><span>${escHtml(d.dateStr)} ${escHtml(d.timeStr)}</span></div>`;
+  if (d.note) html += `<div class="rcpt-row" style="font-size:11px"><span>📝 ${escHtml(d.note)}</span></div>`;
   document.getElementById('rcptBox').innerHTML = html;
   om('successModal');
 }

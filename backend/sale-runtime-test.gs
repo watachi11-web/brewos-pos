@@ -2,7 +2,7 @@
 function brewSaleIsolatedSelfTest_(){
   var production=CONFIG.SPREADSHEET_ID,props=PropertiesService.getScriptProperties(),date=dailyCloseToday_(),checks=[];
   function check(label,a,b){if(JSON.stringify(a)!==JSON.stringify(b))throw Error(label+': '+JSON.stringify(a)+' != '+JSON.stringify(b));checks.push(label);}
-  var fixture={orders:[BrewSaleBatch.columns.orders],order_lines:[BrewSaleBatch.columns.order_lines],order_line_modifiers:[BrewSaleBatch.columns.order_line_modifiers],sale_operations:[BrewSaleBatch.columns.sale_operations],refund_operations:[BrewRefundBatch.operationHeaders],
+  var fixture={customers:[['customer_id','full_name','brand_id','is_active'],['CUS-TEST','<Example & Co.>','SHARED',true]],orders:[BrewSaleBatch.columns.orders],order_lines:[BrewSaleBatch.columns.order_lines],order_line_modifiers:[BrewSaleBatch.columns.order_line_modifiers],sale_operations:[BrewSaleBatch.columns.sale_operations],refund_operations:[BrewRefundBatch.operationHeaders],
     ingredients:[['ingredient_id','unit','current_stock','unit_cost'],['ING-001','g',1000,0.1],['PKG-001','pcs',100,2]],
     inventory_transactions:[['txn_id','ingredient_id','brand_id','txn_type','quantity_change','unit_type','qty_before','qty_after','reference_id','notes','performed_by','created_at','unit_cost_before','unit_cost_after','unit_price','transaction_value','supplier_id','source_doc_type','source_doc_id','shortage_qty']],
     products:[['product_id','name','brand_id','is_available','is_deleted','bom_status','cost_price'],['PRD-001','TEST food','HH',true,false,'READY',14.5],['PRD-002','TEST coffee','BB',true,false,'READY',4]],
@@ -55,6 +55,14 @@ function brewSaleIsolatedSelfTest_(){
     var priorJournal=values('sale_operations','A1:A20').length,rejected=false;
     try{Sheets.Spreadsheets.batchUpdate({requests:[{appendCells:{sheetId:names.indexOf('sale_operations')+1,rows:[{values:[{userEnteredValue:{stringValue:'MUST-NOT-COMMIT'}}]}],fields:'userEnteredValue'}},{updateCells:{start:{sheetId:9999999,rowIndex:0,columnIndex:0},rows:[{values:[{userEnteredValue:{stringValue:'INVALID'}}]}],fields:'userEnteredValue'}}]},id);}catch(e){rejected=true;}
     check('invalid atomic batch rejected',rejected,true);check('invalid batch writes no partial journal',values('sale_operations','A1:A20').length,priorJournal);
+    p.receipt_id='RCP-RUNTIME-CUSTOMER';p.customer_id='CUS-TEST';p.customer_name='untrusted client name';
+    var linked=submitOrderDirect(p);check('linked customer sale',linked.success,true);
+    var linkedRow=values('orders','A1:R30').filter(function(r){return r[0]===p.receipt_id;})[0];
+    check('canonical customer persisted',[linkedRow[6],linkedRow[7]],['CUS-TEST','<Example & Co.>']);
+    check('linked request recovery',brewSaleStatus_(p).verified,true);check('linked retry idempotent',submitOrderDirect(p).idempotent,true);
+    var invalidCustomer=JSON.parse(JSON.stringify(p));invalidCustomer.receipt_id='RCP-RUNTIME-BAD-CUSTOMER';invalidCustomer.customer_id='CUS-MISSING';
+    var beforeBad=values('orders','A1:A30').length;check('invalid customer rejected',submitOrderDirect(invalidCustomer).success,false);check('invalid customer no write',values('orders','A1:A30').length,beforeBad);
+    invalidCustomer.receipt_id=p.receipt_id;check('customer identity part of fingerprint',submitOrderDirect(invalidCustomer).code,'ORDER_ID_COLLISION');
     var proof={passed:true,id:id,release:BREWOS_RECIPE_RELEASE_ID,checks:checks.length,at:new Date().toISOString()};
     props.setProperty('BREWOS_SALE_LAST_TEST',JSON.stringify(proof));console.log('ATOMIC_SALE_RUNTIME_PASS '+JSON.stringify(proof));return proof;
   } finally{brewSaleStore_=baseStore;props.deleteProperty(enabledKey);CONFIG.SPREADSHEET_ID=production;brewRefundTestContext_=null;brewRefundLockState_=null;}
