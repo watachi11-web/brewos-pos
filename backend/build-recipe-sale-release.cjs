@@ -30,9 +30,9 @@ function build(source){
  mods=replaceOnce(mods,'function appendOrderLineModifierRows_(ss,','function brewSaleCollectModifiers_(saleBuffer,');
  mods=replaceOnce(mods,"  var sheet = ss.getSheetByName('order_line_modifiers');\n  if (!sheet) return;\n",'');
  mods=replaceOnce(mods,'sheet.appendRow([','saleBuffer.modifiers.push([');
- source=replaceOnce(source,"VERSION: '6.2.4-REFUND-GUARD'","VERSION: '6.2.5-RECIPE-STOCK'");
+ source=replaceOnce(source,"VERSION: '6.2.4-REFUND-GUARD'","VERSION: '6.2.6-CUSTOMER-LINK'");
  source=replaceOnce(source,"      submit_order:         function() { return submitOrderDirect(body); },","      get_sale_status:      function() { return brewSaleStatus_(body); },\n      submit_order:         function() { return submitOrderDirect(body); },");
- source=replaceOnce(source,'refund_release:BREWOS_REFUND_RELEASE_ID','refund_release:BREWOS_REFUND_RELEASE_ID, atomic_sales:brewSaleEnabled_(), recipe_release:BREWOS_RECIPE_RELEASE_ID');
+ source=replaceOnce(source,'refund_release:BREWOS_REFUND_RELEASE_ID','refund_release:BREWOS_REFUND_RELEASE_ID, atomic_sales:brewSaleEnabled_(), customer_linking:true, recipe_release:BREWOS_RECIPE_RELEASE_ID');
  source=replaceOnce(source,'function submitOrderDirect(){var args=arguments;','function submitOrderDirect(){if(brewSaleEnabled_())return brewSaleDirect_(arguments[0]);var args=arguments;');
  source=replaceOnce(source,'function submitOrder(){var args=arguments;','function submitOrder(){if(brewSaleEnabled_())return {success:false,error:"กรุณารีโหลดหน้า POS เป็นรุ่นใหม่ก่อนบันทึก",code:"SALE_CLIENT_UPGRADE_REQUIRED",do_not_retry:false,result_unknown:false};var args=arguments;');
  source=replaceOnce(source,'    brewRefundAssertNoPending_();\n    return fn();','    brewRefundAssertNoPending_();\n    brewSaleAssertNoPending_();\n    return fn();');

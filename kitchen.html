@@ -126,6 +126,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   </div>
 </div>
 
+<script src="ui-safe.js?v=1"></script>
 <script src="api.js"></script>
 <script>
 // #FIX — เดิม hardcode GAS_URL/fetch เอง เปลี่ยนมาใช้ API.ordersToday() จาก api.js
@@ -199,30 +200,31 @@ function renderCard(o, status) {
 
   const items = Array.isArray(o.items) ? o.items : [];
   const itemsHtml = items.length
-    ? items.map(i => `<div class="order-item"><div class="item-qty">${i.qty}×</div><div class="item-name">${i.name}</div></div>`).join('')
+    ? items.map(i => `<div class="order-item"><div class="item-qty">${BrewUI.html(i.qty)}×</div><div class="item-name">${BrewUI.html(i.name)}</div></div>`).join('')
     : `<div class="order-item"><div class="item-name" style="color:rgba(255,255,255,0.4)">— item details not available / ไม่มีรายละเอียดสินค้า —</div></div>`;
 
   const footerBtns = status === 'pending'
-    ? `<button class="action-btn btn-start" onclick="moveOrder('${orderId}','making')">▶ Start / เริ่มทำ</button>`
+    ? `<button class="action-btn btn-start" data-order-id="${BrewUI.html(orderId)}" data-next-status="making">▶ Start / เริ่มทำ</button>`
     : status === 'making'
-    ? `<button class="action-btn btn-recall" onclick="moveOrder('${orderId}','pending')">↩ Recall / ย้อนกลับ</button>
-       <button class="action-btn btn-done" onclick="moveOrder('${orderId}','done')">✓ Ready / เสร็จแล้ว</button>`
-    : `<button class="action-btn btn-recall" onclick="moveOrder('${orderId}','making')">↩ Reopen / เปิดใหม่</button>`;
+    ? `<button class="action-btn btn-recall" data-order-id="${BrewUI.html(orderId)}" data-next-status="pending">↩ Recall / ย้อนกลับ</button>
+       <button class="action-btn btn-done" data-order-id="${BrewUI.html(orderId)}" data-next-status="done">✓ Ready / เสร็จแล้ว</button>`
+    : `<button class="action-btn btn-recall" data-order-id="${BrewUI.html(orderId)}" data-next-status="making">↩ Reopen / เปิดใหม่</button>`;
 
   return `
-    <div class="order-card" id="card-${orderId}">
+    <div class="order-card" id="card-${BrewUI.html(orderId)}">
       <div class="order-card-header">
         <div class="brand-dot" style="background:${brandColor}"></div>
-        <div class="order-id">${shortId}</div>
-        ${tableLabel ? `<div class="order-table">${tableLabel}</div>` : ''}
+        <div class="order-id">${BrewUI.html(shortId)}</div>
+        ${tableLabel ? `<div class="order-table">${BrewUI.html(tableLabel)}</div>` : ''}
         <span class="timer ${timerClass(mins)}">${timeLabel(mins)}</span>
       </div>
-      <div style="padding:4px 14px 0;font-size:10px;color:rgba(255,255,255,0.4)">${custLabel}</div>
+      <div style="padding:4px 14px 0;font-size:10px;color:rgba(255,255,255,0.4)">${BrewUI.html(custLabel)}</div>
       <div class="order-items">${itemsHtml}</div>
       <div class="order-card-footer">${footerBtns}</div>
     </div>`;
 }
 
+document.addEventListener('click',event=>{const button=event.target.closest('[data-order-id][data-next-status]');if(button&&['pending','making','done'].includes(button.dataset.nextStatus))moveOrder(button.dataset.orderId,button.dataset.nextStatus);});
 function moveOrder(orderId, newStatus) { kitchenState[orderId] = newStatus; renderAll(); }
 function switchBrand(brand, btn) {
   ACTIVE_BRAND = brand;
