@@ -18,6 +18,8 @@
 * { box-sizing:border-box; margin:0; padding:0; }
 html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:#1a2e1a; color:#fff; overflow:hidden; }
 
+body { display:flex; flex-direction:column; }
+.action-btn:disabled { opacity:.4; cursor:wait; }
 .kds-header { background:#111; padding:12px 20px; display:flex; align-items:center; gap:16px; border-bottom:1px solid rgba(255,255,255,0.08); flex-shrink:0; }
 .kds-logo { font-family:'Poppins',sans-serif; font-size:15px; color:#fff; }
 .kds-brand-tabs { display:flex; gap:4px; }
@@ -33,7 +35,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 
 .kds-notice { background:rgba(249,115,22,0.12); border-bottom:1px solid rgba(249,115,22,0.25); padding:6px 20px; font-size:11px; color:#FDB98B; flex-shrink:0; }
 
-.kds-body { flex:1; display:flex; overflow:hidden; height:calc(100vh - 57px - 26px); }
+.kds-body { flex:1; display:flex; overflow:hidden; min-height:0; }
 
 .kds-col { flex:1; display:flex; flex-direction:column; overflow:hidden; border-right:1px solid rgba(255,255,255,0.06); }
 .kds-col:last-child { border-right:none; }
@@ -87,17 +89,14 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
   <div class="kds-stats">
     <div class="kds-stat"><div class="kds-stat-val" id="stat-pending">0</div><div class="kds-stat-lbl">Pending / รอทำ</div></div>
     <div class="kds-stat"><div class="kds-stat-val" id="stat-making">0</div><div class="kds-stat-lbl">Making / กำลังทำ</div></div>
-    <div class="kds-stat"><div class="kds-stat-val" id="stat-done-today">0</div><div class="kds-stat-lbl">Done Today / เสร็จวันนี้</div></div>
+    <div class="kds-stat"><div class="kds-stat-val" id="stat-done-today">0</div><div class="kds-stat-lbl">Ready / พร้อมเสิร์ฟ</div></div>
   </div>
   <div class="kds-time" id="kds-clock">--:--</div>
   <button class="kds-refresh" onclick="loadOrders()">⟳ Refresh</button>
 </div>
 
-<!-- #NOTE — kitchen status (pending/making/ready) เก็บใน memory ของเบราว์เซอร์เท่านั้น
-     เพราะ รหัส.gs ยังไม่มี kitchen queue/order-item-status workflow จริง (orders sheet
-     มีแค่ completed/cancelled) refresh หน้าหรือเปิดคนละเครื่องจะไม่ sync กัน —
-     ยอมรับ limitation นี้ตามที่ตกลงไว้ เนื่องจากใช้งานคนเดียว/เครื่องเดียว -->
-<div class="kds-notice">⚠️ สถานะ Pending/Making/Ready อยู่ในเบราว์เซอร์นี้เท่านั้น (ไม่ sync ข้ามเครื่อง, หายเมื่อ refresh)</div>
+<div class="kds-notice" role="status" id="sync-notice">กำลังเชื่อมต่อสถานะครัว...</div>
+<div style="padding:6px 20px;display:flex;gap:12px;align-items:center"><label>วันที่ <input type="date" id="queue-date"></label><span id="cancelled-notice"></span><button class="kds-refresh" id="retry-kitchen" hidden>ตรวจและส่งสถานะเดิมอีกครั้ง</button></div>
 
 <div class="kds-body">
   <div class="kds-col">
@@ -129,11 +128,17 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 <script src="ui-safe.js?v=1"></script>
 <script src="api.js"></script>
 <script>
-// #FIX — เดิม hardcode GAS_URL/fetch เอง เปลี่ยนมาใช้ API.ordersToday() จาก api.js
-// kitchenState ยังคงเก็บใน memory เหมือนเดิม (ตามที่ตกลงว่ายอมรับ limitation นี้)
-const kitchenState = {}; // orderId → 'pending' | 'making' | 'done'
-let ACTIVE_BRAND = 'ALL';
-let ALL_ORDERS = [];
+const kitchenState = {};
+let ACTIVE_BRAND = 'ALL', ALL_ORDERS = [], loading = false, saving = false, synced = false, lastUpdateError = '';
+const PENDING_KEY = 'brewos_kitchen_pending_v1';
+let pendingUpdate = null;
+try { pendingUpdate = JSON.parse(localStorage.getItem(PENDING_KEY) || 'null'); } catch(e) { pendingUpdate = {invalid:true}; }
+function notice(text) { document.getElementById('sync-notice').textContent = text; }
+function updateControls() {
+ document.querySelectorAll('[data-next-status]').forEach(b=>b.disabled=saving||loading||!synced||!!pendingUpdate);
+ document.getElementById('retry-kitchen').hidden=!pendingUpdate;
+ document.getElementById('retry-kitchen').disabled=saving||!!pendingUpdate?.invalid;
+}
 
 function dateKeyBkk(val) {
   const d = new Date(val);
@@ -151,15 +156,20 @@ function timeLabel(mins) { return mins < 60 ? `${mins}m` : `${Math.floor(mins/60
 function timerClass(mins) { return mins < 10 ? 'timer-ok' : mins < 20 ? 'timer-warn' : 'timer-urgent'; }
 
 async function loadOrders() {
+  if(loading||saving)return;
+  loading=true;updateControls();
+  const date=document.getElementById('queue-date').value;
   try {
-    const orders = await API.ordersToday();
-    const todayStr = dateKeyBkk(new Date());
-    ALL_ORDERS = (orders || []).filter(o => o.created_at && dateKeyBkk(o.created_at) === todayStr && o.order_status !== 'cancelled');
-    ALL_ORDERS.forEach(o => { if (!kitchenState[o.order_id]) kitchenState[o.order_id] = 'pending'; });
+    const queue=await apiGet('get_kitchen_queue',{date});
+    if(document.getElementById('queue-date').value!==date){loading=false;return loadOrders();}
+    if(!queue||!Array.isArray(queue.orders))throw Error('รูปแบบข้อมูลครัวไม่ถูกต้อง');
+    ALL_ORDERS=queue.orders;
+    ALL_ORDERS.forEach(o=>kitchenState[o.order_id]=o.preparation_status);
+    synced=true;
+    notice(lastUpdateError || (pendingUpdate?'มีการเปลี่ยนสถานะรอตรวจผล กดตรวจและส่งสถานะเดิมอีกครั้ง':'บันทึกสถานะที่ระบบแล้ว • ซิงก์ทุก 15 วินาที • ล่าสุด '+new Date().toLocaleTimeString('th-TH')));
   } catch(e) {
-    console.error('loadOrders:', e);
-  }
-  renderAll();
+    synced=false;notice('ซิงก์ไม่สำเร็จ — ข้อมูลที่แสดงอาจเก่า: '+e.message);
+  } finally { loading=false;renderAll();updateControls(); }
 }
 
 function getDisplayOrders() {
@@ -168,6 +178,8 @@ function getDisplayOrders() {
 
 function renderAll() {
   const orders = getDisplayOrders();
+  const cancelled=orders.filter(o=>kitchenState[o.order_id]==='cancelled');
+  document.getElementById('cancelled-notice').textContent=cancelled.length?'ยกเลิกแล้ว '+cancelled.map(o=>String(o.order_id).slice(-8)).join(', '):'';
   const pending = orders.filter(o => kitchenState[o.order_id] === 'pending');
   const making  = orders.filter(o => kitchenState[o.order_id] === 'making');
   const done    = orders.filter(o => kitchenState[o.order_id] === 'done');
@@ -200,7 +212,7 @@ function renderCard(o, status) {
 
   const items = Array.isArray(o.items) ? o.items : [];
   const itemsHtml = items.length
-    ? items.map(i => `<div class="order-item"><div class="item-qty">${BrewUI.html(i.qty)}×</div><div class="item-name">${BrewUI.html(i.name)}</div></div>`).join('')
+    ? items.map(i => `<div class="order-item"><div class="item-qty">${BrewUI.html(i.qty)}×</div><div class="item-name">${BrewUI.html(i.name)}${i.modifiers?.length?'<br>'+i.modifiers.map(BrewUI.html).join(', '):''}${i.notes?'<br>'+BrewUI.html(i.notes):''}</div></div>`).join('')
     : `<div class="order-item"><div class="item-name" style="color:rgba(255,255,255,0.4)">— item details not available / ไม่มีรายละเอียดสินค้า —</div></div>`;
 
   const footerBtns = status === 'pending'
@@ -219,25 +231,50 @@ function renderCard(o, status) {
         <span class="timer ${timerClass(mins)}">${timeLabel(mins)}</span>
       </div>
       <div style="padding:4px 14px 0;font-size:10px;color:rgba(255,255,255,0.4)">${BrewUI.html(custLabel)}</div>
-      <div class="order-items">${itemsHtml}</div>
+      <div class="order-items">${itemsHtml}${o.notes?'<div>หมายเหตุ: '+BrewUI.html(o.notes)+'</div>':''}</div>
       <div class="order-card-footer">${footerBtns}</div>
     </div>`;
 }
 
 document.addEventListener('click',event=>{const button=event.target.closest('[data-order-id][data-next-status]');if(button&&['pending','making','done'].includes(button.dataset.nextStatus))moveOrder(button.dataset.orderId,button.dataset.nextStatus);});
-function moveOrder(orderId, newStatus) { kitchenState[orderId] = newStatus; renderAll(); }
+async function moveOrder(orderId,newStatus) {
+ if(saving||loading||!synced||pendingUpdate)return;
+ const o=ALL_ORDERS.find(o=>o.order_id===orderId);if(!o)return;
+ const request={operation_id:'KDS-'+crypto.randomUUID(),order_id:orderId,status:newStatus,expected_version:o.preparation_version};
+ try{localStorage.setItem(PENDING_KEY,JSON.stringify(request));}catch(e){notice('บันทึกรายการรอตรวจไม่ได้ กรุณาเปิดพื้นที่จัดเก็บของเบราว์เซอร์');return;}
+ pendingUpdate=request;await sendKitchenUpdate();
+}
+async function sendKitchenUpdate(){
+ if(saving||!pendingUpdate||pendingUpdate.invalid)return;
+ saving=true;lastUpdateError='';updateControls();notice('กำลังบันทึกสถานะ...');
+ try{
+  const result=await apiPost('update_kitchen_status',pendingUpdate);
+  if(!result?.saved)throw Error('ยังยืนยันผลบันทึกไม่ได้');
+  localStorage.removeItem(PENDING_KEY);pendingUpdate=null;
+ }catch(e){
+  // Only these explicit pre-write rejections can safely release the pending request.
+  if(/KITCHEN_STATE_CHANGED_REFRESH|KITCHEN_ORDER_CANCELLED|KITCHEN_ORDER_NOT_FOUND|INVALID_KITCHEN_TRANSITION|INVALID_KITCHEN_REQUEST/.test(e.message)){
+   localStorage.removeItem(PENDING_KEY);pendingUpdate=null;
+  }
+  lastUpdateError='ตรวจผลการเปลี่ยนสถานะ: '+e.message+(pendingUpdate?' — กดตรวจและส่งสถานะเดิมอีกครั้ง':' — โหลดสถานะล่าสุดแล้ว กรุณาตรวจบิลก่อนกดใหม่');notice(lastUpdateError);
+ }finally{saving=false;synced=false;updateControls();}
+ await loadOrders();
+}
+document.getElementById('retry-kitchen').addEventListener('click',sendKitchenUpdate);
+document.getElementById('queue-date').value=dateKeyBkk(new Date());
+document.getElementById('queue-date').addEventListener('change',loadOrders);
 function switchBrand(brand, btn) {
   ACTIVE_BRAND = brand;
   document.querySelectorAll('.kds-tab').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  renderAll();
+  renderAll();updateControls();
 }
 
 function updateClock() {
   document.getElementById('kds-clock').textContent = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
 }
 
-setInterval(loadOrders, 60000);
+setInterval(loadOrders, 15000);
 setInterval(updateClock, 1000);
 updateClock();
 loadOrders();

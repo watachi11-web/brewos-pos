@@ -30,9 +30,9 @@ function build(source){
  mods=replaceOnce(mods,'function appendOrderLineModifierRows_(ss,','function brewSaleCollectModifiers_(saleBuffer,');
  mods=replaceOnce(mods,"  var sheet = ss.getSheetByName('order_line_modifiers');\n  if (!sheet) return;\n",'');
  mods=replaceOnce(mods,'sheet.appendRow([','saleBuffer.modifiers.push([');
- source=replaceOnce(source,"VERSION: '6.2.4-REFUND-GUARD'","VERSION: '6.2.6-CUSTOMER-LINK'");
+ source=replaceOnce(source,"VERSION: '6.2.4-REFUND-GUARD'","VERSION: '6.2.7-KITCHEN'");
  source=replaceOnce(source,"      submit_order:         function() { return submitOrderDirect(body); },","      get_sale_status:      function() { return brewSaleStatus_(body); },\n      submit_order:         function() { return submitOrderDirect(body); },");
- source=replaceOnce(source,'refund_release:BREWOS_REFUND_RELEASE_ID','refund_release:BREWOS_REFUND_RELEASE_ID, atomic_sales:brewSaleEnabled_(), customer_linking:true, recipe_release:BREWOS_RECIPE_RELEASE_ID');
+ source=replaceOnce(source,'refund_release:BREWOS_REFUND_RELEASE_ID','refund_release:BREWOS_REFUND_RELEASE_ID, atomic_sales:brewSaleEnabled_(), customer_linking:true, kitchen_workflow:true, recipe_release:BREWOS_RECIPE_RELEASE_ID');
  source=replaceOnce(source,'function submitOrderDirect(){var args=arguments;','function submitOrderDirect(){if(brewSaleEnabled_())return brewSaleDirect_(arguments[0]);var args=arguments;');
  source=replaceOnce(source,'function submitOrder(){var args=arguments;','function submitOrder(){if(brewSaleEnabled_())return {success:false,error:"กรุณารีโหลดหน้า POS เป็นรุ่นใหม่ก่อนบันทึก",code:"SALE_CLIENT_UPGRADE_REQUIRED",do_not_retry:false,result_unknown:false};var args=arguments;');
  source=replaceOnce(source,'    brewRefundAssertNoPending_();\n    return fn();','    brewRefundAssertNoPending_();\n    brewSaleAssertNoPending_();\n    return fn();');
@@ -42,7 +42,9 @@ function build(source){
  source=replaceOnce(source,"var orders=table(tables.orders,['order_id','order_status','payment_status','notes','updated_at']);","var orders=table(tables.orders,['order_id','order_status','payment_status','notes']);\n    var updatedColumn=orders.headers.indexOf('updated_at')>=0?'updated_at':orders.headers.indexOf('completed_at')>=0?'completed_at':null;\n    if(!updatedColumn)fail('MISSING_ORDER_TIMESTAMP_COLUMN');");
  source=replaceOnce(source,"set(orders,r,'updated_at',now),",'');
  source=replaceOnce(source,"+plan.reason+']'));","+plan.reason+']'));\n      if(updatedColumn==='updated_at')requests.push(set(orders,r,updatedColumn,now));");
- const modules=['recipe-stock-plan.js','recipe-stock-adapter.gs','sale-commit.js','sale-batch.js','sale-service.gs','sale-admin.gs'];
+ source=replaceOnce(source,"      get_orders_sheet:       function() { return getOrdersFromSheet(params); },","      get_kitchen_queue: function() { return brewKitchenQueue_(params); },\n      get_orders_sheet:       function() { return getOrdersFromSheet(params); },");
+ source=replaceOnce(source,"      cancel_order:         function() { return cancelOrder(body); },","      update_kitchen_status: function() { return brewKitchenUpdate_(body); },\n      cancel_order:         function() { return cancelOrder(body); },");
+ const modules=['recipe-stock-plan.js','recipe-stock-adapter.gs','sale-commit.js','sale-batch.js','sale-service.gs','sale-admin.gs','kitchen-service.gs'];
  const body=source+'\n'+core+'\n'+mods+'\n'+modules.map(f=>fs.readFileSync(path.join(__dirname,f),'utf8')).join('\n');
  const release=crypto.createHash('sha256').update(body).digest('hex');
  const out=body+'\nvar BREWOS_RECIPE_RELEASE_ID='+JSON.stringify(release)+';\n';
