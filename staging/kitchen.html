@@ -98,6 +98,7 @@ body { display:flex; flex-direction:column; }
 <div class="kds-notice" role="status" id="sync-notice">กำลังเชื่อมต่อสถานะครัว...</div>
 <div style="padding:6px 20px;display:flex;gap:12px;align-items:center"><label>วันที่ <input type="date" id="queue-date"></label><span id="cancelled-notice"></span><button class="kds-refresh" id="retry-kitchen" hidden>ตรวจและส่งสถานะเดิมอีกครั้ง</button></div>
 
+<details id="unrecorded" hidden><summary id="unrecorded-heading"></summary><div id="unrecorded-list"></div></details>
 <div class="kds-body">
   <div class="kds-col">
     <div class="kds-col-header">
@@ -197,7 +198,12 @@ function renderAll() {
   const orders = getDisplayOrders();
   const cancelled=orders.filter(o=>kitchenState[o.order_id]==='cancelled');
   document.getElementById('cancelled-notice').textContent=cancelled.length?'ยกเลิกแล้ว '+cancelled.map(o=>String(o.order_id).slice(-8)).join(', '):'';
-  const pending = orders.filter(o => kitchenState[o.order_id] === 'pending');
+  const historical = selectedDate() < dateKeyBkk(new Date());
+  const unrecorded = orders.filter(o=>historical && o.preparation_version===0 && o.preparation_status==='pending');
+  document.getElementById('unrecorded').hidden=!unrecorded.length;
+  document.getElementById('unrecorded-heading').textContent='ไม่พบประวัติสถานะครัว ('+unrecorded.length+')';
+  document.getElementById('unrecorded-list').textContent=unrecorded.map(o=>o.order_id).join(', ');
+  const pending = orders.filter(o => kitchenState[o.order_id] === 'pending' && !(historical && o.preparation_version===0));
   const making  = orders.filter(o => kitchenState[o.order_id] === 'making');
   const done    = orders.filter(o => kitchenState[o.order_id] === 'done');
 
