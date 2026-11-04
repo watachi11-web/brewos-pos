@@ -1,0 +1,25 @@
+name: Independent browser checks on synthetic staging
+on: [push]
+permissions:
+  contents: read
+jobs:
+  retest:
+    if: github.ref == 'refs/heads/qa/staging-v3-browser'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install --prefix "$RUNNER_TEMP/brew-qa" playwright@1.56.1
+      - run: |
+          "$RUNNER_TEMP/brew-qa/node_modules/.bin/playwright" install --with-deps chromium
+      - run: NODE_PATH="$RUNNER_TEMP/brew-qa/node_modules" node tools/staging/retest-v3.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: brewos-staging-browser-evidence
+          path: |
+            E-04.json
+            offline.png
+            reconnected.png
+            C-04.txt
+            pos-phone.png
