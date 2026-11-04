@@ -18,7 +18,7 @@ function initializeStaging(){
   modifier_options:[['option_id','group_id','name','ingredient_id','qty_used','unit','price_delta','is_default','is_active'],['MO-QA','MG-QA','QA extra ingredient','ING-001',10,'g',5,false,true]],
   product_modifier_groups:[['product_id','group_id','is_active'],['PRD-002','MG-QA',true]]
  };
- Object.keys(fixture).forEach(function(name){var sh=ss.insertSheet(name);sh.getRange(1,1,fixture[name].length,fixture[name][0].length).setValues(fixture[name]);sh.setFrozenRows(1);});
+ Object.keys(fixture).forEach(function(name){var sh=ss.insertSheet(name);if(name==='customers')sh.getRange(2,fixture[name][0].indexOf('phone')+1,sh.getMaxRows()-1,1).setNumberFormat('@');sh.getRange(1,1,fixture[name].length,fixture[name][0].length).setValues(fixture[name]);sh.setFrozenRows(1);});
  SpreadsheetApp.flush();brewRefundOriginal_ensureAccountingSchema_();
  props.setProperty('BREWOS_REFUND_ENABLED','v1');props.setProperty('BREWOS_SALE_ENABLED_'+ss.getId(),'raw-at-sale-v1');
  props.setProperty('BREWOS_STAGE_READY','6.2.7');
