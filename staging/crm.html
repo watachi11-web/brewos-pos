@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="staging-guard.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>[STAGING] CRM / Customers — BrewOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#143D2B; --green2:#1E5A3F; --orange:#F26C21;
+  --bg:#F7E9D6; --card:#ffffff; --border:#e8e2d6;
+  --text:#1a2e1a; --muted:#6b7d68;
+  --gold:#D97706; --gold-bg:#FFFBEB;
+  --silver:#6B7280; --silver-bg:#F9FAFB;
+  --bronze:#92400E; --bronze-bg:#FEF3C7;
+  --success:#16A34A; --success-bg:#F0FDF4;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:var(--bg); color:var(--text); overflow-x:hidden; }
+.app { display:flex; height:100vh; }
+.sidebar { width:220px; background:var(--green); display:flex; flex-direction:column; flex-shrink:0; padding:0 0 16px; }
+.main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+.sidebar-logo { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:8px; }
+.sidebar-logo span { font-family:'Poppins',sans-serif; font-size:13px; color:#fff; }
+.sidebar-logo-sub { font-size:9px; color:rgba(255,255,255,0.5); margin-top:6px; letter-spacing:0.08em; text-transform:uppercase; padding:0 20px; }
+.nav-section { padding:12px 12px 4px; flex:1; overflow-y:auto; }
+.nav-label { font-size:9px; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.1em; font-weight:600; padding:0 8px; margin-bottom:6px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; font-size:12.5px; color:rgba(255,255,255,0.65); cursor:pointer; transition:all 0.15s; text-decoration:none; margin-bottom:1px; }
+.nav-item:hover { background:rgba(255,255,255,0.08); color:#fff; }
+.nav-item.active { background:rgba(255,255,255,0.15); color:#fff; font-weight:500; }
+.nav-icon { width:16px; text-align:center; font-size:13px; }
+.sidebar-footer { padding:12px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:11px; color:rgba(255,255,255,0.4); }
+
+.topbar { background:var(--bg); padding:20px 28px 0; flex-shrink:0; }
+.topbar-top { display:flex; align-items:center; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+.topbar-title { font-family:'Poppins',sans-serif; font-size:24px; font-weight:600; }
+.brand-switch { display:flex; gap:4px; background:var(--card); padding:4px; border-radius:10px; border:1px solid var(--border); }
+.brand-tab { padding:7px 16px; border-radius:7px; font-size:12px; font-weight:500; cursor:pointer; color:var(--muted); border:none; background:transparent; transition:all 0.15s; font-family:'Anuphan','Poppins',sans-serif; }
+.brand-tab.active { background:var(--green); color:#fff; }
+.topbar-actions { margin-left:auto; display:flex; gap:8px; }
+.btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:500; cursor:pointer; border:none; font-family:'Anuphan','Poppins',sans-serif; transition:all 0.15s; display:inline-flex; align-items:center; gap:6px; }
+.btn-ghost { background:var(--card); color:var(--text); border:1px solid var(--border); }
+.btn-ghost:hover { background:#faf8f3; border-color:#d5cdbb; }
+.btn-primary { background:var(--green); color:#fff; }
+.btn-primary:hover { background:var(--green2); }
+.btn-sm { padding:6px 12px; font-size:11.5px; }
+.btn:disabled { opacity:.5; pointer-events:none; }
+
+.content { flex:1; overflow-y:auto; padding:20px 28px 28px; }
+
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.kpi-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
+.kpi-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; font-weight:600; }
+.kpi-value { font-size:22px; font-weight:700; }
+.kpi-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+
+.filter-row { display:flex; gap:8px; margin-bottom:16px; align-items:center; flex-wrap:wrap; }
+.search-wrap { position:relative; }
+.search-input { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px 9px 36px; font-size:12.5px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; width:240px; }
+.search-input:focus { border-color:var(--green2); }
+.search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:0.4; pointer-events:none; }
+.select-filter { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px; font-size:12.5px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; cursor:pointer; }
+
+.table-card { background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+.table-header { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; background:var(--green); font-size:10.5px; color:rgba(255,255,255,0.85); text-transform:uppercase; letter-spacing:0.07em; font-weight:700; }
+.table-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr; gap:12px; padding:13px 18px; border-bottom:1px solid var(--border); align-items:center; transition:background 0.1s; }
+.table-row:last-child { border-bottom:none; }
+.table-row:hover { background:#faf8f3; }
+
+.member-avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; flex-shrink:0; }
+.member-name { font-size:13px; font-weight:600; color:var(--text); }
+.member-id { font-size:10.5px; color:var(--muted); margin-top:1px; }
+
+.tier-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700; }
+.tier-Gold   { background:var(--gold-bg); color:var(--gold); }
+.tier-Silver { background:var(--silver-bg); color:var(--silver); }
+.tier-Bronze { background:var(--bronze-bg); color:var(--bronze); }
+
+.points-bar-wrap { width:100%; height:4px; background:var(--bg); border-radius:2px; margin-top:4px; }
+.points-bar { height:100%; border-radius:2px; background:var(--green2); }
+
+.empty-state { padding:60px 24px; text-align:center; color:var(--muted); }
+
+.modal-overlay { position:fixed; inset:0; background:rgba(26,46,26,0.4); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.modal-overlay.show { opacity:1; pointer-events:all; }
+.modal { background:var(--card); border-radius:18px; width:460px; max-height:85vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+.modal-header { padding:20px 24px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-size:15px; font-weight:600; }
+.modal-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+.modal-body { padding:20px 24px; }
+.form-group { margin-bottom:16px; }
+.form-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; display:block; font-weight:600; }
+.form-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; color:var(--text); font-family:'Anuphan','Poppins',sans-serif; outline:none; }
+.form-input:focus { border-color:var(--green2); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-footer { display:flex; gap:8px; justify-content:flex-end; padding-top:4px; }
+.form-hint { font-size:10.5px; color:var(--muted); margin-top:6px; line-height:1.5; }
+
+.detail-panel { position:fixed; right:0; top:0; bottom:0; width:360px; background:var(--card); border-left:1px solid var(--border); transform:translateX(100%); transition:transform 0.25s; z-index:150; display:flex; flex-direction:column; }
+.detail-panel.open { transform:translateX(0); }
+.detail-header { padding:20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.detail-body { flex:1; overflow-y:auto; padding:20px; }
+.detail-close { background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+.detail-stat { background:var(--bg); border-radius:12px; padding:14px; margin-bottom:12px; }
+.detail-stat-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em; font-weight:600; margin-bottom:4px; }
+.detail-stat-value { font-size:18px; font-weight:700; }
+.points-input-row { display:flex; gap:8px; margin-top:12px; }
+.points-input { flex:1; background:var(--bg); border:1px solid var(--border); border-radius:9px; padding:9px 12px; font-size:13px; font-family:'Anuphan','Poppins',sans-serif; outline:none; color:var(--text); }
+</style>
+<link rel="stylesheet" href="navigation.css?v=1">
+</head>
+<body class="brewos-staging-classic-nav"><div id="stage-banner" style="background:#842029;color:white;padding:8px;text-align:center;font:700 14px sans-serif;flex-shrink:0;z-index:99999">STAGING / ทดสอบเท่านั้น — ข้อมูลสมมติ ไม่ใช่ยอดร้านจริง</div>
+<div class="app">
+  <div class="sidebar">
+    <div class="sidebar-logo"><img src="logo-hh-icon.png" style="width:32px;height:32px;object-fit:contain;flex-shrink:0" onerror="this.style.display='none'"> <span>Brain Brew × Heng Heng</span></div>
+    <div class="sidebar-logo-sub">Back Office</div>
+    <div class="nav-section">
+      <div class="nav-label" style="margin-top:14px">Main</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">▦</span>Dashboard</a>
+      <a href="pos.html" class="nav-item"><span class="nav-icon">🛒</span>POS System</a>
+      <div class="nav-label" style="margin-top:14px">Operations</div>
+      <a href="inventory.html" class="nav-item"><span class="nav-icon">📦</span>Inventory / อุปกรณ์</a>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">📝</span>Recipes</a>
+      <div class="nav-label" style="margin-top:14px">Business</div>
+      <a href="crm.html" class="nav-item active"><span class="nav-icon">👥</span>CRM / ลูกค้า</a>
+      <a href="finance.html" class="nav-item"><span class="nav-icon">💰</span>Finance</a>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span>Reports</a>
+      <div class="nav-label" style="margin-top:14px">Settings</div>
+      <a href="dashboard.html" class="nav-item"><span class="nav-icon">⚙️</span>Settings</a>
+    </div>
+    <div class="sidebar-footer" id="staff-footer">Owner · All Brands</div>
+  </div>
+
+  <div class="main">
+    <nav class="brewos-staging-home-nav" aria-label="กลับหน้าหลัก"><a class="brewos-staging-home-link" href="dashboard.html">← หน้าหลัก</a></nav>
+    <div class="topbar">
+      <div class="topbar-top">
+        <div class="topbar-title">CRM / Customers</div>
+        <div class="brand-switch">
+          <button class="brand-tab active" onclick="switchBrand('', this)">All</button>
+          <button class="brand-tab" onclick="switchBrand('BB', this)">Brain Brew</button>
+          <button class="brand-tab" onclick="switchBrand('HH', this)">Heng Heng</button>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost" onclick="loadCustomers()">⟳ Refresh</button>
+          <button class="btn btn-primary" onclick="UI.openModal('add-modal')">+ Add Customer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Customers</div>
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-sub">Registered</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Gold Customers</div>
+          <div class="kpi-value" id="kpi-gold" style="color:var(--gold)">—</div>
+          <div class="kpi-sub">≥ ฿2,000 spent</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Silver Customers</div>
+          <div class="kpi-value" id="kpi-silver" style="color:var(--silver)">—</div>
+          <div class="kpi-sub">≥ ฿1,000 spent</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Points Issued</div>
+          <div class="kpi-value" id="kpi-points">—</div>
+          <div class="kpi-sub">Outstanding points</div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <div class="search-wrap">
+          <svg class="search-icon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#6b7d68" stroke-width="1.5"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg>
+          <input class="search-input" type="text" placeholder="Search customers…" oninput="filterCustomers(this.value)">
+        </div>
+        <select class="select-filter" onchange="filterByTier(this.value)">
+          <option value="">All Tiers</option>
+          <option value="Gold">🥇 Gold</option>
+          <option value="Silver">🥈 Silver</option>
+          <option value="Bronze">🥉 Bronze</option>
+        </select>
+        <span style="margin-left:auto;font-size:11.5px;color:var(--muted)" id="customer-count">0 customers</span>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div>Customer</div>
+          <div>Tier</div>
+          <div>Points</div>
+          <div>Total Spent</div>
+          <div>Joined</div>
+          <div style="text-align:right">Actions</div>
+        </div>
+        <div id="customer-body">
+          <div class="empty-state">⏳ Loading…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div style="font-size:14px;font-weight:600" id="detail-name">Customer Detail</div>
+    <button class="detail-close" onclick="closeDetail()">×</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New Customer</div>
+      <button class="modal-close" onclick="UI.closeModal('add-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" id="add-name" placeholder="e.g. สมชาย ใจดี">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" type="tel" id="add-phone" placeholder="0812345678">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Brand</label>
+          <select class="form-input" id="add-brand">
+            <option value="SHARED">Shared / ใช้ร่วมกัน</option>
+            <option value="BB">Brain Brew</option>
+            <option value="HH">Heng Heng</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email (optional)</label>
+        <input class="form-input" type="email" id="add-email" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input class="form-input" type="text" id="add-notes" placeholder="e.g. ลูกค้าขาประจำ, แพ้ถั่ว">
+      </div>
+      <div class="form-footer">
+        <button class="btn btn-ghost" onclick="UI.closeModal('add-modal')">Cancel</button>
+        <button class="btn btn-primary" id="save-customer-btn" onclick="saveCustomer()">Add Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="ui-safe.js?v=1"></script>
+<script src="api.js"></script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// #CUSTFIX — เปลี่ยนจาก members (ตัดทิ้งไปแล้ว) มาใช้ customers แทน
+// API.members()/createMember()/addMemberPoints() ที่ไม่มีอยู่แล้วในระบบ ถูกเปลี่ยนเป็น
+// API.customers()/createCustomer()/addCustomerPoints() ทั้งหมด
+// ⚠️ customers เป็นข้อมูลแยกตามแบรนด์ (มี brand_id) ต่างจาก members เดิมที่เป็น global
+// เลยเพิ่มตัวเลือกแบรนด์เข้ามาในฟอร์มเพิ่มลูกค้า + แถบสลับแบรนด์ด้านบน
+// ═══════════════════════════════════════════════════════════
+let CUSTOMERS = [];
+let filterText = '';
+let filterTier = '';
+let activeBrand = '';
+
+document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
+
+function fmt(n) { return '฿' + Math.round(Number(n||0)).toLocaleString('en-US'); }
+
+function avatarColor(name) {
+  const colors = ['#143D2B','#1E5A3F','#F26C21','#6366F1','#0EA5E9','#D97706'];
+  let hash = 0;
+  for (let i=0; i<name.length; i++) hash = name.charCodeAt(i) + hash * 31;
+  return colors[Math.abs(hash) % colors.length];
+}
+
+async function loadCustomers() {
+  try {
+    CUSTOMERS = await API.customers(activeBrand ? { brand_id: activeBrand } : {});
+  } catch(e) {
+    console.error('loadCustomers:', e);
+    UI.toast('โหลดลูกค้าไม่สำเร็จ: ' + e.message, 'error');
+    CUSTOMERS = [];
+  }
+  renderKPIs();
+  renderCustomers();
+}
+
+document.addEventListener('DOMContentLoaded', loadCustomers);
+
+function switchBrand(brand, btn) {
+  activeBrand = brand;
+  document.querySelectorAll('.brand-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadCustomers();
+}
+
+function renderKPIs() {
+  document.getElementById('kpi-total').textContent = CUSTOMERS.length;
+  document.getElementById('kpi-gold').textContent = CUSTOMERS.filter(c=>c.tier==='Gold').length;
+  document.getElementById('kpi-silver').textContent = CUSTOMERS.filter(c=>c.tier==='Silver').length;
+  document.getElementById('kpi-points').textContent = CUSTOMERS.reduce((s,c)=>s+Number(c.points||0),0).toLocaleString();
+}
+
+function getFiltered() {
+  return CUSTOMERS.filter(c => {
+    if (filterTier && c.tier !== filterTier) return false;
+    if (filterText && !(c.full_name||'').toLowerCase().includes(filterText) && !(c.phone||'').includes(filterText)) return false;
+    return true;
+  });
+}
+
+function filterCustomers(q) { filterText = q.toLowerCase(); renderCustomers(); }
+function filterByTier(t)  { filterTier = t; renderCustomers(); }
+
+function renderCustomers() {
+  const items = getFiltered();
+  document.getElementById('customer-count').textContent = `${items.length} customer${items.length!==1?'s':''}`;
+
+  const body = document.getElementById('customer-body');
+  if (!items.length) {
+    body.innerHTML = `<div class="empty-state">No customers found</div>`;
+    return;
+  }
+
+  const maxPts = Math.max(...CUSTOMERS.map(c=>Number(c.points||0)), 1);
+
+  body.innerHTML = items.map(c => {
+    const initials = (c.full_name||'').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase() || '?';
+    const color = avatarColor(c.full_name||'?');
+    const pct = Math.min(100, (Number(c.points||0)/maxPts)*100);
+    const tier = ['Gold','Silver','Bronze'].includes(c.tier) ? c.tier : 'Bronze';
+
+    return `
+      <div class="table-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="member-avatar" style="background:${color}">${BrewUI.html(initials)}</div>
+          <div>
+            <div class="member-name">${BrewUI.html(c.full_name)}</div>
+            <div class="member-id">${BrewUI.html(c.customer_id)}${c.phone ? ' · ' + BrewUI.html(c.phone) : ''}${c.brand_id ? ' · ' + BrewUI.html(c.brand_id) : ''}</div>
+          </div>
+        </div>
+        <div><span class="tier-badge tier-${tier}">${tier==='Gold'?'🥇':tier==='Silver'?'🥈':'🥉'} ${tier}</span></div>
+        <div>
+          <div style="font-size:13px;font-weight:600">${Number(c.points||0).toLocaleString()} pts</div>
+          <div class="points-bar-wrap"><div class="points-bar" style="width:${pct}%"></div></div>
+        </div>
+        <div style="font-size:13px;font-weight:500">${fmt(c.total_spent)}</div>
+        <div style="font-size:12px;color:var(--muted)">${(c.join_date || c.created_at) ? BrewUI.html(String(c.join_date || c.created_at).slice(0,10)) : '—'}</div>
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-sm" data-customer-id="${BrewUI.html(c.customer_id)}">View</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  body.querySelectorAll('[data-customer-id]').forEach(btn=>btn.addEventListener('click',()=>openDetail(btn.dataset.customerId)));
+}
+
+function openDetail(customerId) {
+  const c = CUSTOMERS.find(x => x.customer_id === customerId);
+  if (!c) return;
+  const tier = ['Gold','Silver','Bronze'].includes(c.tier) ? c.tier : 'Bronze';
+
+  document.getElementById('detail-name').textContent = c.full_name;
+  document.getElementById('detail-panel').classList.add('open');
+
+  const nextTier = tier === 'Bronze' ? { name:'Silver', need:1000 } : tier === 'Silver' ? { name:'Gold', need:2000 } : null;
+  const totalSpent = Number(c.total_spent || 0);
+  const progressPct = nextTier ? Math.min(100, (totalSpent/nextTier.need)*100) : 100;
+
+  document.getElementById('detail-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+      <div class="member-avatar" style="background:${avatarColor(c.full_name)};width:50px;height:50px;font-size:18px">${BrewUI.html((c.full_name||'?').slice(0,2).toUpperCase())}</div>
+      <div>
+        <div style="font-size:16px;font-weight:700">${BrewUI.html(c.full_name)}</div>
+        <div style="margin-top:4px"><span class="tier-badge tier-${tier}">${tier==='Gold'?'🥇':tier==='Silver'?'🥈':'🥉'} ${tier}</span></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="detail-stat">
+        <div class="detail-stat-label">Points</div>
+        <div class="detail-stat-value">${Number(c.points||0).toLocaleString()}</div>
+      </div>
+      <div class="detail-stat">
+        <div class="detail-stat-label">Total Spent</div>
+        <div class="detail-stat-value" style="font-size:15px">${fmt(totalSpent)}</div>
+      </div>
+    </div>
+
+    ${nextTier ? `
+      <div style="background:var(--bg);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Progress to ${nextTier.name}</div>
+        <div style="height:6px;background:var(--border);border-radius:3px;margin-bottom:6px">
+          <div style="width:${progressPct}%;height:100%;border-radius:3px;background:var(--green2)"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">${fmt(totalSpent)} / ${fmt(nextTier.need)} — ${fmt(nextTier.need - totalSpent)} more to ${nextTier.name}</div>
+      </div>
+    ` : `
+      <div style="background:var(--gold-bg);border:1px solid #FDE68A;border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--gold);font-weight:500">🥇 Gold customer — highest tier!</div>
+    `}
+
+    ${c.phone ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">📞 ${BrewUI.html(c.phone)}</div>` : ''}
+    ${c.email ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">✉️ ${BrewUI.html(c.email)}</div>` : ''}
+    ${c.brand_id ? `<div style="font-size:12.5px;color:var(--muted);margin-bottom:6px">🏷️ ${BrewUI.html(c.brand_id)}</div>` : ''}
+    ${c.notes ? `<div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px;margin:10px 0">${BrewUI.html(c.notes)}</div>` : ''}
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px">Joined: ${(c.join_date || c.created_at) ? BrewUI.html(String(c.join_date || c.created_at).slice(0,10)) : '—'}</div>
+
+    <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Add Points / Purchase</div>
+    <div class="points-input-row">
+      <input class="points-input" type="number" id="pts-input" placeholder="Points to add" min="0">
+      <input class="points-input" type="number" id="pts-amount" placeholder="Purchase amount (฿)">
+      <button class="btn btn-primary btn-sm" id="give-points-btn" >Add</button>
+    </div>
+    <div class="form-hint">กรอกยอดซื้อ (฿) เพื่ออัปเดต total spent + tier อัตโนมัติ ส่วนแต้มจะใส่หรือเว้นว่างไว้ก็ได้</div>
+  `;
+  document.getElementById('give-points-btn').addEventListener('click',()=>givePoints(c.customer_id));
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+async function givePoints(customerId) {
+  const pts = parseInt(document.getElementById('pts-input').value) || 0;
+  const amount = parseFloat(document.getElementById('pts-amount').value) || 0;
+  if (!pts && !amount) { UI.toast('กรอกแต้มหรือยอดซื้ออย่างน้อย 1 อย่าง', 'error'); return; }
+
+  const btn = document.getElementById('give-points-btn');
+  UI.loading(btn, true);
+  try {
+    await API.addCustomerPoints({ customer_id: customerId, points: pts, amount });
+    UI.toast('อัปเดตแล้ว');
+    await loadCustomers();
+    openDetail(customerId);
+  } catch(e) {
+    UI.toast('Failed: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+  }
+}
+
+async function saveCustomer() {
+  const name = document.getElementById('add-name').value.trim();
+  if (!name) { UI.toast('Please enter a name.', 'error'); return; }
+
+  const btn = document.getElementById('save-customer-btn');
+  UI.loading(btn, true);
+  try {
+    await API.createCustomer({
+      name,
+      brand_id: document.getElementById('add-brand').value,
+      phone: document.getElementById('add-phone').value.trim(),
+      email: document.getElementById('add-email').value.trim(),
+      notes: document.getElementById('add-notes').value.trim(),
+    });
+    UI.toast('เพิ่มลูกค้าใหม่แล้ว');
+    UI.closeModal('add-modal');
+    ['add-name','add-phone','add-email','add-notes'].forEach(id => { document.getElementById(id).value = ''; });
+    await loadCustomers();
+  } catch(e) {
+    UI.toast('Failed: ' + e.message, 'error');
+  } finally {
+    UI.loading(btn, false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.modal-overlay').forEach(o => {
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('show'); });
+  });
+});
+</script>
+</body>
+</html>
