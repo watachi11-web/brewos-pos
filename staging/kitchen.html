@@ -130,12 +130,14 @@ body { display:flex; flex-direction:column; }
 <script>
 const kitchenState = {};
 let ACTIVE_BRAND = 'ALL', ALL_ORDERS = [], loading = false, saving = false, synced = false, lastUpdateError = '';
+let queueGeneration = 0, requestedDate = '', loadedDate = '';
+function selectedDate() { return document.getElementById('queue-date').value; }
 const PENDING_KEY = 'brewos_staging_kitchen_pending_v1';
 let pendingUpdate = null;
 try { pendingUpdate = JSON.parse(localStorage.getItem(PENDING_KEY) || 'null'); } catch(e) { pendingUpdate = {invalid:true}; }
 function notice(text) { document.getElementById('sync-notice').textContent = text; }
 function updateControls() {
- document.querySelectorAll('[data-next-status]').forEach(b=>b.disabled=saving||loading||!synced||!!pendingUpdate);
+ document.querySelectorAll('[data-next-status]').forEach(b=>b.disabled=saving||loading||!synced||loadedDate!==selectedDate()||!!pendingUpdate);
  document.getElementById('retry-kitchen').hidden=!pendingUpdate;
  document.getElementById('retry-kitchen').disabled=saving||!!pendingUpdate?.invalid;
 }
@@ -156,20 +158,35 @@ function timeLabel(mins) { return mins < 60 ? `${mins}m` : `${Math.floor(mins/60
 function timerClass(mins) { return mins < 10 ? 'timer-ok' : mins < 20 ? 'timer-warn' : 'timer-urgent'; }
 
 async function loadOrders() {
-  if(loading||saving)return;
-  loading=true;updateControls();
-  const date=document.getElementById('queue-date').value;
+  const date = selectedDate();
+  if (loading && requestedDate === date) return;
+  const generation = ++queueGeneration;
+  requestedDate = date;
+  if (loadedDate !== date) {
+    synced = false;
+    ALL_ORDERS = [];
+    renderAll();
+  }
+  loading = false;
+  updateControls();
+  if (saving || !date) return;
+  loading = true;
+  updateControls();
   try {
-    const queue=await apiGet('get_kitchen_queue',{date});
-    if(document.getElementById('queue-date').value!==date){loading=false;return loadOrders();}
-    if(!queue||!Array.isArray(queue.orders))throw Error('รูปแบบข้อมูลครัวไม่ถูกต้อง');
+    const queue = await apiGet('get_kitchen_queue', {date});
+    if (generation !== queueGeneration || date !== selectedDate()) return;
+    if (queue?.date !== date || !Array.isArray(queue.orders)) throw Error('วันที่หรือรูปแบบข้อมูลครัวไม่ถูกต้อง');
+    loadedDate = date;
     ALL_ORDERS=queue.orders;
     ALL_ORDERS.forEach(o=>kitchenState[o.order_id]=o.preparation_status);
     synced=true;
     notice(lastUpdateError || (pendingUpdate?'มีการเปลี่ยนสถานะรอตรวจผล กดตรวจและส่งสถานะเดิมอีกครั้ง':'บันทึกสถานะที่ระบบแล้ว • ซิงก์ทุก 15 วินาที • ล่าสุด '+new Date().toLocaleTimeString('th-TH')));
   } catch(e) {
+    if (generation !== queueGeneration || date !== selectedDate()) return;
     synced=false;notice('ซิงก์ไม่สำเร็จ — ข้อมูลที่แสดงอาจเก่า: '+e.message);
-  } finally { loading=false;renderAll();updateControls(); }
+  } finally {
+    if (generation === queueGeneration) { loading=false;renderAll();updateControls(); }
+  }
 }
 
 function getDisplayOrders() {
@@ -238,7 +255,7 @@ function renderCard(o, status) {
 
 document.addEventListener('click',event=>{const button=event.target.closest('[data-order-id][data-next-status]');if(button&&['pending','making','done'].includes(button.dataset.nextStatus))moveOrder(button.dataset.orderId,button.dataset.nextStatus);});
 async function moveOrder(orderId,newStatus) {
- if(saving||loading||!synced||pendingUpdate)return;
+ if(saving||loading||!synced||loadedDate!==selectedDate()||pendingUpdate)return;
  const o=ALL_ORDERS.find(o=>o.order_id===orderId);if(!o)return;
  const request={operation_id:'KDS-'+crypto.randomUUID(),order_id:orderId,status:newStatus,expected_version:o.preparation_version};
  try{localStorage.setItem(PENDING_KEY,JSON.stringify(request));}catch(e){notice('บันทึกรายการรอตรวจไม่ได้ กรุณาเปิดพื้นที่จัดเก็บของเบราว์เซอร์');return;}
