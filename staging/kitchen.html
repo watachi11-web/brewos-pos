@@ -137,10 +137,11 @@ const PENDING_KEY = 'brewos_staging_kitchen_pending_v1';
 let pendingUpdate = null;
 try { pendingUpdate = JSON.parse(localStorage.getItem(PENDING_KEY) || 'null'); } catch(e) { pendingUpdate = {invalid:true}; }
 function notice(text) { document.getElementById('sync-notice').textContent = text; }
+function offline() { return typeof navigator !== 'undefined' && navigator.onLine === false; }
 function updateControls() {
- document.querySelectorAll('[data-next-status]').forEach(b=>b.disabled=saving||loading||!synced||loadedDate!==selectedDate()||!!pendingUpdate);
+ document.querySelectorAll('[data-next-status]').forEach(b=>b.disabled=offline()||saving||loading||!synced||loadedDate!==selectedDate()||!!pendingUpdate);
  document.getElementById('retry-kitchen').hidden=!pendingUpdate;
- document.getElementById('retry-kitchen').disabled=saving||!!pendingUpdate?.invalid;
+ document.getElementById('retry-kitchen').disabled=offline()||saving||!!pendingUpdate?.invalid;
 }
 
 function dateKeyBkk(val) {
@@ -170,6 +171,7 @@ async function loadOrders() {
   }
   loading = false;
   updateControls();
+  if (offline()) { synced=false; notice('ออฟไลน์ — เชื่อมต่ออินเทอร์เน็ตเพื่อซิงก์คิวครัว'); updateControls(); return; }
   if (saving || !date) return;
   loading = true;
   updateControls();
@@ -261,14 +263,14 @@ function renderCard(o, status) {
 
 document.addEventListener('click',event=>{const button=event.target.closest('[data-order-id][data-next-status]');if(button&&['pending','making','done'].includes(button.dataset.nextStatus))moveOrder(button.dataset.orderId,button.dataset.nextStatus);});
 async function moveOrder(orderId,newStatus) {
- if(saving||loading||!synced||loadedDate!==selectedDate()||pendingUpdate)return;
+ if(offline()||saving||loading||!synced||loadedDate!==selectedDate()||pendingUpdate)return;
  const o=ALL_ORDERS.find(o=>o.order_id===orderId);if(!o)return;
  const request={operation_id:'KDS-'+crypto.randomUUID(),order_id:orderId,status:newStatus,expected_version:o.preparation_version};
  try{localStorage.setItem(PENDING_KEY,JSON.stringify(request));}catch(e){notice('บันทึกรายการรอตรวจไม่ได้ กรุณาเปิดพื้นที่จัดเก็บของเบราว์เซอร์');return;}
  pendingUpdate=request;await sendKitchenUpdate();
 }
 async function sendKitchenUpdate(){
- if(saving||!pendingUpdate||pendingUpdate.invalid)return;
+ if(offline()||saving||!pendingUpdate||pendingUpdate.invalid)return;
  saving=true;lastUpdateError='';updateControls();notice('กำลังบันทึกสถานะ...');
  try{
   const result=await apiPost('update_kitchen_status',pendingUpdate);
@@ -297,6 +299,11 @@ function updateClock() {
   document.getElementById('kds-clock').textContent = new Date().toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit', timeZone:'Asia/Bangkok'});
 }
 
+window.addEventListener('offline', () => {
+  ++queueGeneration; loading=false; synced=false;
+  notice('ออฟไลน์ — เชื่อมต่ออินเทอร์เน็ตเพื่อซิงก์คิวครัว'); updateControls();
+});
+window.addEventListener('online', loadOrders);
 setInterval(loadOrders, 15000);
 setInterval(updateClock, 1000);
 updateClock();
