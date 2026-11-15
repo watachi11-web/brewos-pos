@@ -422,6 +422,7 @@ button{cursor:pointer}
   <div class="modal">
     <div class="modal-head"><span class="modal-title">👥 เลือกลูกค้า</span><button class="modal-x" onclick="cm('memberModal')">✕</button></div>
     <input class="modal-inp" type="text" id="mSearch" placeholder="ค้นหาชื่อหรือเบอร์..." oninput="searchMember(this.value)">
+    <button type="button" class="modal-btn mbtn-cancel" id="refreshMembers">รีเฟรชสมาชิก</button><span id="memberRefreshStatus" role="status"></span>
     <div id="mResults"></div>
     <div class="modal-row">
       <button class="modal-btn mbtn-cancel" onclick="selectMember(null)">ลูกค้าทั่วไป</button>
@@ -757,14 +758,33 @@ function applyNote() { orderNote = document.getElementById('noteInput').value.tr
 let _customersCache = null;
 function openMemberModal() { om('memberModal'); document.getElementById('mSearch').value = ''; document.getElementById('mResults').innerHTML = ''; }
 let memberSearchVersion=0;
+let customerLoad=null;
+function loadCustomers(force=false){
+  if(!force && _customersCache)return Promise.resolve(_customersCache);
+  if(!force && customerLoad)return customerLoad;
+  const request=API.customers().then(rows=>rows.map(BrewUI.customer));
+  customerLoad=request;
+  return request.then(rows=>{if(customerLoad===request)_customersCache=rows;return rows;})
+    .finally(()=>{if(customerLoad===request)customerLoad=null;});
+}
+document.getElementById('refreshMembers').addEventListener('click',async()=>{
+  const button=document.getElementById('refreshMembers'),status=document.getElementById('memberRefreshStatus');
+  button.disabled=true;status.textContent=' กำลังโหลด…';memberSearchVersion++;
+  try{
+    await loadCustomers(true);
+    await searchMember(document.getElementById('mSearch').value);
+    status.textContent=' อัปเดตแล้ว';
+  }catch(e){status.textContent=' โหลดไม่สำเร็จ: '+e.message;}
+  finally{button.disabled=false;}
+});
 async function searchMember(q) {
   const version=++memberSearchVersion, box=document.getElementById('mResults');
   box.replaceChildren();if(!q.trim())return;
   try {
-    if (!_customersCache) _customersCache=(await API.customers()).map(BrewUI.customer);
+    const customers=await loadCustomers();
     if(version!==memberSearchVersion)return;
     const query=q.trim().toLocaleLowerCase();
-    const hits=_customersCache.filter(c=>c.full_name.toLocaleLowerCase().includes(query)||c.phone.includes(query));
+    const hits=customers.filter(c=>c.full_name.toLocaleLowerCase().includes(query)||c.phone.includes(query));
     if(!hits.length){box.textContent='ไม่พบลูกค้า';return;}
     hits.slice(0,5).forEach(c=>{const button=document.createElement('button');button.type='button';button.style.cssText='display:block;padding:8px 12px;width:100%;text-align:left';button.textContent=c.full_name+' · '+(c.phone||'-')+' · แต้ม '+(Number(c.points)||0);button.addEventListener('click',()=>pickMember(c));box.append(button);});
   }catch(e){if(version===memberSearchVersion)box.textContent='ค้นหาไม่สำเร็จ: '+e.message;}

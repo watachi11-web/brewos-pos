@@ -44,7 +44,14 @@ function build(source){
  source=replaceOnce(source,"+plan.reason+']'));","+plan.reason+']'));\n      if(updatedColumn==='updated_at')requests.push(set(orders,r,updatedColumn,now));");
  source=replaceOnce(source,"      get_orders_sheet:       function() { return getOrdersFromSheet(params); },","      get_kitchen_queue: function() { return brewKitchenQueue_(params); },\n      get_orders_sheet:       function() { return getOrdersFromSheet(params); },");
  source=replaceOnce(source,"      cancel_order:         function() { return cancelOrder(body); },","      update_kitchen_status: function() { return brewKitchenUpdate_(body); },\n      cancel_order:         function() { return cancelOrder(body); },");
- const modules=['recipe-stock-plan.js','recipe-stock-adapter.gs','sale-commit.js','sale-batch.js','sale-service.gs','sale-admin.gs','kitchen-service.gs'];
+ source=replaceOnce(source,'appendRowByHeader(sheet, {\n      customer_id: newId','brewAppendCustomer_(sheet, {\n      customer_id: newId');
+ const customerStart=source.indexOf('function brewRefundOriginal_updateCustomer_(');
+ const customerEnd=source.indexOf('function brewRefundOriginal_addCustomerPoints_(',customerStart);
+ const updateSource=source.slice(customerStart,customerEnd);
+ const updatedCustomer=replaceOnce(updateSource,'if (col !== -1 && body[field] !== undefined) sheet.getRange(r + 1, col + 1).setValue(body[field]);',
+   "if (col === -1 || body[field] === undefined) return;\n          if (field === 'phone') brewUpdateCustomerPhone_(sheet, r, col, body[field]);\n          else sheet.getRange(r + 1, col + 1).setValue(body[field]);");
+ source=replaceOnce(source,updateSource,updatedCustomer);
+ const modules=['recipe-stock-plan.js','recipe-stock-adapter.gs','sale-commit.js','sale-batch.js','sale-service.gs','sale-admin.gs','kitchen-service.gs','customer-phone.gs'];
  const body=source+'\n'+core+'\n'+mods+'\n'+modules.map(f=>fs.readFileSync(path.join(__dirname,f),'utf8')).join('\n');
  const release=crypto.createHash('sha256').update(body).digest('hex');
  const out=body+'\nvar BREWOS_RECIPE_RELEASE_ID='+JSON.stringify(release)+';\n';
