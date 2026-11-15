@@ -3,6 +3,10 @@ const source=fs.readFileSync(require('node:path').join(__dirname,'../backend/kit
 function fixture(){
  const tables={orders:[{order_id:'A',created_at:'2026-10-30',order_status:'completed',payment_status:'paid',brand_id:'HH'}],order_lines:[{order_id:'A',line_id:'L',quantity:2,product_name:'Tea'}],order_line_modifiers:[{line_id:'L',option_name:'No sugar'}],kitchen_events:[]};
  let writes=0,lose=false;const ctx=vm.createContext({CONFIG:{SPREADSHEET_ID:'test'},SpreadsheetApp:{openById:()=>({}),flush(){if(lose){lose=false;throw Error('RESPONSE_LOST');}}},Utilities:{formatDate:()=> '2026-10-30'},normalizeDateKey_:v=>String(v).slice(0,10),normalizeDateTimeBkk_:v=>v,brewRefundWithSnapshot_:f=>f(),brewRecipeTable_:(ss,name)=>({headers:ctx.BREWOS_KITCHEN_HEADERS,rows:tables[name],sheet:{appendRow(row){writes++;tables[name].push(Object.fromEntries(ctx.BREWOS_KITCHEN_HEADERS.map((h,i)=>[h,row[i]])));}}})});vm.runInContext(source,ctx);
+ ctx.Sheets={Spreadsheets:{Values:{batchGet:()=>({valueRanges:['orders','order_lines','order_line_modifiers','kitchen_events'].map(key=>{
+   const headers=key==='kitchen_events'?ctx.BREWOS_KITCHEN_HEADERS:Object.keys(tables[key][0]);
+   return {values:[headers,...tables[key].map(r=>headers.map(h=>r[h]))]};
+ })})}}};
  return {ctx,tables,get writes(){return writes},lose(){lose=true},update:(status,v,op='KDS-1234567890123456')=>ctx.brewKitchenUpdate_({order_id:'A',status,expected_version:v,operation_id:op}),queue:()=>ctx.brewKitchenQueue_({date:'2026-10-30'}).orders};
 }
 test('preparation persists independently of paid/completed financial status and reloads with modifiers',()=>{const f=fixture(),before=JSON.stringify(f.tables.orders);assert.equal(f.queue()[0].preparation_status,'pending');f.update('making',0);assert.equal(f.queue()[0].preparation_status,'making');assert.equal(f.queue()[0].items[0].qty,2);assert.equal(f.queue()[0].items[0].modifiers[0],'No sugar');assert.equal(JSON.stringify(f.tables.orders),before);f.update('done',1,'KDS-2234567890123456');assert.equal(f.queue()[0].preparation_status,'done');});

@@ -7,6 +7,9 @@ test('customer normalization accepts CRM and legacy shapes without losing IDs',(
 test('CRM table/detail treat customer fields and IDs as text',()=>{
  const document=dom(),c={customer_id:hostile,full_name:hostile,phone:hostile,email:hostile,brand_id:hostile,notes:hostile,tier:hostile,created_at:hostile};
  const ctx=vm.createContext({BrewUI,document,CUSTOMERS:[c],getFiltered:()=>[c],avatarColor:()=> '#123456',fmt:()=> '0',givePoints(){}});
+ vm.runInContext(part('crm.html','function joinedDay(','function fmt('),ctx);
+ assert.equal(ctx.joinedDay('2026-11-03T17:00:00Z'),'2026-11-04');
+ assert.equal(ctx.joinedDay('2026-11-03'),'2026-11-03');
  vm.runInContext(part('crm.html','function renderCustomers()','function closeDetail()'),ctx);ctx.renderCustomers();ctx.openDetail(hostile);
  for(const id of ['customer-body','detail-body']){const html=document.getElementById(id).innerHTML;assert(!html.includes('<Example'));assert(!html.includes('<img'));assert(!html.includes('onclick='));assert(html.includes('&lt;Example &amp; Co.&gt;'));}assert.equal(document.getElementById('detail-name').textContent,hostile);
 });
