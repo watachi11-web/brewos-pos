@@ -30,7 +30,7 @@ const report = {
   environment: { platform: os.platform(), release: os.release(), arch: os.arch(), node: process.version,
     playwright: require('playwright/package.json').version, runId: process.env.GITHUB_RUN_ID || null,
     runAttempt: process.env.GITHUB_RUN_ATTEMPT || null, headSha: process.env.GITHUB_SHA || null },
-  checks: [], files: {}, cycles: [], browserRequests: [], browserFailures: [], pageErrors: [], blockedRequests: []
+  checks: [], files: {}, cycles: [], browserRequests: [], browserFailures: [], pageErrors: [], blockedRequests: [], readinessObservations: []
 };
 const logFile = path.join(OUT, 'test.log');
 function log(message, data) {
@@ -93,6 +93,19 @@ async function ready(page, offline = false) {
       && (offline ? notice.includes('ออฟไลน์') : notice.includes('ซิงก์ทุก 15'));
   }, offline, { timeout: 90000 });
 }
+async function settledSnapshot(page, name) {
+  // A peer can enter its normal 15-second refresh after a prior readiness check.
+  // Keep disabled-during-refresh observations; require the same enabled assertion within 90 seconds.
+  const deadline = Date.now() + 90000;
+  while (Date.now() < deadline) {
+    await ready(page);
+    const value = await snapshot(page);
+    if (value.controls.length && value.controls.every(c => !c.disabled)) return value;
+    report.readinessObservations.push({ context: name, time: new Date().toISOString(), snapshot: value });
+    await page.waitForTimeout(100);
+  }
+  throw Error('Controls did not settle enabled within 90 seconds: ' + name);
+}
 async function setup(browser, name, timezoneId) {
   const context = await browser.newContext({ timezoneId, viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block' });
   // Safety-only routing: no response fulfillment, no simulated ping failure, no app-state injection.
@@ -128,7 +141,7 @@ let browser, phase = 'preflight';
   const screens = await Promise.all([setup(browser, 'A', 'UTC'), setup(browser, 'B', 'Asia/Bangkok')]);
   report.before = [];
   for (const s of screens) {
-    const value = { context: s.name, timezone: s.timezoneId, ping: await ping(s.page, s.name + '-before'), snapshot: await snapshot(s.page) };
+    const value = { context: s.name, timezone: s.timezoneId, ping: await ping(s.page, s.name + '-before'), snapshot: await settledSnapshot(s.page, s.name) };
     report.before.push(value);
     check(s.name + ' online identity and current columns', () => { identity(value.ping); validSnapshot(value.snapshot); });
   }
@@ -137,7 +150,7 @@ let browser, phase = 'preflight';
     const cycle = { context: target.name, peer: peer.name, startedAt: new Date().toISOString() }; report.cycles.push(cycle);
     phase = target.name + '-offline'; await target.context.setOffline(true); await ready(target.page, true);
     cycle.offline = { ping: await ping(target.page, target.name + '-offline'), snapshot: await snapshot(target.page) };
-    cycle.peerDuringOffline = { ping: await ping(peer.page, peer.name + '-peer-online'), snapshot: await snapshot(peer.page) };
+    cycle.peerDuringOffline = { ping: await ping(peer.page, peer.name + '-peer-online'), snapshot: await settledSnapshot(peer.page, peer.name) };
     check(target.name + ' actual offline failure and disabled controls; peer remains online', () => {
       validSnapshot(cycle.offline.snapshot, true); assert.equal(cycle.offline.ping.online, false);
       assert.equal(cycle.offline.ping.error?.name, 'TypeError'); assert.match(cycle.offline.ping.error.message, /Failed to fetch|NetworkError|Load failed/);
@@ -158,7 +171,7 @@ let browser, phase = 'preflight';
     await target.context.setOffline(false); await ready(target.page);
     const queueResponse = await freshQueue;
     cycle.freshQueue = await queueResponse.json();
-    cycle.after = { ping: await ping(target.page, target.name + '-after'), snapshot: await snapshot(target.page), peerSnapshot: await snapshot(peer.page) };
+    cycle.after = { ping: await ping(target.page, target.name + '-after'), snapshot: await settledSnapshot(target.page, target.name), peerSnapshot: await settledSnapshot(peer.page, peer.name) };
     check(target.name + ' reconnected identity, enabled controls and both current columns', () => {
       identity(cycle.after.ping); validSnapshot(cycle.after.snapshot); validSnapshot(cycle.after.peerSnapshot);
       assert.deepEqual(cycle.after.snapshot.columns, cycle.after.peerSnapshot.columns);
