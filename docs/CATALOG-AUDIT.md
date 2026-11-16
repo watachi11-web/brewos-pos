@@ -17,7 +17,7 @@ Status: **Conditional Acceptance; not merged or deployed**. This review does not
 
 ## Validation and limits
 
-- Local full suite: **247 passed, 0 failed, 0 skipped**, Node 24.21.0, including private reviewed-baseline sale/refund integration.
+- Local full suite: **253 passed, 0 failed, 0 skipped**, Node 24.21.0, including private reviewed-baseline sale/refund integration and the latest main menu-insights tests.
 - Built private candidate: catalog tests **10 passed, 0 failed, 0 skipped**, confirming builder routing, not only standalone modules.
 - Pre-change editor reproduction: 5 failures / 1 pass (six initial cases); catalog baseline reproduction: 7 failures / 3 passes. These are synthetic fault demonstrations, not live data failures.
 - PR workflow runs the six portable catalog/stock test files on Ubuntu; it has read-only repository permissions and no deployment step, credentials or live endpoints in its tests.
