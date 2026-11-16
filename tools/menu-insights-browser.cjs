@@ -1,0 +1,16 @@
+const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert/strict');
+const {chromium}=require(process.env.BREWOS_PLAYWRIGHT || 'playwright');
+const root=process.cwd(),out=process.env.BREWOS_MENU_PROOF || '/tmp/brewos-menu-proof';fs.mkdirSync(out,{recursive:true});
+const products=[{product_id:'A',name:'Menu A',base_price:30,cost_price:12,category_id:'C',brand_id:'HH'},{product_id:'B',name:'Menu B',base_price:35,cost_price:15,category_id:'C',brand_id:'HH'}];
+const menu={products,categories:[{category_id:'C',name:'Food',brand_id:'HH'}]};
+const orders=[{order_id:'O',date_key:require(path.join(root,'menu-insights.js')).windowDates().to,order_status:'completed',payment_status:'paid',items:[{line_id:'L',product_id:'B',qty:3}]}];
+(async()=>{let browser,server;try{
+ server=http.createServer((q,r)=>{const f=path.join(root,new URL(q.url,'http://local').pathname);if(!f.startsWith(root)||!fs.existsSync(f)){r.writeHead(404);return r.end();}r.setHeader('Content-Type',f.endsWith('.js')?'text/javascript':'text/html');r.end(fs.readFileSync(f));});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ browser=await chromium.launch({headless:true});const ctx=await browser.newContext({viewport:{width:1366,height:900}});let mode='ok',release;const errors=[];
+ await ctx.route('https://**/*',async route=>{const u=new URL(route.request().url());if(!u.hostname.includes('script.google.com'))return route.abort();assert.equal(route.request().method(),'GET');if(u.searchParams.get('action')==='get_orders_sheet'){if(mode==='slow')await new Promise(r=>release=r);if(mode==='fail')return route.abort();return route.fulfill({json:{success:true,data:orders}});}return route.fulfill({json:{success:true,data:menu}});});
+ const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));const base='http://127.0.0.1:'+server.address().port;
+ await page.goto(base+'/pos.html');await page.waitForFunction(()=>document.getElementById('menuRankingStatus').textContent.includes('ไม่หักคืนสินค้า'));assert.equal(await page.locator('[data-menu-id]').first().getAttribute('data-menu-id'),'B');await page.screenshot({path:out+'/pos.png'});
+ mode='slow';await page.reload();await page.locator('[data-menu-id="A"]').waitFor();await page.locator('[data-menu-id="A"]').dispatchEvent('pointerdown');release();await page.waitForFunction(()=>document.getElementById('menuRankingStatus').textContent.includes('คงลำดับเดิม'));assert.equal(await page.locator('[data-menu-id]').first().getAttribute('data-menu-id'),'A');
+ mode='fail';await page.reload();await page.waitForFunction(()=>document.getElementById('menuRankingStatus').textContent.includes('ใช้ลำดับเดิม'));assert.equal(await page.locator('[data-menu-id]').first().getAttribute('data-menu-id'),'A');
+ mode='ok';await page.goto(base+'/brand_editor.html');await page.waitForFunction(()=>document.getElementById('menu-content').textContent.includes('จำนวนขาย 30 วัน: 3'));assert((await page.locator('summary').innerText()).includes('ยังไม่เปิดขาย'));await page.screenshot({path:out+'/editor.png'});assert.deepEqual(errors,[]);console.log('PASS: ranking, interaction freeze, network fallback, editor metrics/drafts; no writes, no page errors');
+ }finally{await browser?.close();server?.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

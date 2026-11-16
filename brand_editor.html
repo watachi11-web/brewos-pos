@@ -234,6 +234,7 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 </div>
 
 <script src="api.js"></script>
+<script src="menu-insights.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
 // brand_editor.html — ผูกกับ create_product/update_product/delete_product/create_category
@@ -242,11 +243,17 @@ html,body { height:100%; font-family:'Anuphan','Poppins',sans-serif; background:
 // ═══════════════════════════════════════════════════════════
 let CATEGORIES = [];
 let PRODUCTS = [];
+let INSIGHTS = null;
+let INSIGHTS_MESSAGE = "กำลังโหลดสถิติ";
+let INSIGHTS_GENERATION = 0;
 let ACTIVE_BRAND = 'ALL';
 
 document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
 
 async function loadData() {
+  const generation = ++INSIGHTS_GENERATION;
+  INSIGHTS = null;
+  INSIGHTS_MESSAGE = "กำลังโหลดสถิติ";
   document.getElementById('menu-content').innerHTML = '<div class="loading-text">⏳ Loading…</div>';
   try {
     const menu = await API.menuData();
@@ -256,6 +263,16 @@ async function loadData() {
     console.error('loadData failed:', e);
     document.getElementById('menu-content').innerHTML = `<div class="empty-state">โหลดไม่สำเร็จ: ${e.message}</div>`;
     return;
+  }
+  renderMenu();
+  try {
+    const result = await MenuInsights.load(API, PRODUCTS);
+    if (generation !== INSIGHTS_GENERATION) return;
+    INSIGHTS = result.stats;
+    INSIGHTS_MESSAGE = 'ยอดจากบิลสำเร็จที่ชำระแล้ว ถึง ' + result.range.to + ' · ไม่ใช่ยอดสุทธิหลังคืนสินค้า · ยอดศูนย์ไม่ได้แปลว่าเคยเปิดขาย';
+  } catch(e) {
+    if (generation !== INSIGHTS_GENERATION) return;
+    INSIGHTS_MESSAGE = 'สถิติไม่พร้อมหรือข้อมูลไม่ครบ — ไม่ใช้ยอดศูนย์แทนข้อมูลที่หาย';
   }
   renderMenu();
 }
@@ -278,7 +295,15 @@ function renderMenu() {
     return;
   }
 
-  content.innerHTML = cats.map(cat => {
+  const drafts = ACTIVE_BRAND === 'BB' ? '' : `<details style="padding:16px;border:1px solid #ddd;margin-bottom:16px" open>
+    <summary>แผนเมนูทดลอง Heng Heng — ยังไม่เปิดขาย</summary>
+    <p>ยังไม่มีราคาและขนาดเสิร์ฟ จึงยังไม่สร้างสินค้าขายหรือตัดสต็อก</p>
+    <ul><li>ซาซิมิแซลมอน — รอแหล่งซื้อ ต้นทุน น้ำหนักพร้อมเสิร์ฟ เครื่องเคียง และบรรจุภัณฑ์</li>
+    <li>ยำแซลมอน — รอสูตรน้ำยำ ปริมาณปลา ผัก และบรรจุภัณฑ์</li>
+    <li>ข้าวหน้าเนื้อ — ตรวจและปรับสูตร PRD-045 เดิมก่อน ไม่สร้างซ้ำ</li>
+    <li>หมี่หน้าเนื้อ — รอชนิดเส้น น้ำหนักเนื้อ ซอส และบรรจุภัณฑ์</li></ul>
+    <p>แนะนำทดลองทีละกลุ่ม: แซลมอน / เนื้อ โดยติดตามยอดขายและของเสียแยกกัน</p></details>`;
+  content.innerHTML = drafts + '<p role="status">' + INSIGHTS_MESSAGE + '</p>' + cats.map(cat => {
     const products = PRODUCTS.filter(p => p.category_id === cat.category_id);
     return `
       <div class="cat-section">
@@ -297,15 +322,23 @@ function renderMenu() {
 }
 
 function renderProductCard(p) {
+  const stat = INSIGHTS && (INSIGHTS[p.product_id] || {qty30:0,qty90:0,last:''});
+  const price = Number(p.base_price), cost = Number(p.cost_price);
+  const contribution = Number.isFinite(cost) && cost > 0 && Number.isFinite(price) ? (price-cost).toFixed(2) : 'ยังไม่ทราบ';
   return `
     <div class="product-card">
-      ${p.is_featured ? '<div class="featured-badge">★ FEATURED</div>' : ''}
+      ${p.is_featured ? '<div class="featured-badge">★ ร้านแนะนำ / ปักด้านบน</div>' : ''}
       <div class="product-emoji">${p.emoji || '🍽'}</div>
       <div class="product-name">${p.name}</div>
       <div class="product-name-th">${p.name_th || '&nbsp;'}</div>
       <div class="product-price-row">
         <span class="product-price">฿${p.base_price}</span>
         <span class="product-cost">cost ฿${p.cost_price}</span>
+      </div>
+      <div style="padding:8px;font-size:12px;line-height:1.6">
+        ${stat ? `จำนวนขาย 30 วัน: ${stat.qty30} · 90 วัน: ${stat.qty90}<br>ขายล่าสุดในช่วง: ${stat.last || 'ไม่พบบิล'}` : 'สถิติยังไม่พร้อม'}
+        <br>ราคาขาย − ต้นทุนสูตรปัจจุบัน: ฿${contribution}
+        <br>ก่อนส่วนลด ค่าแรง ค่าธรรมเนียม และของเสีย · ไม่ใช่กำไรสุทธิ
       </div>
       <div class="product-actions">
         <button class="icon-btn" onclick='editProduct(${JSON.stringify(p)})'>✎ Edit</button>
