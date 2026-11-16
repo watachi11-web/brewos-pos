@@ -285,6 +285,7 @@ button{cursor:pointer}
         <input type="text" placeholder="ค้นหาเมนู..." oninput="filterSearch(this.value)">
       </div>
     </div>
+    <div id="menuRankingStatus" role="status" style="padding:8px 20px;font-size:12px">ลำดับเดิม · กำลังตรวจยอดขาย</div>
     <div class="menu-grid" id="menuGrid">
       <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">กำลังโหลดเมนู...</div>
     </div>
@@ -459,6 +460,7 @@ button{cursor:pointer}
 
 <script src="ui-safe.js?v=1"></script>
 <script src="api.js"></script>
+<script src="menu-insights.js"></script>
 <script src="sale-client.js"></script>
 <script>
 // ═══════════════════════════════════════════════════════════
@@ -521,6 +523,10 @@ function escHtml(v) {
 }
 
 // ── LOAD MENUS — #FIX ใช้ API.menuData() จาก api.js แทน hardcode fetch URL ──
+let MENU_STATS = null;
+let MENU_INTERACTED = false;
+document.getElementById('menuGrid').addEventListener('pointerdown', () => { MENU_INTERACTED = true; });
+document.getElementById('menuGrid').addEventListener('keydown', () => { MENU_INTERACTED = true; });
 async function loadMenus() {
   document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">⏳ กำลังโหลดเมนู...</div>';
   const catBarEl = document.getElementById('catBar');
@@ -548,6 +554,19 @@ async function loadMenus() {
     buildCatBar();
     currentCat = 'all';
     renderMenus(MENUS);
+    // Apply the ranking only before the cashier starts a basket.
+    MenuInsights.load(API, MENUS).then(result => {
+      const status = document.getElementById('menuRankingStatus');
+      if (MENU_INTERACTED || Object.keys(cart).length) {
+        status.textContent = 'มีบิลกำลังรับอยู่ · คงลำดับเดิมจนเปิดหน้าใหม่';
+        return;
+      }
+      MENU_STATS = result.stats;
+      status.textContent = 'ร้านแนะนำก่อน → จำนวนขาย 30 วัน ภายในแบรนด์/หมวด · ถึง ' + result.range.to + ' · เฉพาะบิลสำเร็จที่ชำระแล้ว ไม่หักคืนสินค้า';
+      applyFilter(document.querySelector('.cat-search input').value.toLowerCase());
+    }).catch(() => {
+      document.getElementById('menuRankingStatus').textContent = 'โหลดสถิติไม่ได้หรือข้อมูลไม่ครบ · ใช้ลำดับเดิม';
+    });
   } catch(e) {
     console.error('loadMenus error:', e.message);
     document.getElementById('menuGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">โหลดเมนูไม่ได้ — ' + escHtml(e.message) + '</div>';
@@ -581,7 +600,7 @@ function buildCatBar() {
 function renderMenus(items) {
   const g = document.getElementById('menuGrid');
   if (!items.length) { g.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-l)">ไม่พบเมนู</div>'; return; }
-  g.innerHTML = items.map(m => {
+  g.innerHTML = MenuInsights.rank(items, MENU_STATS).map(m => {
     const id = escHtml(m.id);
     const name = escHtml(m.name || 'ไม่มีชื่อ');
     const nameTh = escHtml(m.nameTh || '');
@@ -592,7 +611,7 @@ function renderMenus(items) {
       <div class="mc-photo">
         ${img ? `<img src="${img}" alt="${name}" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : ''}
         <div class="mc-emoji" style="${img?'display:none':'display:flex'}">${emoji}</div>
-        ${m.best ? '<div class="best-badge">BEST SELLER</div>' : ''}
+        ${m.best ? '<div class="best-badge">ร้านแนะนำ</div>' : ''}
         ${!img ? '<div class="img-missing-note">เพิ่มรูปได้</div>' : ''}
       </div>
       <div class="mc-body">
