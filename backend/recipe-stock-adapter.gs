@@ -18,14 +18,14 @@ function brewRecipeSnapshot_(ss) {
     if(/^รวม SUB-\d+$/.test(id)&&String(row.ingredient_id||'').trim()===''&&row.qty_used==='')return;
     if(!/^SUB-\d+$/.test(id))throw Error('INVALID_SUBRECIPE_ID_'+id);
     var def=bySub.get(id),unit=String(row.batch_yield_unit||'').trim();
-    if(!def){def={product_id:id,yield_qty:row.batch_yield_qty,yield_unit:unit,lines:[]};bySub.set(id,def);units.set(id,unit);}
+    if(!def){def={product_id:id,name:String(row.product_name||id),yield_qty:row.batch_yield_qty,yield_unit:unit,lines:[]};bySub.set(id,def);units.set(id,unit);}
     if(Number(row.batch_yield_qty)!==Number(def.yield_qty)||unit!==def.yield_unit)throw Error('INCONSISTENT_BATCH_YIELD_'+id);
     def.lines.push(row);
   });
   function requirement(row,qty) {
     var id=String(row.ingredient_id||'').trim(),from=String(row.unit||'').trim(),to=units.get(id);
     if(!from||!to)throw Error('MISSING_RECIPE_UNIT_OR_INGREDIENT_'+id);
-    if(qty===''||qty===null||qty===undefined||typeof qty==='boolean'||!isFinite(Number(qty))||Number(qty)<=0)throw Error('INVALID_RECIPE_QUANTITY_'+id);
+    if((typeof qty!=='number'&&typeof qty!=='string')||String(qty).trim()===''||!isFinite(Number(qty))||Number(qty)<=0)throw Error('INVALID_RECIPE_QUANTITY_'+id);
     var converted=convertInventoryQty_(Number(qty),from,to);
     if(converted===null)throw Error('RECIPE_UNIT_MISMATCH_'+id+'_'+from+'_'+to);
     return {ingredient_id:id,qty:converted,unit:to};

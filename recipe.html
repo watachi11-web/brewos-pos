@@ -251,7 +251,7 @@ const CAT_LABELS = {
 
 document.getElementById('staff-footer').textContent = Identity.getName() + ' · All Brands';
 
-function fmt(n) { return '฿' + Number(n||0).toFixed(2); }
+function fmt(n) { return n == null || !Number.isFinite(Number(n)) ? '—' : '฿' + Number(n).toFixed(2); }
 
 function gpClass(gp) {
   if (gp >= 65) return 'gp-high';
@@ -347,6 +347,10 @@ function renderDetail() {
   document.getElementById('empty-detail').style.display = 'none';
   document.getElementById('recipe-detail').style.display = 'block';
 
+  if (recipe.cost_complete === false) {
+    document.getElementById('recipe-detail').textContent = recipe.name + ' — ไม่สามารถยืนยันต้นทุน: ' + (recipe.cost_error || 'กรุณาตรวจสูตรและหน่วยก่อนใช้งาน');
+    return;
+  }
   const costPerServing = recipe.cost;
   const margin = recipe.selling_price - costPerServing;
   const gp = recipe.gp_percent;
@@ -474,6 +478,10 @@ let ALL_PRODUCTS = [];
 let ALL_INGREDIENTS = [];   // ingredients sheet เท่านั้น
 let ALL_SUB_RECIPES = [];   // #SUBFIX — sub_recipes (ผ่าน API.recipes() grouped by product_id) มารวมใน dropdown เดียวกัน
 let formLines = [];
+let recipeSaving = false;
+function recipeText(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
 
 async function openAddRecipeModal() {
   UI.openModal('add-recipe-modal');
@@ -482,9 +490,9 @@ async function openAddRecipeModal() {
   formLines = [];
 
   try {
-    const [menu, ingredients] = await Promise.all([API.menuData(), API.ingredients()]);
-    ALL_PRODUCTS = menu.products || [];
-    ALL_INGREDIENTS = ingredients || [];
+    const [products, ingredients] = await Promise.all([API.products(), API.ingredients()]);
+    ALL_PRODUCTS = (products || []).filter(p => ![true, 'true', 'TRUE', 1, '1'].includes(p.is_deleted));
+    ALL_INGREDIENTS = (ingredients || []).filter(i => !String(i.ingredient_id).startsWith('SUB-'));
 
     // #SUBFIX — ดึงรายการ sub-recipe ที่มีอยู่จริงจากบรรทัดของ RECIPES ที่โหลดไว้แล้ว
     // (is_sub_recipe flag มาจาก getRecipesWithCost() ใน รหัส.gs) เอามาสร้างเป็นตัวเลือก
@@ -492,7 +500,7 @@ async function openAddRecipeModal() {
     const subMap = {};
     RECIPES.forEach(r => (r.lines || []).forEach(l => {
       if (l.is_sub_recipe && !subMap[l.ingredient_id]) {
-        subMap[l.ingredient_id] = { ingredient_id: l.ingredient_id, name: l.name, unit: l.unit };
+        subMap[l.ingredient_id] = { ingredient_id: l.ingredient_id, name: l.name, unit: l.stock_unit || l.unit };
       }
     }));
     ALL_SUB_RECIPES = Object.values(subMap);
@@ -503,12 +511,12 @@ async function openAddRecipeModal() {
     sel.innerHTML = '<option value="">— Select a menu item —</option>' +
       ALL_PRODUCTS.map(p => {
         const hasRecipe = recipeProductIds.has(p.product_id);
-        return `<option value="${p.product_id}" data-name="${p.name}">${p.emoji||'🍽'} ${p.name}${hasRecipe ? ' (has recipe — will overwrite)' : ''}</option>`;
+        return `<option value="${recipeText(p.product_id)}" data-name="${recipeText(p.name)}">${p.emoji||'🍽'} ${recipeText(p.name)} · ${recipeText(p.product_id)}${hasRecipe ? ' (has recipe — will overwrite)' : ''}</option>`;
       }).join('');
 
     addIngredientLine();
   } catch(e) {
-    document.getElementById('ar-product').innerHTML = `<option value="">⚠️ Failed to load: ${e.message}</option>`;
+    document.getElementById('ar-product').innerHTML = `<option value="">⚠️ Failed to load: ${recipeText(e.message)}</option>`;
   }
 }
 
@@ -517,23 +525,20 @@ function closeAddRecipeModal() { UI.closeModal('add-recipe-modal'); }
 function onProductSelected() {
   const sel = document.getElementById('ar-product');
   const productId = sel.value;
-  if (!productId) return;
-
-  // #SUBFIX — ตอนนี้หาสูตรเดิมด้วย product_id ตรงๆ แทนชื่อ (แม่นยำกว่า ไม่พังเวลาชื่อซ้ำ)
   const existing = RECIPES.find(r => r.product_id === productId);
-  if (existing && existing.lines && existing.lines.length) {
-    formLines = existing.lines.map(l => ({ ingredient_id: l.ingredient_id, qty: l.qty }));
-    renderIngredientLines();
-  }
+  formLines = existing && existing.lines && existing.lines.length
+    ? existing.lines.map(l => ({ ingredient_id: l.ingredient_id, qty: l.qty, unit: l.unit }))
+    : [{ingredient_id:'', qty:'', unit:''}];
+  renderIngredientLines();
 }
 
 // #SUBFIX — dropdown วัตถุดิบตอนนี้รวมทั้ง ingredients จริง และ sub-recipe (มี optgroup แยกให้ดูง่าย)
 function ingredientOptionsHtml(selectedId) {
-  const ingOptions = ALL_INGREDIENTS.map(i =>
-    `<option value="${i.ingredient_id}" ${i.ingredient_id===selectedId?'selected':''}>${i.name} (${i.unit})</option>`
+  const ingOptions = ALL_INGREDIENTS.filter(i => !String(i.ingredient_id).startsWith('SUB-')).map(i =>
+    `<option value="${recipeText(i.ingredient_id)}" ${i.ingredient_id===selectedId?'selected':''}>${recipeText(i.name)} · ${recipeText(i.ingredient_id)} (${recipeText(i.unit)})</option>`
   ).join('');
   const subOptions = ALL_SUB_RECIPES.map(s =>
-    `<option value="${s.ingredient_id}" ${s.ingredient_id===selectedId?'selected':''}>🧪 ${s.name} (${s.unit}) — sub-recipe</option>`
+    `<option value="${recipeText(s.ingredient_id)}" ${s.ingredient_id===selectedId?'selected':''}>🧪 ${recipeText(s.name)} · ${recipeText(s.ingredient_id)} (${recipeText(s.unit)}) — sub-recipe</option>`
   ).join('');
   return '<option value="">— Select ingredient —</option>' +
     (subOptions ? `<optgroup label="Sub-recipes (สูตรแม่)">${subOptions}</optgroup>` : '') +
@@ -541,18 +546,24 @@ function ingredientOptionsHtml(selectedId) {
 }
 
 function addIngredientLine() {
-  formLines.push({ ingredient_id: '', qty: '' });
+  formLines.push({ ingredient_id: '', qty: '', unit: '' });
   renderIngredientLines();
 }
 function removeIngredientLine(idx) {
   formLines.splice(idx, 1);
   renderIngredientLines();
 }
-function updateLineIngredient(idx, ingId) { formLines[idx].ingredient_id = ingId; }
+function updateLineIngredient(idx, ingId) {
+  const ing = findIngredientOrSub(ingId);
+  formLines[idx] = {ingredient_id: ingId, qty: '', unit: ing ? ing.unit : ''};
+  renderIngredientLines();
+}
 function updateLineQty(idx, qty) { formLines[idx].qty = qty; }
 
 function findIngredientOrSub(id) {
-  return ALL_INGREDIENTS.find(i => i.ingredient_id === id) || ALL_SUB_RECIPES.find(s => s.ingredient_id === id);
+  return String(id).startsWith('SUB-')
+    ? ALL_SUB_RECIPES.find(s => s.ingredient_id === id)
+    : ALL_INGREDIENTS.find(i => i.ingredient_id === id);
 }
 
 function renderIngredientLines() {
@@ -563,14 +574,14 @@ function renderIngredientLines() {
   }
   container.innerHTML = formLines.map((line, idx) => {
     const ing = findIngredientOrSub(line.ingredient_id);
-    const unit = ing ? ing.unit : '—';
+    const unit = line.unit || (ing ? ing.unit : '—');
     return `
       <div class="ing-line-row">
         <select class="form-input" onchange="updateLineIngredient(${idx}, this.value)">
-          ${ingredientOptionsHtml(line.ingredient_id)}
+          ${line.ingredient_id && !ing ? `<option selected value="${recipeText(line.ingredient_id)}">ไม่พบ ${recipeText(line.ingredient_id)}</option>` : ''}${ingredientOptionsHtml(line.ingredient_id)}
         </select>
-        <input class="form-input" type="number" step="0.1" min="0" placeholder="Qty" value="${line.qty}" oninput="updateLineQty(${idx}, this.value)">
-        <div style="font-size:12px;color:var(--muted);text-align:center">${unit}</div>
+        <input class="form-input" type="number" step="0.1" min="0" placeholder="Qty" value="${recipeText(line.qty)}" oninput="updateLineQty(${idx}, this.value)">
+        <div style="font-size:12px;color:var(--muted);text-align:center">${recipeText(unit)}</div>
         <button class="ing-line-remove" onclick="removeIngredientLine(${idx})">✕</button>
       </div>
     `;
@@ -578,6 +589,7 @@ function renderIngredientLines() {
 }
 
 async function saveRecipeForm() {
+  if (recipeSaving) return;
   const sel = document.getElementById('ar-product');
   const productId = sel.value;
   if (!productId) { UI.toast('กรุณาเลือกเมนู', 'error'); return; }
@@ -585,7 +597,17 @@ async function saveRecipeForm() {
   const selectedOption = sel.options[sel.selectedIndex];
   const productName = selectedOption.getAttribute('data-name');
 
-  const validLines = formLines.filter(l => l.ingredient_id && l.qty && Number(l.qty) > 0);
+  // Ignore only entirely empty new rows. A partial row must never disappear.
+  const validLines = formLines.filter(l => l.ingredient_id || String(l.qty == null ? '' : l.qty).trim() !== '');
+  const seen = new Set();
+  for (const line of validLines) {
+    const ing = findIngredientOrSub(line.ingredient_id), qty = Number(line.qty);
+    if (!ing || !Number.isFinite(qty) || qty <= 0 || !(line.unit || ing.unit) || seen.has(line.ingredient_id)) {
+      UI.toast('กรุณาตรวจรหัสวัตถุดิบ หน่วย และจำนวนให้ครบ ห้ามรายการซ้ำหรือจำนวนไม่เป็นบวก', 'error');
+      return;
+    }
+    seen.add(line.ingredient_id);
+  }
   if (!validLines.length) { UI.toast('กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ', 'error'); return; }
 
   const payload = {
@@ -597,12 +619,13 @@ async function saveRecipeForm() {
         ingredient_id: l.ingredient_id,
         ingredient_name: ing ? ing.name : '',
         qty_used: Number(l.qty),
-        unit: ing ? ing.unit : '',
+        unit: l.unit || ing.unit,
       };
     }),
   };
 
   const btn = document.getElementById('save-recipe-btn');
+  recipeSaving = true;
   UI.loading(btn, true);
   try {
     const result = await API.createRecipe(payload);
@@ -615,6 +638,7 @@ async function saveRecipeForm() {
   } catch(e) {
     UI.toast('บันทึกไม่สำเร็จ: ' + e.message, 'error');
   } finally {
+    recipeSaving = false;
     UI.loading(btn, false);
   }
 }

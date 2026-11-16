@@ -51,7 +51,14 @@ function build(source){
  const updatedCustomer=replaceOnce(updateSource,'if (col !== -1 && body[field] !== undefined) sheet.getRange(r + 1, col + 1).setValue(body[field]);',
    "if (col === -1 || body[field] === undefined) return;\n          if (field === 'phone') brewUpdateCustomerPhone_(sheet, r, col, body[field]);\n          else sheet.getRange(r + 1, col + 1).setValue(body[field]);");
  source=replaceOnce(source,updateSource,updatedCustomer);
- const modules=['recipe-stock-plan.js','recipe-stock-adapter.gs','sale-commit.js','sale-batch.js','sale-service.gs','sale-admin.gs','kitchen-service.gs','customer-phone.gs'];
+ // Keep the reviewed legacy source for provenance, but route catalog reads and
+ // recipe writes through the same unit-aware planner used by atomic sales.
+ for(const name of ['buildCurrentProductCostInfoMap','getRecipesWithCost','brewRefundOriginal_createRecipeLines_']){
+   source=replaceOnce(source,'function '+name+'(','function brewCatalogLegacy_'+name+'(');
+ }
+ source=replaceOnce(source,'recipe_cost_preview: info ? Math.round(Number(info.cost || 0) * 10000) / 10000 : 0,',
+   'recipe_cost_preview: info && info.structural_complete ? Math.round(info.cost * 10000) / 10000 : null,');
+ const modules=['recipe-stock-plan.js','recipe-stock-adapter.gs','recipe-catalog.gs','sale-commit.js','sale-batch.js','sale-service.gs','sale-admin.gs','kitchen-service.gs','customer-phone.gs'];
  const body=source+'\n'+core+'\n'+mods+'\n'+modules.map(f=>fs.readFileSync(path.join(__dirname,f),'utf8')).join('\n');
  const release=crypto.createHash('sha256').update(body).digest('hex');
  const out=body+'\nvar BREWOS_RECIPE_RELEASE_ID='+JSON.stringify(release)+';\n';
