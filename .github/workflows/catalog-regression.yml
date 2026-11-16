@@ -1,0 +1,37 @@
+name: Catalog and BOM regression
+on:
+  pull_request:
+    paths:
+      - recipe.html
+      - backend/**
+      - tools/audit-catalog.cjs
+      - tests/**
+      - .github/workflows/catalog-regression.yml
+permissions:
+  contents: read
+jobs:
+  synthetic-catalog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run portable synthetic catalog and stock tests
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir evidence
+          node --version > evidence/environment.txt
+          git rev-parse HEAD >> evidence/environment.txt
+          node --test tests/catalog-audit.test.cjs tests/recipe-catalog.test.cjs tests/recipe-editor.test.cjs tests/recipe-stock-plan.test.cjs tests/recipe-stock-adapter.test.cjs 2>&1 | tee evidence/tests.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: catalog-regression-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 30
