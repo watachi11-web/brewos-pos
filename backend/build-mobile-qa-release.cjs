@@ -16,13 +16,16 @@ function build(source){
  source=once(source,"${catMap[cat]||cat}","${escHtml(catMap[cat]||cat)}");
  source=once(source,"  mobileSaleBusy=true;\n  btnPay.textContent", "  mobileSaleBusy=true;\n  syncMobileControls();\n  btnPay.textContent");
  source=once(source,"    clearCart();\n    document.getElementById('rcptOverlay')", "    mobileInternal(() => clearCart());\n    document.getElementById('rcptOverlay')");
- source=once(source,'    resetForm();\n    document.getElementById(\'saleVerified\')', '    mobileInternal(() => resetForm());\n    document.getElementById(\'saleVerified\')');
+ source=once(source,'    resetForm();\n    document.getElementById(\'saleVerified\')', '    mobileResolveOwnedSale(saved.result.order_id);\n    document.getElementById(\'saleVerified\')');
  // Do not clear another tab's unsent basket when a different tab finishes its sale.
- source=once(source,"resetForm();showToast('บิลยืนยันแล้วจากอีกแท็บ เริ่มบิลใหม่ได้');","showToast('บิลยืนยันแล้วจากอีกแท็บ ตรวจตะกร้าของหน้านี้ก่อนรับบิลต่อ');");
+ source=once(source,"resetForm();showToast('บิลยืนยันแล้วจากอีกแท็บ เริ่มบิลใหม่ได้');","mobileResolveOwnedSale(old.request.receipt_id);showToast('บิลยืนยันแล้วจากอีกแท็บ ตรวจตะกร้าของหน้านี้ก่อนรับบิลต่อ');");
  source=once(source,"(err.message || '') + '</div>'", "escHtml(err.message || '') + '</div>'");
  const start=source.indexOf('async function doCancelOrder() {'),end=source.indexOf('async function loadDashboard()',start);
  if(start<0||end<0)throw Error('Missing legacy cancel boundary');
  source=source.slice(0,start)+"async function doCancelOrder() { closeCancelModal(); showToast('กรุณาใช้หน้ารายการออเดอร์บนเว็บหลักเพื่อคืนสินค้า'); }\n"+source.slice(end);
+ source=once(source,'  const saved=await getMobileSaleClient().commit(request,{rcpId,grand});return saved.result;', '  mobileOwnedSale={receiptId:rcpId,basket:JSON.stringify(cart)};\n  const saved=await getMobileSaleClient().commit(request,{rcpId,grand});return saved.result;');
+ source=once(source,'  if (_dailyChart) _dailyChart.destroy();', '  if (typeof Chart === \'function\') {\n  if (_dailyChart) _dailyChart.destroy();');
+ source=once(source,'  renderDashMenus(d.menus);', '  } else { mobileDailyFallback(d.daily); }\n  renderDashMenus(d.menus);');
  const runtime=fs.readFileSync(path.join(__dirname,'mobile-qa-runtime.js'),'utf8');
  const insights=fs.readFileSync(path.join(__dirname,'../menu-insights.js'),'utf8');
  source=once(source,'initMenus();\n</script>',insights+'\n'+runtime+'\ninitMenus();\n</script>');

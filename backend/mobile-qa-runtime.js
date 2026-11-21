@@ -1,4 +1,8 @@
 // Injected before initMenus. No private HTML/configuration or production mutations.
+let mobileOwnedSale=null;
+function mobileResolveOwnedSale(receiptId){
+ if(mobileOwnedSale?.receiptId===receiptId){const same=mobileOwnedSale.basket===JSON.stringify(cart);mobileOwnedSale=null;if(same)mobileInternal(()=>resetForm());}
+}
 let mobileInternalDepth=0, mobileMenuReady=false, mobileMenuState='loading', mobileRank=null, mobileTouched=false;
 function mobileInternal(fn){mobileInternalDepth++;try{return fn();}finally{mobileInternalDepth--;}}
 function mobileLocked(){if(mobileInternalDepth)return false;try{return mobileSaleBusy||!!mobileSalePending();}catch(_){return true;}}
@@ -51,13 +55,13 @@ renderMenu=function(){
 };
 let mobileLoadVersion=0;
 initMenus=async function(){
- if(mobileLocked())return;
- const version=++mobileLoadVersion;mobileMenuState='loading';renderMenu();
+ const version=++mobileLoadVersion;mobileMenuReady=false;mobileMenuState='loading';renderMenu();
  try{
   const raw=await mobileRead('get_menu_data');if(version!==mobileLoadVersion)return;
   if(!raw||!Array.isArray(raw.products)||!Array.isArray(raw.categories))throw Error('Invalid menu');
-  CATS=[{id:'all',name:'ทั้งหมด',emoji:'🍽',brand:'ALL'},...raw.categories.map(c=>({id:c.category_id||c.id,name:c.name,emoji:c.emoji||'🍽',brand:c.brand_id}))];
-  PRODUCTS=raw.products.filter(p=>p.is_available!==false).map(p=>({id:p.product_id||p.id,cat:p.category_id,name:p.name||p.name_th||'',sub:p.name_th||'',emoji:p.emoji||'🍽',price:Number(p.base_price||p.price||0),cost:Number(p.cost_price||p.cost||0),brand:p.brand_id||'',best:p.is_featured===true,imgUrl:normalizeImageUrl(p.image_url||''),modifierGroups:Array.isArray(p.modifier_groups)?p.modifier_groups:[]}));
+  const inactiveCats=new Set(raw.categories.filter(c=>c.is_active===false||String(c.is_active).toLowerCase()==='false').map(c=>c.category_id||c.id));
+  CATS=[{id:'all',name:'ทั้งหมด',emoji:'🍽',brand:'ALL'},...raw.categories.filter(c=>!inactiveCats.has(c.category_id||c.id)).map(c=>({id:c.category_id||c.id,name:c.name,emoji:c.emoji||'🍽',brand:c.brand_id}))];
+  PRODUCTS=raw.products.filter(p=>p.is_available!==false&&String(p.is_available).toLowerCase()!=='false'&&!inactiveCats.has(p.category_id)).map(p=>({id:p.product_id||p.id,cat:p.category_id,name:p.name||p.name_th||'',sub:p.name_th||'',emoji:p.emoji||'🍽',price:Number(p.base_price||p.price||0),cost:Number(p.cost_price||p.cost||0),brand:p.brand_id||'',best:p.is_featured===true,imgUrl:normalizeImageUrl(p.image_url||''),modifierGroups:Array.isArray(p.modifier_groups)?p.modifier_groups:[]}));
   mobileMenuReady=true;mobileMenuState='ready';buildCatTabs();renderMenu();
   try{const metrics=await MenuInsights.load({orders:p=>mobileRead('get_orders_sheet',p)},PRODUCTS);if(version===mobileLoadVersion&&!mobileTouched&&!Object.keys(cart).length&&!mobileLocked()){mobileRank=metrics.stats;PRODUCTS=MenuInsights.rank(PRODUCTS,mobileRank);renderMenu();}}catch(_){/* Original ordering remains usable. */}
  }catch(_){if(version!==mobileLoadVersion)return;mobileMenuState='error';renderMenu();}
@@ -87,3 +91,15 @@ const staffParam=new URLSearchParams(window.location.search).get('staff')||sessi
 if(staffParam){try{document.getElementById('staffName').textContent=JSON.parse(staffParam).name||'Staff';}catch(_){document.getElementById('staffName').textContent=staffParam;}}
 document.addEventListener('pointerdown',()=>{mobileTouched=true;},true);
 document.addEventListener('keydown',()=>{mobileTouched=true;},true);
+
+// All category labels and dashboard report strings are data, never executable markup.
+buildCatTabs=function(){const el=document.getElementById('catTabs');el.replaceChildren();for(const c of CATS){const button=document.createElement('button');button.type='button';button.className='cat-tab'+(c.id===activeCat?' active':'');button.textContent=(c.emoji||'')+' '+(c.name||'');button.addEventListener('click',()=>setCat(c.id));el.append(button);}};
+function mobileReportRows(id,rows,columns){
+ const target=document.getElementById(id);target.replaceChildren();
+ if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=columns.length;td.textContent='ไม่มีข้อมูลในช่วงนี้';tr.append(td);target.append(tr);return;}
+ for(const row of rows){const tr=document.createElement('tr');columns.forEach((f,i)=>{const td=document.createElement('td');td.textContent=f(row);if(i)td.className='r';tr.append(td);});target.append(tr);}
+}
+function renderDashMenus(rows=[]){const target=document.getElementById('d-menus');target.replaceChildren();if(!rows.length){target.textContent='ไม่มีข้อมูลในช่วงนี้';return;}for(const r of rows){const item=document.createElement('div');item.textContent=String(r.name||'—')+' · '+Number(r.qty||0)+' รายการ · '+fmt(r.rev);target.append(item);}}
+function renderDashCats(rows=[]){mobileReportRows('d-cats',rows,[r=>String(r.cat||'—'),r=>fmt(r.rev),r=>fmt(r.profit),r=>r.gp===null||r.gp===undefined?'—':Number(r.gp)+'%']);}
+function renderDashCustomers(rows=[]){mobileReportRows('d-custs',rows,[r=>String(r.name||'—'),r=>fmt(r.rev),r=>Number(r.visits||0)]);}
+function mobileDailyFallback(rows=[]){const canvas=document.getElementById('dailyChart');let fallback=document.getElementById('dailyFallback');if(!fallback){fallback=document.createElement('div');fallback.id='dailyFallback';canvas.parentElement.append(fallback);}fallback.replaceChildren();canvas.hidden=true;const status=document.createElement('p');status.textContent='โหลดกราฟไม่ได้ — แสดงข้อมูลรายวันแทน';fallback.append(status);for(const row of rows){const item=document.createElement('div');item.textContent=String(row.day)+' · ยอดขาย '+fmt(row.rev)+' · กำไรขั้นต้น '+fmt(row.profit);fallback.append(item);}canvas.parentElement.style.overflow='auto';}
